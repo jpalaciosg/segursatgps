@@ -1,0 +1,4 @@
+env/
+templates/
+*.pyc
+*.sqlite3
