@@ -1,11 +1,15 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse_lazy
 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
+from bootstrap_modal_forms.generic import BSModalCreateView
+
 from .models import Driver
+from .forms import DriverModelForm
 from .serializers import DriverSerializer
 
 # Create your views here.
@@ -35,3 +39,9 @@ def get_driver(request,id):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+class DriverCreateView(BSModalCreateView):
+    template_name = 'drivers/create-driver.html'
+    form_class = DriverModelForm
+    success_message = 'Success: Driver was created.'
+    success_url = reverse_lazy('drivers')

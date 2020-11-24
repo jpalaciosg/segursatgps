@@ -36,3 +36,4 @@ def users_view(request):
     return render(request,'users/users.html',{
         'profiles':profiles,
     })
+
