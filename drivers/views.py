@@ -1,23 +1,43 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
+from django.views import View
 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from bootstrap_modal_forms.generic import BSModalCreateView
-
 from .models import Driver
-from .forms import DriverModelForm
+from .forms import DriverCreateForm
 from .serializers import DriverSerializer
 
 # Create your views here.
+
 @login_required
 def drivers_view(request):
+    form = DriverCreateForm()
+    if request.method == 'POST':
+        form = DriverCreateForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            try:
+                driver = Driver.objects.get(id=data['id'])
+            except Driver.DoesNotExist:
+                driver = None
+            if driver:
+                form.add_error('id', 'El numero de documento ya existe.')
+            else:
+                driver = Driver.objects.create(
+                    id = data['id'],
+                    firstname = data['firstname'],
+                    lastname = data['lastname'],
+                    account = request.user.profile.account
+                )
+                return redirect('drivers')
     drivers = Driver.objects.filter(account=request.user.profile.account)
     return render(request,'drivers/drivers.html',{
         'drivers':drivers,
+        'form':form,
     })
 
 @api_view(['GET'])
@@ -39,9 +59,3 @@ def get_driver(request,id):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-
-class DriverCreateView(BSModalCreateView):
-    template_name = 'drivers/create-driver.html'
-    form_class = DriverModelForm
-    success_message = 'Success: Driver was created.'
-    success_url = reverse_lazy('drivers')

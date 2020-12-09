@@ -3,7 +3,7 @@ from users.models import Account
 
 # Create your models here.
 class Driver(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.CharField(max_length=50,primary_key=True)
     firstname = models.CharField(max_length=200)
     lastname = models.CharField(max_length=200)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)

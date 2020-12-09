@@ -1,12 +1,6 @@
-from .models import Driver
-from bootstrap_modal_forms.forms import BSModalModelForm
+from django import forms
 
-class DriverModelForm(BSModalModelForm):
-    class Meta:
-        model = Driver
-        fields = ['id','firstname','lastname','account']
-        labels = {
-            'id':'Numero de DNI',
-            'firstname':'Nombres',
-            'lastname':'Apellidos',
-        }
+class DriverCreateForm(forms.Form):
+    id = forms.CharField(max_length=50,required=True,label='Documento de identidad')
+    lastname = forms.CharField(max_length=200,required=True,label='Apellidos')
+    firstname = forms.CharField(max_length=200,required=True,label='Nombres')

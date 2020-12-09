@@ -2,8 +2,12 @@ from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.urls import reverse_lazy
+
+from bootstrap_modal_forms.generic import BSModalFormView
 
 from .models import Profile
+from .forms import UserCreateForm
 
 # Create your views here.
 def login_view(request):
@@ -32,8 +36,30 @@ def logout_view(request):
 
 @login_required
 def users_view(request):
+    form = UserCreateForm()
+    if request.method == 'POST':
+        form = UserCreateForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            try:
+                user = User.objects.get(username=data['username'])
+            except User.DoesNotExist:
+                user = None
+            if user:
+                form.add_error('username', 'El usuario ya existe.')
+            else:
+                user = User.objects.create(
+                    username = data['username'],
+                    first_name = data['firstname'],
+                    last_name = data['lastname']
+                )
+                profile = Profile.objects.create(
+                    user = user,
+                    account = request.user.profile.account
+                )
+                return redirect('users')
     profiles = Profile.objects.filter(account=request.user.profile.account)
     return render(request,'users/users.html',{
         'profiles':profiles,
+        'form':form,
     })
-

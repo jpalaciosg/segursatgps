@@ -1,19 +1,59 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from .models import Unit
+from .models import Unit,Device
 from .serializers import UnitSerializer
+from .forms import UnitCreateForm
 
 # Create your views here.  
 @login_required
 def units_view(request):
+    form = UnitCreateForm()
+    if request.method == 'POST':
+        form = UnitCreateForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            try:
+                device = Device.objects.get(uniqueid=data['uniqueid'])
+            except Device.DoesNotExist:
+                device = None
+            try:
+                unit = Unit.objects.get(name=data['unit_name'])
+            except Unit.DoesNotExist:
+                unit = None
+            if device:
+                form.add_error('uniqueid', 'El dispositivo ya existe.')
+            if unit:
+                form.add_error('unit_name', 'La unidad ya existe.')
+            if not device and not unit:
+                try:
+                    device = Device.objects.create(
+                        uniqueid = data['uniqueid'],
+                        imei = data['imei'],
+                        sim_phonenumber = data['sim_phonenumber'],
+                        sim_iccid = data['sim_iccid']
+                    )
+                    unit = Unit.objects.create(
+                        name = data['unit_name'],
+                        device = device,
+                        account = request.user.profile.account
+                    )
+                    return redirect('units')
+                except IntegrityError as e:
+                    print(e)
+                    field = e.args[0].split('.')[1]
+                    if field == 'imei': 
+                        form.add_error('imei', 'imei ya existe.')
+
     units = Unit.objects.filter(account=request.user.profile.account)
     return render(request,'units/units.html',{
         'units':units,
+        'form':form
     })
 
 @api_view(['GET'])

@@ -34,8 +34,8 @@ urlpatterns = [
     path('dashboard/', reports_views.dashboard_view, name='dashboard'),
     path('maps/', maps_views.map_view, name='map'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
-    #MODALS
-    path('drivers/create-driver/', drivers_views.DriverCreateView.as_view(), name='create-driver'),
+    path('alerts/triggers/', alerts_views.triggers_view, name='triggers'),
+    path('alerts/history/', alerts_views.alert_history_view, name='alert-history'),
     # REST FRAMEWORK
     path('web/api/get-units/', units_views.get_units),
     path('web/api/get-drivers/', drivers_views.get_drivers),

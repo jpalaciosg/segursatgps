@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 
 from rest_framework.response import Response
@@ -7,13 +7,38 @@ from rest_framework.decorators import api_view
 
 from .models import Geofence
 from .serializers import GeofenceSerializer
+from .forms import GeofenceCreateForm
 
 # Create your views here.
 @login_required
 def geofences_view(request):
+    form = GeofenceCreateForm
+    if request.method == 'POST':
+        form = GeofenceCreateForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            try:
+                geofence = Geofence.objects.get(
+                    name = data['name'],
+                    account = request.user.profile.account,
+                )
+            except Geofence.DoesNotExist:
+                geofence = None
+            if geofence:
+                form.add_error('name', 'La geocerca ya existe.')
+                form.add_error('geojson', 'La geocerca ya existe.')
+            else:
+                geofence = Geofence.objects.create(
+                    name = data['name'],
+                    description = data['description'],
+                    geojson = data['geojson'],
+                    account = request.user.profile.account
+                )
+                return redirect('geofences')
     geofences = Geofence.objects.filter(account=request.user.profile.account)
     return render(request,'geofences/geofences.html',{
         'geofences':geofences,
+        'form':form
     })
 
 @api_view(['GET'])
