@@ -37,9 +37,11 @@ urlpatterns = [
     path('alerts/triggers/', alerts_views.triggers_view, name='triggers'),
     path('alerts/history/', alerts_views.alert_history_view, name='alert-history'),
     # REST FRAMEWORK
-    path('web/api/get-units/', units_views.get_units),
-    path('web/api/get-drivers/', drivers_views.get_drivers),
-    path('web/api/get-driver/<int:id>/', drivers_views.get_driver),
-    path('web/api/get-geofences/', geofences_views.get_geofences),
-    path('web/api/get-geofence/<str:name>/', geofences_views.get_geofence),
+    path('web/api/units/get-units/', units_views.get_units),
+    path('web/api/drivers/get-drivers/', drivers_views.get_drivers),
+    path('web/api/drivers/get-driver/<int:id>/', drivers_views.get_driver),
+    path('web/api/geofences/get-geofences/', geofences_views.get_geofences),
+    path('web/api/geofences/get-geofence/<str:name>/', geofences_views.get_geofence),
+    path('web/api/alerts/alert-search/<str:alert_date>/<str:unit_name>/', alerts_views.alert_search),
+    path('web/api/alerts/get-alert/<int:id>/', alerts_views.get_alert),
 ]
