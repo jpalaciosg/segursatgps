@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'reports',
     'maps',
     'alerts',
+    'locations',
 ]
 
 MIDDLEWARE = [

@@ -22,6 +22,7 @@ import geofences.views as geofences_views
 import reports.views as reports_views
 import maps.views as maps_views
 import alerts.views as alerts_views
+import locations.views as locations_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -44,4 +45,5 @@ urlpatterns = [
     path('web/api/geofences/get-geofence/<str:name>/', geofences_views.get_geofence),
     path('web/api/alerts/alert-search/<str:alert_date>/<str:unit_name>/', alerts_views.alert_search),
     path('web/api/alerts/get-alert/<int:id>/', alerts_views.get_alert),
+    path('web/api/locations/insert-location/', locations_views.insert_location),
 ]

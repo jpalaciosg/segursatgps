@@ -57,15 +57,6 @@ def units_view(request):
     })
 
 @api_view(['GET'])
-def get_units(request):
-    try:
-        units = Unit.objects.filter(account=request.user.profile.account)
-        return Response(units,status=status.HTTP_200_OK)
-    except Exception as e:
-        error = {'error':str(e)}
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])
 def get_unit(request,name):
     try:
         unit = Unit.objects.get(name=name,account=request.user.profile.account)
@@ -74,3 +65,13 @@ def get_unit(request,name):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_units(request):
+    try:
+        units = Unit.objects.filter(account=request.user.profile.account)
+        serializer = UnitSerializer(units,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)

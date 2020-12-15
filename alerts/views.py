@@ -42,15 +42,30 @@ def alert_history_view(request):
 @api_view(['GET'])
 def alert_search(request,alert_date,unit_name):
     try:
-        print(alert_date)
+        initial_timestamp = None
+        final_timestamp = None
+        try:
+            date_time_str = f'{alert_date} 00:00:00'
+            date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
+            initial_timestamp = datetime.timestamp(date_time_obj)
+            final_timestamp = initial_timestamp+86400
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
         if unit_name == 'all':
             alerts = Alert.objects.filter(
-            account = request.user.profile.account
+            account = request.user.profile.account,
+            timestamp__gte=initial_timestamp,
+            timestamp__lte=final_timestamp
         )
         else:
             alerts = Alert.objects.filter(
                 account = request.user.profile.account,
-                unit_name = unit_name
+                unit_name = unit_name,
+                timestamp__gte=initial_timestamp,
+                timestamp__lte=final_timestamp
             )
         serializer = AlertSerializer(alerts,many=True)
         data = serializer.data
@@ -59,6 +74,7 @@ def alert_search(request,alert_date,unit_name):
             item['datetime'] = dt.strftime("%Y/%m/%d %H:%M:%S")
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
+        print(e)
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
