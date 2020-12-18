@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'bootstrap_modal_forms',
+    'channels',
     'widget_tweaks',
     'users',
     'units',
@@ -136,3 +136,17 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "templates/static",
 ]
+
+# Login variable
+LOGIN_URL = '/login/'
+
+# Channels
+ASGI_APPLICATION = "segursatgps.asgi.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
