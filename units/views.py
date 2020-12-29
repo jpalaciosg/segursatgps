@@ -6,9 +6,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
+import json
+from datetime import datetime
+
 from .models import Unit,Device
 from .serializers import UnitSerializer
-from .forms import UnitCreateForm
+from .forms import UnitCreateForm,UnitUpdateForm
 
 # Create your views here.  
 @login_required
@@ -49,22 +52,15 @@ def units_view(request):
                     field = e.args[0].split('.')[1]
                     if field == 'imei': 
                         form.add_error('imei', 'imei ya existe.')
-
     units = Unit.objects.filter(account=request.user.profile.account)
     return render(request,'units/units.html',{
         'units':units,
         'form':form
     })
 
-@api_view(['GET'])
-def get_unit(request,name):
-    try:
-        unit = Unit.objects.get(name=name,account=request.user.profile.account)
-        serializer = UnitSerializer(unit,many=False)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    except Exception as e:
-        error = {'error':str(e)}
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+@login_required
+def create_unit_view(request):
+    pass
 
 @api_view(['GET'])
 def get_units(request):
@@ -75,3 +71,36 @@ def get_units(request):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_unit(request,name):
+    try:
+        unit = Unit.objects.get(name=name,account=request.user.profile.account)
+        serializer = UnitSerializer(unit,many=False)
+        data = serializer.data
+        data['device']['last_attributes'] = json.loads(data['device']['last_attributes'])
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@login_required
+def delete_unit(request,id):
+    try:
+        unit = Unit.objects.get(id=id,account=request.user.profile.account)
+        unit.device.delete()
+        return redirect('units')
+    except:
+        return redirect('units')
+
+@api_view(['GET'])
+def get_unit_information(request,name):
+    try:
+        unit = Unit.objects.get(name=name,account=request.user.profile.account)
+        serializer = UnitSerializer(unit,many=False)
+        data = serializer.data
+        data['device']['last_attributes'] = json.loads(data['device']['last_attributes'])
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)

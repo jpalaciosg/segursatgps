@@ -59,3 +59,12 @@ def get_driver(request,id):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@login_required
+def delete_driver(request,id):
+    try:
+        driver = Driver.objects.get(id=id,account=request.user.profile.account)
+        driver.delete()
+        return redirect('drivers')
+    except:
+        return redirect('drivers')

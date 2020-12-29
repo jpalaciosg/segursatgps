@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
+import json
+
 from .models import Geofence
 from .serializers import GeofenceSerializer
 from .forms import GeofenceCreateForm
@@ -52,11 +54,22 @@ def get_geofences(request):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-def get_geofence(request,name):
+def get_geofence(request,id):
     try:
-        geofence = Geofence.objects.get(name=name,account=request.user.profile.account)
+        geofence = Geofence.objects.get(id=id,account=request.user.profile.account)
         serializer = GeofenceSerializer(geofence,many=False)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        data = serializer.data
+        data['geojson'] = json.loads(data['geojson'])
+        return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@login_required
+def delete_geofence(request,id):
+    try:
+        geofence = Geofence.objects.get(id=id,account=request.user.profile.account)
+        geofence.delete()
+        return redirect('geofences')
+    except:
+        return redirect('geofences')

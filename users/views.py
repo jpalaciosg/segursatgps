@@ -24,7 +24,7 @@ def login_view(request):
                 return render(request,'users/login.html',{
                     'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
                 })
-            return redirect('users')
+            return redirect('map')
         else:
             return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
     return render(request,'users/login.html')
@@ -63,3 +63,12 @@ def users_view(request):
         'profiles':profiles,
         'form':form,
     })
+
+@login_required
+def delete_user(request,username):
+    try:
+        user = User.objects.get(username=username)
+        user.delete()
+        return redirect('users')
+    except:
+        return redirect('users')

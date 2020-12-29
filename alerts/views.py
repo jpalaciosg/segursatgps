@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 
 from rest_framework.response import Response
@@ -93,3 +93,12 @@ def get_alert(request,id):
     except Exception as e:
         print(e)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@login_required
+def delete_trigger(request,id):
+    try:
+        trigger = Trigger.objects.get(id=id,account=request.user.profile.account)
+        trigger.delete()
+        return redirect('triggers')
+    except:
+        return redirect('triggers')
