@@ -11,6 +11,6 @@ class UnitCreateForm(forms.Form):
 class UnitUpdateForm(forms.Form):
     uniqueid = forms.CharField(max_length=50,required=True,label='Identificador unico')
     imei = forms.CharField(max_length=50,required=True,label='Imei del equipo')
-    sim_phonenumber = forms.CharField(max_length=50,required=True,label='Numero de telefono del sim')
+    sim_phonenumber = forms.CharField(max_length=50,required=False,label='Numero de telefono del sim')
     sim_iccid = forms.CharField(max_length=50,required=True,label='Identificador del sim')
     unit_name = forms.CharField(max_length=50,required=True,label='Placa de la unidad')

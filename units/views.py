@@ -16,11 +16,20 @@ from .forms import UnitCreateForm,UnitUpdateForm
 # Create your views here.  
 @login_required
 def units_view(request):
-    form = UnitCreateForm()
+    create_form = UnitCreateForm()
+    units = Unit.objects.filter(account=request.user.profile.account)
+    return render(request,'units/units.html',{
+        'units':units,
+        'create_form':create_form
+    })
+
+@login_required
+def create_unit_view(request):
     if request.method == 'POST':
-        form = UnitCreateForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
+        units = Unit.objects.filter(account=request.user.profile.account)
+        create_form = UnitCreateForm(request.POST)
+        if create_form.is_valid():
+            data = create_form.cleaned_data
             try:
                 device = Device.objects.get(uniqueid=data['uniqueid'])
             except Device.DoesNotExist:
@@ -30,9 +39,9 @@ def units_view(request):
             except Unit.DoesNotExist:
                 unit = None
             if device:
-                form.add_error('uniqueid', 'El dispositivo ya existe.')
+                create_form.add_error('uniqueid', 'El dispositivo ya existe.')
             if unit:
-                form.add_error('unit_name', 'La unidad ya existe.')
+                create_form.add_error('unit_name', 'La unidad ya existe.')
             if not device and not unit:
                 try:
                     device = Device.objects.create(
@@ -46,21 +55,75 @@ def units_view(request):
                         device = device,
                         account = request.user.profile.account
                     )
-                    return redirect('units')
+                    create_form = UnitCreateForm()
+                    return render(request,'units/units.html',{
+                        'units':units,
+                        'create_form':create_form,
+                        'success':'Unidad creada exitosamente.'
+                    })
                 except IntegrityError as e:
                     print(e)
                     field = e.args[0].split('.')[1]
                     if field == 'imei': 
-                        form.add_error('imei', 'imei ya existe.')
-    units = Unit.objects.filter(account=request.user.profile.account)
-    return render(request,'units/units.html',{
-        'units':units,
-        'form':form
-    })
+                        create_form.add_error('imei', 'imei ya existe.')
+        return render(request,'units/units.html',{
+            'units':units,
+            'create_form':create_form
+        })
+    return redirect('units')
 
 @login_required
-def create_unit_view(request):
-    pass
+def update_unit_view(request):
+    if request.method == 'POST':
+        data = request.POST
+        units = Unit.objects.filter(account=request.user.profile.account)
+        create_form = UnitCreateForm()
+        update_form = UnitUpdateForm(data,auto_id=False)
+        try:
+            device = Device.objects.get(uniqueid=data['uniqueid'])
+        except Device.DoesNotExist:
+            device = None
+        try:
+            unit = Unit.objects.get(name=data['unit_name'])
+        except Unit.DoesNotExist:
+            unit = None
+        if update_form.is_valid():
+            form_data = update_form.cleaned_data
+            if device == None:
+                update_form.add_error('uniqueid', 'El dispositivo no existe.')
+            if unit == None:
+                update_form.add_error('unit_name', 'La unidad no existe.')
+            if device and unit:
+                try:
+                    device.sim_phonenumber = form_data['sim_phonenumber']
+                    device.sim_iccid = form_data['sim_iccid']
+                    unit.name = form_data['unit_name']
+                    device.save()
+                    unit.save()
+                    return render(request,'units/units.html',{
+                        'units':units,
+                        'create_form':create_form,
+                        'update_form':update_form,
+                        'success':'Unidad actualizada exitosamente.'
+                    })
+                except Except as e:
+                    print(e)
+            return render(request,'units/units.html',{
+                'units':units,
+                'create_form':create_form,
+                'update_form':update_form,
+                'modal_id':f'unit{unit.id}_update_modal',
+                'modal_unit_id':unit.id
+            })
+        else:
+            return render(request,'units/units.html',{
+                'units':units,
+                'create_form':create_form,
+                'update_form':update_form,
+                'modal_id':f'unit{unit.id}_update_modal',
+                'modal_unit_id':unit.id
+            })
+    return redirect('units')
 
 @api_view(['GET'])
 def get_units(request):
