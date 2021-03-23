@@ -8,36 +8,91 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from .models import Driver
-from .forms import DriverCreateForm
+from .forms import DriverCreateForm,DriverUpdateForm
 from .serializers import DriverSerializer
 
 # Create your views here.
 
 @login_required
 def drivers_view(request):
-    form = DriverCreateForm()
     if request.method == 'POST':
-        form = DriverCreateForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
+        data = request.POST
+        # Create driver
+        if data['form_type'] == 'create_form':
+            drivers = Driver.objects.filter(account=request.user.profile.account)
+            create_form = DriverCreateForm(data)
+            if create_form.is_valid():
+                form_data = create_form.cleaned_data
+                try:
+                    driver = Driver.objects.get(id=form_data['id'])
+                except Driver.DoesNotExist:
+                    driver = None
+                if driver:
+                    create_form.add_error('id', 'El numero de documento ya existe.')
+                else:
+                    driver = Driver.objects.create(
+                        id = form_data['id'],
+                        firstname = form_data['firstname'],
+                        lastname = form_data['lastname'],
+                        account = request.user.profile.account
+                    )
+                    return render(request,'drivers/drivers.html',{
+                        'drivers':drivers,
+                        'create_form':create_form,
+                        'success':'conductor creado exitosamente.'
+                    })
+            return render(request,'drivers/drivers.html',{
+                'drivers':drivers,
+                'create_form':create_form
+            })
+        # Unit update
+        if data['form_type'] == 'update_form':
+            drivers = Driver.objects.filter(account=request.user.profile.account)
+            create_form = DriverCreateForm()
+            update_form = DriverUpdateForm(data,auto_id=False)
             try:
                 driver = Driver.objects.get(id=data['id'])
             except Driver.DoesNotExist:
                 driver = None
-            if driver:
-                form.add_error('id', 'El numero de documento ya existe.')
+            if update_form.is_valid():
+                form_data = update_form.cleaned_data
+                if driver == None:
+                    update_form.add_error('id', 'El dispositivo no existe.')
+                if driver:
+                    try:
+                        driver.firstname = form_data['firstname']
+                        driver.lastname = form_data['lastname']
+                        driver.save()
+                        return render(request,'drivers/drivers.html',{
+                            'drivers':drivers,
+                            'create_form':create_form,
+                            'update_form':update_form,
+                            'success':'Conductor actualizado exitosamente.'
+                        })
+                    except Exception as e:
+                        print(e)
+                return render(request,'drivers/drivers.html',{
+                    'drivers':drivers,
+                    'create_form':create_form,
+                    'update_form':update_form,
+                    'modal_id':f'unit{driver.id}_update_modal',
+                    'modal_driver_id':driver.id
+                })
             else:
-                driver = Driver.objects.create(
-                    id = data['id'],
-                    firstname = data['firstname'],
-                    lastname = data['lastname'],
-                    account = request.user.profile.account
-                )
-                return redirect('drivers')
+                return render(request,'drivers/drivers.html',{
+                    'drivers':drivers,
+                    'create_form':create_form,
+                    'update_form':update_form,
+                    'modal_id':f'unit{driver.id}_update_modal',
+                    'modal_driver_id':driver.id
+                })
+                   
+    # GET
+    create_form = DriverCreateForm()
     drivers = Driver.objects.filter(account=request.user.profile.account)
     return render(request,'drivers/drivers.html',{
         'drivers':drivers,
-        'form':form,
+        'create_form':create_form,
     })
 
 @api_view(['GET'])

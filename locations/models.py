@@ -14,4 +14,3 @@ class Location(models.Model):
     address = models.TextField(default="")
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-

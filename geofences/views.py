@@ -14,8 +14,8 @@ from .forms import GeofenceCreateForm
 # Create your views here.
 @login_required
 def geofences_view(request):
-    form = GeofenceCreateForm
     if request.method == 'POST':
+        geofences = Geofence.objects.filter(account=request.user.profile.account)
         form = GeofenceCreateForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
@@ -30,14 +30,30 @@ def geofences_view(request):
                 form.add_error('name', 'La geocerca ya existe.')
                 form.add_error('geojson', 'La geocerca ya existe.')
             else:
-                geofence = Geofence.objects.create(
-                    name = data['name'],
-                    description = data['description'],
-                    geojson = data['geojson'],
-                    account = request.user.profile.account
-                )
-                return redirect('geofences')
+                try:
+                    geojson = json.loads(data['geojson'])
+                except:
+                    geojson = None
+                    form.add_error('geojson', 'Formato incorrecto.')
+                if geojson:
+                    geofence = Geofence.objects.create(
+                        name = data['name'],
+                        description = data['description'],
+                        geojson = data['geojson'],
+                        account = request.user.profile.account
+                    )
+                    return render(request,'geofences/geofences.html',{
+                        'geofences':geofences,
+                        'form':form,
+                        'success':'Geocerca creada exitosamente.'
+                    })
+        return render(request,'geofences/geofences.html',{
+            'geofences':geofences,
+            'form':form
+        })
+    # GET
     geofences = Geofence.objects.filter(account=request.user.profile.account)
+    form = GeofenceCreateForm
     return render(request,'geofences/geofences.html',{
         'geofences':geofences,
         'form':form
