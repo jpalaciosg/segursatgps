@@ -12,6 +12,14 @@ class DeviceReader:
 		reader = Teltonika(self.deviceid)
 		return reader.detect_panic_event(location)
 	
-	def get_stop_report(self,locations):
+	def generate_stop_report(self,locations):
 		reader = Teltonika(self.deviceid)
-		return reader.get_stop_report(locations)
+		return reader.generate_stop_report(locations)
+
+	def generate_travel_report(self,locations):
+		reader = Teltonika(self.deviceid)
+		return reader.generate_travel_report(locations)
+
+	def generate_speed_report(self,locations,speed_limit):
+		reader = Teltonika(self.deviceid)
+		return reader.generate_speed_report(locations,speed_limit)

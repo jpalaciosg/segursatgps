@@ -23,6 +23,7 @@ import reports.views as reports_views
 import maps.views as maps_views
 import alerts.views as alerts_views
 import locations.views as locations_views
+import maintenances.views as maintenances_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -39,14 +40,18 @@ urlpatterns = [
     path('dashboard/', reports_views.dashboard_view, name='dashboard'),
     path('reports/fleet-status/', reports_views.fleet_status_view, name='fleet-status'),
     path('reports/detailed-report/', reports_views.detailed_report_view, name='detailed-report'),
-    path('reports/event-report/', reports_views.event_report_view, name='event-report'),
+    path('reports/speed-report/', reports_views.speed_report_view, name='speed-report'),
     path('reports/travel-report/', reports_views.travel_report_view, name='travel-report'),
     path('reports/stop-report/', reports_views.stop_report_view, name='stop-report'),
+    path('reports/mileage-report/', reports_views.mileage_report_view, name='mileage-report'),
     path('maps/', maps_views.map_view, name='map'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
     path('alerts/triggers/', alerts_views.triggers_view, name='triggers'),
     path('alerts/delete-trigger/<int:id>/', alerts_views.delete_trigger, name='delete-trigger'),
     path('alerts/history/', alerts_views.alert_history_view, name='alert-history'),
+    path('maintenances/', maintenances_views.maintenances_view, name='maintenances'),
+    path('maintenances/triggers/', maintenances_views.triggers_view, name='maintenance-triggers'),
+    path('maintenances/history/', maintenances_views.maintenance_history_view, name='maintenance-history'),
     # REST FRAMEWORK
     path('web/api/units/get-units/', units_views.get_units),
     path('web/api/units/get-unit/<str:name>/', units_views.get_unit),

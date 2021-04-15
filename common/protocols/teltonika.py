@@ -4,8 +4,13 @@ from units.models import Device,DeviceDigitalInput
 from datetime import datetime,timezone,timedelta
 import requests
 import json
+from geopy.distance import great_circle
+
+from common.gmt_conversor import GMTConversor
 
 GEOCODING_SERVER = '172.16.2.4'
+
+gmt_conversor = GMTConversor()
 
 class Teltonika:
 
@@ -73,7 +78,7 @@ class Teltonika:
             print(e)
             return False
 
-    def get_stop_report(self,locations):
+    def generate_stop_report(self,locations):
         stop_report = []
         for i in range(len(locations)):
             if i != 0:
@@ -86,6 +91,7 @@ class Teltonika:
                     stop_report.append({
                         'latitude':locations[i]['latitude'],
                         'longitude':locations[i]['longitude'],
+                        'address':locations[i]['address'],
                         'initial_timestamp':locations[i]['timestamp'],
                     })
                 elif previous_speed==0 and current_speed!=0:
@@ -100,6 +106,7 @@ class Teltonika:
                         stop_report.append({
                             'latitude':locations[i]['latitude'],
                             'longitude':locations[i]['longitude'],
+                            'address':locations[i]['address'],
                             'initial_timestamp':initial_timestamp,
                             'final_timestamp':timestamp,
                         })
@@ -121,23 +128,113 @@ class Teltonika:
             sr['duration'] = str(timedelta(seconds=duration))
             sr['initial_datetime'] = datetime.fromtimestamp(sr['initial_timestamp']).strftime("%d/%m/%Y, %H:%M:%S")
             sr['final_datetime'] = datetime.fromtimestamp(sr['final_timestamp']).strftime("%d/%m/%Y, %H:%M:%S")
-            try:
-                api_url = f"http://{GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={sr['latitude']}&lon={sr['longitude']}&addressdetails=1"
-                headers = {'Content-Type': 'application/json'}
-                response = requests.get(api_url, headers=headers)
-                address = json.loads(response.content.decode('utf-8'))['display_name']
-            except Exception as e:
-                address = ""
-            sr['address'] = address
-            print(sr)
 
         return stop_report
-"""
-from common.protocols.teltonika import Teltonika
-fm = Teltonika({
-    'deviceid':'352093087864533',
-    'attributes':{'event': 0, 'ignition': True, 'motion': False, 'workMode': 4, 'io200': 2, 'gpsStatus': 3, 'di1': 1},
-})
-fm.detect_ignition_event()
-fm.detect_panic_event()
-"""
+
+    def generate_travel_report(self,locations):
+        travel_report = []
+        for i in range(len(locations)):
+            if i != 0:
+                previous_location = locations[i-1]
+                current_location = locations[i]
+                previous_ignition = previous_location['attributes']['ignition']
+                current_ignition = current_location['attributes']['ignition']
+                if previous_ignition == False and current_ignition == True:
+                    #print('ON')
+                    travel_report.append({
+                        'latitude':locations[i]['latitude'],
+                        'longitude':locations[i]['longitude'],
+                        'initial_timestamp':locations[i]['timestamp'],
+                    })
+                elif previous_ignition == True and current_ignition == False:
+                    #print('OFF')
+                    if len(travel_report) == 0:
+                        timestamp = locations[i]['timestamp']
+                        dt_object = datetime.fromtimestamp(timestamp)
+                        dt_str = dt_object.strftime("%d/%m/%Y, %H:%M:%S")
+                        dt_str = dt_object.strftime("%d/%m/%Y, 00:00:00")
+                        dt_object = datetime.strptime(dt_str, '%d/%m/%Y, %H:%M:%S')
+                        initial_timestamp = int(dt_object.replace(tzinfo=timezone.utc).timestamp())
+                        #dt_object = gmt_conversor.convert_utctolocaltime(dt_object)
+                        #initial_timestamp = dt_object.timestamp()
+                        travel_report.append({
+                            'latitude':locations[i]['latitude'],
+                            'longitude':locations[i]['longitude'],
+                            'initial_timestamp':initial_timestamp,
+                            'final_timestamp':timestamp,
+                        })
+                    else:
+                        travel_report[-1]['final_timestamp'] = locations[i]['timestamp']
+
+        if len(travel_report) != 0:
+            if "final_timestamp" not in travel_report[-1]:
+                timestamp = travel_report[-1]['initial_timestamp']
+                dt_object = datetime.fromtimestamp(timestamp)
+                dt_str = dt_object.strftime("%d/%m/%Y, %H:%M:%S")
+                dt_str = dt_object.strftime("%d/%m/%Y, 00:00:00")
+                dt_object = datetime.strptime(dt_str, '%d/%m/%Y, %H:%M:%S')
+                initial_timestamp = int(dt_object.replace(tzinfo=timezone.utc).timestamp())
+                final_timestamp = initial_timestamp + 86400
+                travel_report[-1]['final_timestamp'] = locations[i]['timestamp']
+
+        for tr in travel_report:
+            duration = tr['final_timestamp'] - tr['initial_timestamp']
+            tr['duration'] = str(timedelta(seconds=duration))
+            tr['initial_datetime'] = datetime.fromtimestamp(tr['initial_timestamp'])
+            tr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(tr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+            tr['final_datetime'] = datetime.fromtimestamp(tr['final_timestamp'])
+            tr['final_datetime'] = gmt_conversor.convert_utctolocaltime(tr['final_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+            speeds = []
+            distance = 0
+            for location in locations:
+                if location['timestamp'] >= tr['initial_timestamp'] and location['timestamp'] <= tr['final_timestamp']:
+                    speeds.append(location['speed'])
+                if location['timestamp'] == tr['initial_timestamp']:
+                    tr['initial_latitude'] = location['latitude']
+                    tr['initial_longitude'] = location['longitude']
+                    tr['initial_address'] = location['address']
+                if location['timestamp'] == tr['final_timestamp']:
+                    tr['final_latitude'] = location['latitude']
+                    tr['final_longitude'] = location['longitude']
+                    tr['final_address'] = location['address']
+            average_speed = int(sum(speeds)/len(speeds))
+            max_speed = max(speeds)
+            tr['average_speed'] = average_speed
+            tr['max_speed'] = max_speed
+            for i in range(len(locations)):
+                if i != 0:
+                    if locations[i]['timestamp'] >= tr['initial_timestamp'] and locations[i]['timestamp'] <= tr['final_timestamp']:
+                        previous_location = {
+                            'latitude' : locations[i-1]['latitude'],
+                            'longitude' : locations[i-1]['longitude'],
+                        }
+                        if locations[i]['latitude'] != 0.0 and locations[i]['longitude'] != 0.0:
+                            distance2 = great_circle(
+                                (
+                                    previous_location['latitude'],
+                                    previous_location['longitude']
+                                ),
+                                (
+                                    locations[i]['latitude'],
+                                    locations[i]['longitude']
+                                ),
+                            ).km
+                        distance += distance2
+                tr['distance'] = distance
+        return travel_report
+
+    def generate_speed_report(self,locations,speed_limit):
+        speed_report = []
+        for location in locations:
+            if int(location['speed']) > speed_limit:
+                speed_report.append({
+                    'latitude':location['latitude'],
+                    'longitude':location['longitude'],
+                    'timestamp':location['timestamp'],
+                    'speed':location['speed'],
+                    'address':location['address'],
+                })
+        for sr in speed_report:
+            sr['dt'] = datetime.fromtimestamp(sr['timestamp'])
+            sr['dt'] = gmt_conversor.convert_utctolocaltime(sr['dt']).strftime("%d/%m/%Y, %H:%M:%S")
+        return speed_report

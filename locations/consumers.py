@@ -32,15 +32,14 @@ class LocationConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
-                'type': 'update_location',
+                'type': 'send_message',
                 'message': message
             }
         )
 
     # Receive message from room group
-    def update_location(self, event):
+    def send_message(self, event):
         message = event['message']
-
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'message': message

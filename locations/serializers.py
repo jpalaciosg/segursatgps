@@ -9,6 +9,7 @@ class InsertLocationSerializer(serializers.Serializer):
     altitude = serializers.IntegerField(default=0)
     speed = serializers.IntegerField(default=-1)
     angle = serializers.IntegerField(default=-1)
+    protocol = serializers.CharField(max_length=100)
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:

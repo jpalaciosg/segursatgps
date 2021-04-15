@@ -3,7 +3,8 @@ from django.db import models
 # Create your models here.
 class Location(models.Model):
     id = models.BigAutoField(primary_key=True)
-    unit_name = models.CharField(max_length=50)
+    protocol = models.CharField(max_length=100)
+    unitid = models.IntegerField()
     timestamp = models.PositiveIntegerField(default=0)
     latitude = models.FloatField(default=0.0)
     longitude = models.FloatField(default=0.0)
@@ -14,3 +15,7 @@ class Location(models.Model):
     address = models.TextField(default="")
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    class Meta:
+       indexes = [
+           models.Index(fields=['unitid', 'timestamp',]),
+        ]

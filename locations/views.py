@@ -14,14 +14,20 @@ from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
 
 from .models import Location
+from units.models import Device
 from .serializers import InsertLocationSerializer,LocationSerializer
-from units.models import Unit
+from common.gmt_conversor import GMTConversor
+from common.device_reader import DeviceReader
+from common.alert_reader import AlertReader
 
 WS_TARGET = '127.0.0.1'
 WS_PORT = 8000
 GEOCODING_SERVER = '172.16.2.4'
 
 # Create your views here.
+
+gmt_conversor = GMTConversor() #conversor zona horaria
+
 @api_view(['POST'])
 def insert_location(request):
     data = request.data
@@ -29,27 +35,27 @@ def insert_location(request):
     if serializer.is_valid():
         try:
             deviceid = data['deviceid']
-            unit = Unit.objects.get(device__uniqueid=deviceid)
+            unit = Device.objects.get(uniqueid=deviceid)
             previous_location = {
-                'timestamp':unit.device.last_timestamp,
-                'latitude':unit.device.last_latitude,
-                'longitude':unit.device.last_longitude,
-                'altitude':unit.device.last_altitude,
-                'angle':unit.device.last_angle,
-                'speed':unit.device.last_speed,
-                'attributes':unit.device.last_attributes,
-                'address':unit.device.last_address
+                'timestamp':unit.last_timestamp,
+                'latitude':unit.last_latitude,
+                'longitude':unit.last_longitude,
+                'altitude':unit.last_altitude,
+                'angle':unit.last_angle,
+                'speed':unit.last_speed,
+                'attributes':unit.last_attributes,
+                'address':unit.last_address
             }
         except Exception as e:
             error = {'error':str(e)}
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        unit.device.last_timestamp = data['timestamp']
-        unit.device.last_latitude = data['latitude']
-        unit.device.last_longitude = data['longitude']
-        unit.device.last_altitude = data['altitude']
-        unit.device.last_angle = data['angle']
-        unit.device.last_speed = data['speed']
-        unit.device.last_attributes = json.dumps(data['attributes'])
+        unit.last_timestamp = data['timestamp']
+        unit.last_latitude = data['latitude']
+        unit.last_longitude = data['longitude']
+        unit.last_altitude = data['altitude']
+        unit.last_angle = data['angle']
+        unit.last_speed = data['speed']
+        unit.last_attributes = json.dumps(data['attributes'])
         # CALCULAR UBICACION PREVIA
         if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
             if data['latitude'] != 0.0 and data['longitude'] != 0.0:
@@ -63,20 +69,21 @@ def insert_location(request):
                         data['longitude']
                     ),
                 ).km
-                unit.device.last_gps_odometer += distance
-        unit.device.previous_location = json.dumps(previous_location)
+                unit.odometer += distance
+        unit.previous_location = json.dumps(previous_location)
         # FIN CALCULAR UBICACION PREVIA
         try:
             api_url = f"http://{GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={data['latitude']}&lon={data['longitude']}&addressdetails=1"
             headers = {'Content-Type': 'application/json'}
-            response = requests.get(api_url, headers=headers)
+            response = requests.get(api_url, headers=headers, timeout=5)
             address = json.loads(response.content.decode('utf-8'))['display_name']
         except Exception as e:
             address = ""
-        unit.device.last_address = address
-        unit.device.save()
+        unit.last_address = address
+        unit.save()
         location = Location.objects.create(
-            unit_name = unit.name,
+            unitid = unit.id,
+            protocol= data['protocol'],
             timestamp = data['timestamp'],
             latitude = data['latitude'],
             longitude = data['longitude'],
@@ -91,20 +98,28 @@ def insert_location(request):
         async_to_sync(channel_layer.group_send)(
             'chat_PRUEBAS',
             {
-                'type': 'update_location',
+                'type': 'send_message',
                 'message': {
-                    'unit_name': location.unit_name,
-                    'timestamp': location.timestamp,
-                    'latitude': location.latitude,
-                    'longitude': location.longitude,
-                    'altitude': location.altitude,
-                    'angle': location.angle,
-                    'speed': location.speed,
-                    'attributes': location.attributes,
-                    'address': location.address
+                    'type':'update_location',
+                    'payload': {
+                        'unitid': location.unitid,
+                        'unit_name': unit.name,
+                        'timestamp': location.timestamp,
+                        'latitude': location.latitude,
+                        'longitude': location.longitude,
+                        'altitude': location.altitude,
+                        'angle': location.angle,
+                        'speed': location.speed,
+                        'attributes': location.attributes,
+                        'address': location.address
+                    }
                 }
             }
         )
+        # ALERTAS
+        alert_reader = AlertReader(unit.uniqueid)
+        alert_reader.run(data)
+        # FIN ALERTAS
         return Response(serializer.data)
     else:
         return Response(serializer.errors)
@@ -130,20 +145,31 @@ def get_location_history(request,unit_name,initial_date,final_date):
     initial_timestamp = None
     final_timestamp = None
     try:
-        initial_datetime_str = f'{initial_date} 00:00:00'
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f'{final_date} 00:00:00'
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-        final_timestamp = final_timestamp+86400
+        unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
     except Exception as e:
         error = {
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = Location.objects.filter(unit_name=unit_name,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('-id')
+    try:
+        initial_datetime_str = f'{initial_date} 00:00:00'
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        print(initial_timestamp)
+        #
+        final_datetime_str = f'{final_date} 00:00:00'
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+        final_timestamp = final_timestamp+86400
+        print(final_timestamp)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    locations = Location.objects.filter(unitid=unit.id,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('-id')
     locations = reversed(locations)
     serializer = LocationSerializer(locations,many=True)
     data = serializer.data
@@ -152,6 +178,7 @@ def get_location_history(request,unit_name,initial_date,final_date):
         data[i]['attributes'] = json.loads(data[i]['attributes'])
         if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
             data1.append(data[i])
+        data[i]['unit_name'] = unit_name
     return Response(data1,status=status.HTTP_200_OK)
 
 @api_view(['GET'])

@@ -8,8 +8,12 @@ from rest_framework.decorators import api_view
 from .models import Trigger,Alert
 from .forms import TriggerCreateForm
 from .serializers import AlertSerializer
-from units.models import Unit
 from datetime import datetime
+
+from units.models import Device
+from common.gmt_conversor import GMTConversor
+
+gmt_conversor = GMTConversor() #conversor zona horaria
 
 # Create your views here.
 @login_required
@@ -17,7 +21,13 @@ def alerts_view(request):
     account = request.user.profile.account
     alerts = Alert.objects.filter(account=account).order_by('-id')[:100]
     for alert in alerts:
+        try:
+            unit = Device.objects.get(id=alert.unitid)
+            alert.unit_name = unit.name
+        except Alert.DoesNotExist:
+            unit_name = None
         dt = datetime.fromtimestamp(alert.timestamp)
+        dt = gmt_conversor.convert_utctolocaltime(dt)
         alert.datetime = dt.strftime("%Y/%m/%d %H:%M:%S")
     return render(request,'alerts/alerts.html',{
         'alerts':alerts
@@ -34,7 +44,7 @@ def triggers_view(request):
 
 @login_required
 def alert_history_view(request):
-    units = Unit.objects.filter(account=request.user.profile.account)
+    units = Device.objects.filter(account=request.user.profile.account)
     return render(request,'alerts/alert-history.html',{
         'units':units
     })
@@ -85,8 +95,14 @@ def get_alert(request,id):
             alert = Alert.objects.get(id=id)
         except Alert.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        try:
+            unit = Device.objects.get(id=alert.unitid)
+            unit_name = unit.name
+        except Alert.DoesNotExist:
+            unit_name = None
         serializer = AlertSerializer(alert, many=False)
         data = serializer.data
+        data['unit_name'] = unit_name
         dt = datetime.fromtimestamp(data['timestamp'])
         data['datetime'] = dt.strftime("%Y/%m/%d %H:%M:%S")
         return Response(data,status=status.HTTP_200_OK)

@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 
 from bootstrap_modal_forms.generic import BSModalFormView
+from pytz import timezone
 
 from .models import Profile
 from .forms import UserCreateForm,UserUpdateForm
@@ -27,6 +28,13 @@ def login_view(request):
             return redirect('map')
         else:
             return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
+    try:
+        account = request.GET['account']
+    except:
+        account = None
+    if account == "autoplan":
+        return render(request,'users/login-autoplan.html')
+    
     return render(request,'users/login.html')
 
 @login_required
@@ -118,6 +126,11 @@ def users_view(request):
     # GET
     profiles = Profile.objects.filter(account=request.user.profile.account)
     create_form = UserCreateForm()
+    for profile in profiles:
+        try:
+            profile.user.last_login = profile.user.last_login.replace(tzinfo=timezone('America/Lima'))
+        except Exception as e:
+            print(e)
     return render(request,'users/users.html',{
         'profiles':profiles,
         'create_form':create_form,

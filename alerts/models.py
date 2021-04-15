@@ -24,7 +24,7 @@ class Alert(models.Model):
         ('V', 'VERY HIGH'),
     ]
     id = models.BigAutoField(primary_key=True)
-    unit_name = models.CharField(max_length=50)
+    unitid = models.IntegerField()
     timestamp = models.PositiveIntegerField()
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -40,7 +40,7 @@ class Alert(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
-        unique_together = (('alert_type','account'),)
+        unique_together = (('alert_type','unitid','timestamp'),)
     def __str__(self):
         return f"{self.account}_{self.id}"
 

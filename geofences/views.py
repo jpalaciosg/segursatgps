@@ -64,7 +64,10 @@ def get_geofences(request):
     try:
         geofences = Geofence.objects.filter(account=request.user.profile.account)
         serializer = GeofenceSerializer(geofences,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        data = serializer.data
+        for item in data:
+            item['geojson'] = json.loads(item['geojson'])
+        return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
