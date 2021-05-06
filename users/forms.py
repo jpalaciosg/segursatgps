@@ -17,5 +17,6 @@ class UserUpdateForm(forms.Form):
     )
     lastname = forms.CharField(max_length=200,required=True,label='Apellidos')
     firstname = forms.CharField(max_length=200,required=True,label='Nombres')
+    is_active = forms.BooleanField(required=False)
     #password = forms.CharField(widget=forms.PasswordInput(),required=True,label='Ingresar contraseña')
     #password_confirmation = forms.CharField(widget=forms.PasswordInput(),required=True,label='Confirmar contraseña')

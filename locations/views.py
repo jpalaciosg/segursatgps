@@ -19,10 +19,7 @@ from .serializers import InsertLocationSerializer,LocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
-
-#WS_TARGET = '127.0.0.1'
-#WS_PORT = 8000
-GEOCODING_SERVER = '172.16.2.4'
+from .config import GEOCODING_SERVER,GEOCODING_PORT
 
 # Create your views here.
 
@@ -73,7 +70,7 @@ def insert_location(request):
         unit.previous_location = json.dumps(previous_location)
         # FIN CALCULAR UBICACION PREVIA
         try:
-            api_url = f"http://{GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={data['latitude']}&lon={data['longitude']}&addressdetails=1"
+            api_url = f"http://{GEOCODING_SERVER}:{GEOCODING_PORT}/nominatim/reverse?format=jsonv2&lat={data['latitude']}&lon={data['longitude']}&addressdetails=1"
             headers = {'Content-Type': 'application/json'}
             response = requests.get(api_url, headers=headers, timeout=5)
             address = json.loads(response.content.decode('utf-8'))['display_name']

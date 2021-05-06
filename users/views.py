@@ -1,7 +1,8 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
+from users.models import User
 from django.urls import reverse_lazy
 
 from bootstrap_modal_forms.generic import BSModalFormView
@@ -99,6 +100,7 @@ def users_view(request):
                     try:
                         user.first_name = form_data['firstname']
                         user.last_name = form_data['lastname']
+                        user.is_active = form_data['is_active']
                         user.save()
                         return render(request,'users/users.html',{
                             'profiles':profiles,

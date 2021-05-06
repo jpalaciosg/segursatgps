@@ -84,7 +84,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'segursatgps.wsgi.application'
 
-#DATABASE_ROUTERS = ['segursatgps.router.DBRouter']
+DATABASE_ROUTERS = ['segursatgps.router.DBRouter']
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -150,6 +150,9 @@ STATICFILES_DIRS = [
 
 # Login variable
 LOGIN_URL = '/login/'
+
+# Auth model
+AUTH_USER_MODEL = 'users.User'
 
 # Channels
 ASGI_APPLICATION = "segursatgps.asgi.application"
