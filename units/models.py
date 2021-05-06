@@ -6,9 +6,11 @@ class Device(models.Model):
     uniqueid = models.CharField(unique=True,max_length=20)
     imei = models.CharField(unique=True,max_length=20)
     name = models.CharField(max_length=50)
+    description = models.CharField(max_length=200,blank=True)
     sim_phonenumber = models.CharField(max_length=20,blank=True)
     sim_iccid = models.CharField(max_length=20,blank=True)
     odometer = models.FloatField(default=0.0)
+    note = models.TextField(blank=True)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     last_timestamp = models.IntegerField(default=0)
     last_latitude = models.FloatField(default=0)
@@ -41,3 +43,29 @@ class DeviceDigitalInput(models.Model):
         unique_together = (
             ('device','input','input_event'),
         )
+
+class DeviceDigitaOutput(models.Model):
+    OUTPUT_EVENT_CHOICES = [
+        ('MOTOR_LOCK', 'MOTOR_LOCK'),
+    ]
+    device = models.ForeignKey(Device,on_delete=models.CASCADE)
+    output = models.PositiveIntegerField()
+    output_event = models.CharField(
+        max_length=50,
+        choices=OUTPUT_EVENT_CHOICES,
+    )
+    class Meta:
+        unique_together = (
+            ('device','output','output_event'),
+        )
+
+class Group(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.CharField(max_length=200,blank=True)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True,null=True)
+    modified = models.DateTimeField(auto_now=True)
+    class Meta:
+        unique_together = (("name","account"),)
+    def __str__(self):
+        return self.name

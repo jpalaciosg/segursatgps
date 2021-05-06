@@ -32,6 +32,7 @@ urlpatterns = [
     path('users/', users_views.users_view, name='users'),
     path('users/delete-user/<str:username>/', users_views.delete_user, name='delete-user'),
     path('units/', units_views.units_view, name='units'),
+    path('units/groups/', units_views.unit_group_view, name='unit-group'),
     path('units/delete-unit/<int:id>/', units_views.delete_unit, name='delete-unit'),
     path('drivers/', drivers_views.drivers_view, name='drivers'),
     path('drivers/delete-driver/<int:id>/', drivers_views.delete_driver, name='delete-driver'),
@@ -55,6 +56,7 @@ urlpatterns = [
     # REST FRAMEWORK
     path('web/api/units/get-units/', units_views.get_units),
     path('web/api/units/get-unit/<str:name>/', units_views.get_unit),
+    path('web/api/units/get-unit-status/<str:name>/', units_views.get_unit_status),
     path('web/api/drivers/get-drivers/', drivers_views.get_drivers),
     path('web/api/drivers/get-driver/<int:id>/', drivers_views.get_driver),
     path('web/api/geofences/get-geofences/', geofences_views.get_geofences),

@@ -60,7 +60,7 @@ class AlertReader:
 				)
 				channel_layer = channels.layers.get_channel_layer()
 				async_to_sync(channel_layer.group_send)(
-					'chat_PRUEBAS',
+					f'chat_{unit.account.name}',
 					{
 						'type': 'send_message',
 						'message': {
@@ -80,7 +80,7 @@ class AlertReader:
 					}
 				)
 				async_to_sync(channel_layer.group_send)(
-					'chat_PRUEBAS',
+					f'chat_{unit.account.name}',
 					{
 						'type': 'send_message',
 						'message': {

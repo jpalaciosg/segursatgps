@@ -78,7 +78,31 @@ class Teltonika:
             print(e)
             return False
 
-    def generate_stop_report(self,locations):
+    def detect_motor_lock_event(self,location):
+        try:
+            try:
+                device_digital_output = DeviceDigitalOutput.objects.get(
+                    device__uniqueid=self.deviceid,
+                    input_event="MOTOR_LOCK"
+                )
+                output = device_digital_output.output
+                output = f'out{output}'
+            except:
+                input = None
+            attributes = location['attributes']
+            if input != None and input in attributes:
+                print(attributes[input])
+                if attributes[input] == True:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        except Exception as e:
+            print(e)
+            return False
+
+    def generate_stop_report(self,locations,initial_timestamp,final_timestamp):
         stop_report = []
         for i in range(len(locations)):
             if i != 0:
@@ -91,43 +115,36 @@ class Teltonika:
                     stop_report.append({
                         'latitude':locations[i]['latitude'],
                         'longitude':locations[i]['longitude'],
+                        'angle':locations[i]['angle'],
                         'address':locations[i]['address'],
                         'initial_timestamp':locations[i]['timestamp'],
                     })
                 elif previous_speed==0 and current_speed!=0:
                     #print('MOVEMENT')
                     if len(stop_report) == 0:
-                        timestamp = locations[i]['timestamp']
-                        dt_object = datetime.fromtimestamp(timestamp)
-                        dt_str = dt_object.strftime("%d/%m/%Y, %H:%M:%S")
-                        dt_str = dt_object.strftime("%d/%m/%Y, 00:00:00")
-                        dt_object = datetime.strptime(dt_str, '%d/%m/%Y, %H:%M:%S')
-                        initial_timestamp = int(dt_object.replace(tzinfo=timezone.utc).timestamp())
                         stop_report.append({
                             'latitude':locations[i]['latitude'],
                             'longitude':locations[i]['longitude'],
+                            'angle':locations[i]['angle'],
                             'address':locations[i]['address'],
                             'initial_timestamp':initial_timestamp,
-                            'final_timestamp':timestamp,
+                            'final_timestamp':locations[i]['timestamp'],
                         })
                     else:
                         stop_report[-1]['final_timestamp'] = locations[i]['timestamp']
+                    
         if len(stop_report) != 0:
             if "final_timestamp" not in stop_report[-1]:
-                timestamp = stop_report[-1]['initial_timestamp']
-                dt_object = datetime.fromtimestamp(timestamp)
-                dt_str = dt_object.strftime("%d/%m/%Y, %H:%M:%S")
-                dt_str = dt_object.strftime("%d/%m/%Y, 00:00:00")
-                dt_object = datetime.strptime(dt_str, '%d/%m/%Y, %H:%M:%S')
-                initial_timestamp = int(dt_object.replace(tzinfo=timezone.utc).timestamp())
-                final_timestamp = initial_timestamp + 86400
-                stop_report[-1]['final_timestamp'] = locations[i]['timestamp']
+                #stop_report[-1]['final_timestamp'] = locations[i]['timestamp']
+                stop_report[-1]['final_timestamp'] = final_timestamp
 
         for sr in stop_report:
             duration = sr['final_timestamp'] - sr['initial_timestamp']
             sr['duration'] = str(timedelta(seconds=duration))
-            sr['initial_datetime'] = datetime.fromtimestamp(sr['initial_timestamp']).strftime("%d/%m/%Y, %H:%M:%S")
-            sr['final_datetime'] = datetime.fromtimestamp(sr['final_timestamp']).strftime("%d/%m/%Y, %H:%M:%S")
+            sr['initial_datetime'] = datetime.fromtimestamp(sr['initial_timestamp'])
+            sr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(sr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+            sr['final_datetime'] = datetime.fromtimestamp(sr['final_timestamp'])
+            sr['final_datetime'] = gmt_conversor.convert_utctolocaltime(sr['final_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
 
         return stop_report
 
@@ -152,11 +169,9 @@ class Teltonika:
                         timestamp = locations[i]['timestamp']
                         dt_object = datetime.fromtimestamp(timestamp)
                         dt_str = dt_object.strftime("%d/%m/%Y, %H:%M:%S")
-                        dt_str = dt_object.strftime("%d/%m/%Y, 00:00:00")
                         dt_object = datetime.strptime(dt_str, '%d/%m/%Y, %H:%M:%S')
-                        initial_timestamp = int(dt_object.replace(tzinfo=timezone.utc).timestamp())
-                        #dt_object = gmt_conversor.convert_utctolocaltime(dt_object)
-                        #initial_timestamp = dt_object.timestamp()
+                        #initial_timestamp = int(dt_object.replace(tzinfo=timezone.utc).timestamp())
+                        initial_timestamp = int(dt_object.timestamp())
                         travel_report.append({
                             'latitude':locations[i]['latitude'],
                             'longitude':locations[i]['longitude'],
@@ -171,10 +186,8 @@ class Teltonika:
                 timestamp = travel_report[-1]['initial_timestamp']
                 dt_object = datetime.fromtimestamp(timestamp)
                 dt_str = dt_object.strftime("%d/%m/%Y, %H:%M:%S")
-                dt_str = dt_object.strftime("%d/%m/%Y, 00:00:00")
                 dt_object = datetime.strptime(dt_str, '%d/%m/%Y, %H:%M:%S')
                 initial_timestamp = int(dt_object.replace(tzinfo=timezone.utc).timestamp())
-                final_timestamp = initial_timestamp + 86400
                 travel_report[-1]['final_timestamp'] = locations[i]['timestamp']
 
         for tr in travel_report:
@@ -220,21 +233,5 @@ class Teltonika:
                                 ),
                             ).km
                         distance += distance2
-                tr['distance'] = distance
+                tr['distance'] = round(distance,2)
         return travel_report
-
-    def generate_speed_report(self,locations,speed_limit):
-        speed_report = []
-        for location in locations:
-            if int(location['speed']) > speed_limit:
-                speed_report.append({
-                    'latitude':location['latitude'],
-                    'longitude':location['longitude'],
-                    'timestamp':location['timestamp'],
-                    'speed':location['speed'],
-                    'address':location['address'],
-                })
-        for sr in speed_report:
-            sr['dt'] = datetime.fromtimestamp(sr['timestamp'])
-            sr['dt'] = gmt_conversor.convert_utctolocaltime(sr['dt']).strftime("%d/%m/%Y, %H:%M:%S")
-        return speed_report

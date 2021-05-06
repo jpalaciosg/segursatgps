@@ -11,9 +11,10 @@ import json
 from datetime import datetime
 from pytz import timezone
 
-from .models import Device
+from .models import Device,Group
 from .forms import UnitCreateForm,UnitUpdateForm
 from .serializers import DeviceSerializer
+from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 
 gmt_conversor = GMTConversor() #conversor zona horaria
@@ -23,6 +24,7 @@ gmt_conversor = GMTConversor() #conversor zona horaria
 def units_view(request):
     if request.method == 'POST':
         data = request.POST
+        data._mutable = True
         # Unit create
         if data['form_type'] == 'create_form':
             units = Device.objects.filter(account=request.user.profile.account)
@@ -42,10 +44,12 @@ def units_view(request):
                     try:
                         unit = Device.objects.create(
                             name = data['unit_name'],
+                            description = form_data['description'],
                             uniqueid = data['uniqueid'],
                             imei = data['imei'],
                             sim_phonenumber = data['sim_phonenumber'],
                             sim_iccid = data['sim_iccid'],
+                            note = data['note'],
                             account = request.user.profile.account
                         )
                         create_form = UnitCreateForm()
@@ -70,6 +74,10 @@ def units_view(request):
             units = Device.objects.filter(account=request.user.profile.account)
             create_form = UnitCreateForm()
             update_form = UnitUpdateForm(data,auto_id=False)
+            try:
+                data['odometer'] = float(data['odometer'])
+            except Exception as e:
+                print(e)
             if update_form.is_valid():
                 form_data = update_form.cleaned_data
                 try:
@@ -86,7 +94,14 @@ def units_view(request):
                         unit.imei = form_data['imei']
                         unit.sim_phonenumber = form_data['sim_phonenumber']
                         unit.sim_iccid = form_data['sim_iccid']
+                        unit.description = form_data['description']
+                        unit.odometer = form_data['odometer']
+                        unit.note = form_data['note']
                         unit.save()
+                        for unit in units:
+                            unit.odometer = str(unit.odometer)
+                            unit.modified = gmt_conversor.convert_utctolocaltime(unit.modified) # convertir a zona horaria
+                            unit.created = gmt_conversor.convert_utctolocaltime(unit.created) # convertir a zona horaria
                         return render(request,'units/units.html',{
                             'units':units,
                             'create_form':create_form,
@@ -100,6 +115,10 @@ def units_view(request):
                             update_form.add_error('imei', 'imei ya existe.')
                         if field == 'uniqueid': 
                             update_form.add_error('uniqueid', 'identificador unico ya existe.')
+                    for unit in units:
+                        unit.odometer = str(unit.odometer)
+                        unit.modified = gmt_conversor.convert_utctolocaltime(unit.modified) # convertir a zona horaria
+                        unit.created = gmt_conversor.convert_utctolocaltime(unit.created) # convertir a zona horaria
                     return render(request,'units/units.html',{
                         'units':units,
                         'create_form':create_form,
@@ -118,6 +137,11 @@ def units_view(request):
                 except Device.DoesNotExist:
                     unit = None
                 if unit:
+                    #update_form.fields['id'].widget = forms.HiddenInput()
+                    for unit in units:
+                        unit.odometer = str(unit.odometer)
+                        unit.modified = gmt_conversor.convert_utctolocaltime(unit.modified) # convertir a zona horaria
+                        unit.created = gmt_conversor.convert_utctolocaltime(unit.created) # convertir a zona horaria
                     return render(request,'units/units.html',{
                         'units':units,
                         'create_form':create_form,
@@ -131,15 +155,33 @@ def units_view(request):
     # GET
     create_form = UnitCreateForm()
     units = Device.objects.filter(account=request.user.profile.account)
+    """
     for unit in units:
         try:
             unit.created = unit.created.replace(tzinfo=timezone('America/Lima'))
             unit.modified = unit.modified.replace(tzinfo=timezone('America/Lima'))
         except Exception as e:
             print(e)
+    """
+    for unit in units:
+        unit.odometer = str(unit.odometer)
+        unit.modified = gmt_conversor.convert_utctolocaltime(unit.modified) # convertir a zona horaria
+        unit.created = gmt_conversor.convert_utctolocaltime(unit.created) # convertir a zona horaria
     return render(request,'units/units.html',{
         'units':units,
         'create_form':create_form
+    })
+
+@login_required
+def unit_group_view(request):
+    units = Device.objects.filter(account=request.user.profile.account)
+    groups = Group.objects.filter(account=request.user.profile.account)
+    for group in groups:
+        group.modified = gmt_conversor.convert_utctolocaltime(group.modified) # convertir a zona horaria
+        group.created = gmt_conversor.convert_utctolocaltime(group.created) # convertir a zona horaria
+    return render(request,'units/groups.html',{
+        'units':units,
+        'groups':groups,
     })
 
 @api_view(['GET'])
@@ -181,18 +223,9 @@ def delete_unit(request,id):
         return redirect('units')
 
 @api_view(['GET'])
-def get_unit_information(request,name):
-    try:
-        unit = Device.objects.get(name=name,account=request.user.profile.account)
-        serializer = DeviceSerializer(unit,many=False)
-        data = serializer.data
-        try:
-            data['last_attributes'] = json.loads(data['last_attributes'])
-        except:
-            data['last_attributes'] = ''
-        data['last_report'] = datetime.fromtimestamp(unit.last_timestamp)
-        data['last_report'] = gmt_conversor.convert_utctolocaltime(unit.last_report)
-        return Response(data,status=status.HTTP_200_OK)
-    except Exception as e:
-        error = {'error':str(e)}
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+def get_unit_status(request,name):
+    unit = Device.objects.get(name=name,account=request.user.profile.account)
+    device_reader = DeviceReader(unit.uniqueid)
+    response = device_reader.get_unit_status(unit)
+    return Response(response,status=status.HTTP_200_OK)
+        

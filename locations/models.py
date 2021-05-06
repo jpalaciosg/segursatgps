@@ -13,9 +13,18 @@ class Location(models.Model):
     angle = models.IntegerField(default=-1)
     attributes = models.TextField(default="")
     address = models.TextField(default="")
+    reference = models.CharField(max_length=50,blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
-       indexes = [
-           models.Index(fields=['unitid', 'timestamp',]),
+        # app_label helps django to recognize your db
+        app_label = 'locations'
+        # indexes
+        indexes = [
+            models.Index(fields=['unitid', 'timestamp',]),
         ]
+        """
+        unique_together = (
+            ('unitid','timestamp',),
+        )
+        """

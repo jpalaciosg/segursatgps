@@ -20,8 +20,8 @@ from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
 
-WS_TARGET = '127.0.0.1'
-WS_PORT = 8000
+#WS_TARGET = '127.0.0.1'
+#WS_PORT = 8000
 GEOCODING_SERVER = '172.16.2.4'
 
 # Create your views here.
@@ -91,12 +91,15 @@ def insert_location(request):
             angle = data['angle'],
             speed = data['speed'],
             attributes = json.dumps(data['attributes']),
-            address = address
+            address = address,
+            reference = unit.name
         )
         account = unit.account.name
+        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(location.timestamp))
+        last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
         channel_layer = channels.layers.get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            'chat_PRUEBAS',
+            f'chat_{account}',
             {
                 'type': 'send_message',
                 'message': {
@@ -110,15 +113,17 @@ def insert_location(request):
                         'altitude': location.altitude,
                         'angle': location.angle,
                         'speed': location.speed,
-                        'attributes': location.attributes,
-                        'address': location.address
+                        'attributes': data['attributes'],
+                        'address': location.address,
+                        'odometer': round(unit.odometer,2),
+                        'last_report': last_report
                     }
                 }
             }
         )
         # ALERTAS
-        alert_reader = AlertReader(unit.uniqueid)
-        alert_reader.run(data)
+        #alert_reader = AlertReader(unit.uniqueid)
+        #alert_reader.run(data)
         # FIN ALERTAS
         return Response(serializer.data)
     else:
@@ -169,8 +174,8 @@ def get_location_history(request,unit_name,initial_date,final_date):
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = Location.objects.filter(unitid=unit.id,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('-id')
-    locations = reversed(locations)
+    locations = Location.objects.filter(unitid=unit.id,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('timestamp')
+    #locations = reversed(locations)
     serializer = LocationSerializer(locations,many=True)
     data = serializer.data
     data1 = []

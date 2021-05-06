@@ -84,6 +84,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'segursatgps.wsgi.application'
 
+#DATABASE_ROUTERS = ['segursatgps.router.DBRouter']
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -94,9 +95,15 @@ DATABASES = {
         #'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
-            'read_default_file': '/srv/segursatgps/segursatgps/my.cnf',
+            'read_default_file': '/srv/segursatgps/segursatgps/my1.cnf',
         },
-    }
+    },
+    'history_db': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': '/srv/segursatgps/segursatgps/my2.cnf',
+        },
+    },
 }
 
 

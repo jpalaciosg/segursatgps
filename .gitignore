@@ -2,3 +2,5 @@ env/
 templates/
 *.pyc
 *.sqlite3
+segursatgps/my1.cnf
+segursatgps/my2.cnf

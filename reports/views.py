@@ -70,6 +70,7 @@ def detailed_report_view(request):
         initial_timestamp = None
         final_timestamp = None
         form = ReportForm(data)
+        print(data)
         if form.is_valid():
             try:
                 unit = Device.objects.get(name=data['unit_name'])
@@ -77,7 +78,8 @@ def detailed_report_view(request):
                 form.add_error('unit_name', e)
             #
             try:
-                initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                #initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
                 # convertir a zona horaria
                 initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
@@ -88,16 +90,17 @@ def detailed_report_view(request):
                 form.add_error('initial_date', e)
             #
             try:
-                final_datetime_str = f"{data['final_date']} 00:00:00"
+                #final_datetime_str = f"{data['final_date']} 00:00:00"
+                final_datetime_str = f"{data['final_datetime']}:00"
                 final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
                 # convertir a zona horaria
                 final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
                 # --
                 final_timestamp = datetime.timestamp(final_datetime_obj)
-                final_timestamp = final_timestamp+86400
             except Exception as e:
                 form.add_error('final_date', e)
-
+            print(initial_timestamp)
+            print(final_timestamp)
             if len(form.errors) != 0:
                 return render(request,'reports/detailed-report.html',{
                     'units':units,
@@ -111,13 +114,15 @@ def detailed_report_view(request):
             for location in locations:
                 dt = datetime.utcfromtimestamp(location.timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-                location.datetime = dt
+                location.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
                 # ignicion
                 device_reader = DeviceReader(unit.uniqueid)
                 location.ignition = device_reader.detect_ignition_event({
                     'attributes':json.loads(location.attributes)
                 })
             return render(request,'reports/detailed-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
                 'unit_name':unit.name,
                 'units':units,
                 'locations':locations,
@@ -149,7 +154,7 @@ def travel_report_view(request):
                 form.add_error('unit_name', e)
             #
             try:
-                initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
                 # convertir a zona horaria
                 initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
@@ -158,19 +163,18 @@ def travel_report_view(request):
 
             except Exception as e:
                 print(e)
-                form.add_error('initial_date', e)
+                form.add_error('initial_datetime', e)
             #
             try:
-                final_datetime_str = f"{data['final_date']} 00:00:00"
+                final_datetime_str = f"{data['final_datetime']}:00"
                 final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
                 # convertir a zona horaria
                 final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
                 # --
                 final_timestamp = datetime.timestamp(final_datetime_obj)
-                final_timestamp = final_timestamp+86400
             except Exception as e:
                 print(e)
-                form.add_error('final_date', e)
+                form.add_error('final_datetime', e)
 
             if len(form.errors) != 0:
                 return render(request,'reports/travel-report.html',{
@@ -183,20 +187,22 @@ def travel_report_view(request):
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
-            ).order_by('id')
-            locations_qs = locations_qs.order_by('timestamp')
+            ).order_by('timestamp')
+            locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
             locations = []
-            for location_qs in locations_qs:
+            for location in locations_qs:
                 locations.append({
-                    'latitude':location_qs.latitude,
-                    'longitude':location_qs.longitude,
-                    'timestamp':location_qs.timestamp,
-                    'speed':location_qs.speed,
-                    'address':location_qs.address,
-                    'attributes':json.loads(location_qs.attributes),
+                    'latitude':location.latitude,
+                    'longitude':location.longitude,
+                    'timestamp':location.timestamp,
+                    'speed':location.speed,
+                    'address':location.address,
+                    'attributes':json.loads(location.attributes),
                 })
             if len(locations) == 0:
                 return render(request,'reports/travel-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
                     'units':units,
                     'form':form,
                     'error':'No existe un recorrido para analizar.'
@@ -204,6 +210,8 @@ def travel_report_view(request):
             device_reader = DeviceReader(unit.uniqueid)
             travel_report = device_reader.generate_travel_report(locations)
             return render(request,'reports/travel-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
                 'unit_name':unit.name,
                 'travel_report':travel_report,
                 'units':units,
@@ -237,21 +245,26 @@ def stop_report_view(request):
                 form.add_error('unit_name', e)
             #
             try:
-                initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+                # --
                 initial_timestamp = datetime.timestamp(initial_datetime_obj)
             except Exception as e:
                 print(e)
-                form.add_error('initial_date', e)
+                form.add_error('initial_datetime', e)
             #
             try:
-                final_datetime_str = f"{data['final_date']} 00:00:00"
+                final_datetime_str = f"{data['final_datetime']}:00"
                 final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+                # --
                 final_timestamp = datetime.timestamp(final_datetime_obj)
-                final_timestamp = final_timestamp+86400
             except Exception as e:
                 print(e)
-                form.add_error('final_date', e)
+                form.add_error('final_datetime', e)
 
             if len(form.errors) != 0:
                 return render(request,'reports/stop-report.html',{
@@ -267,24 +280,29 @@ def stop_report_view(request):
             ).order_by('id')
             locations_qs = locations_qs.order_by('timestamp')
             locations = []
-            for location_qs in locations_qs:
+            for location in locations_qs:
                 locations.append({
-                    'latitude':location_qs.latitude,
-                    'longitude':location_qs.longitude,
-                    'timestamp':location_qs.timestamp,
-                    'speed':location_qs.speed,
-                    'address':location_qs.address,
-                    'attributes':json.loads(location_qs.attributes),
+                    'latitude':location.latitude,
+                    'longitude':location.longitude,
+                    'timestamp':location.timestamp,
+                    'angle':location.angle,
+                    'speed':location.speed,
+                    'address':location.address,
+                    'attributes':json.loads(location.attributes),
                 })
             if len(locations) == 0:
                 return render(request,'reports/stop-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
                     'units':units,
                     'form':form,
                     'error':'No existe un recorrido para analizar.'
                 })
             device_reader = DeviceReader(unit.uniqueid)
-            stop_report = device_reader.generate_stop_report(locations)
+            stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp)
             return render(request,'reports/stop-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
                 'unit_name':unit.name,
                 'stop_report':stop_report,
                 'units':units,
@@ -318,21 +336,21 @@ def speed_report_view(request):
                 form.add_error('unit_name', e)
             #
             try:
-                initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
                 initial_timestamp = datetime.timestamp(initial_datetime_obj)
             except Exception as e:
                 print(e)
-                form.add_error('initial_date', e)
+                form.add_error('initial_datetime', e)
             #
             try:
-                final_datetime_str = f"{data['final_date']} 00:00:00"
+                final_datetime_str = f"{data['final_datetime']}:00"
                 final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
                 final_timestamp = datetime.timestamp(final_datetime_obj)
                 final_timestamp = final_timestamp+86400
             except Exception as e:
                 print(e)
-                form.add_error('final_date', e)
+                form.add_error('final_datetime', e)
 
             if len(form.errors) != 0:
                 return render(request,'reports/speed-report.html',{
@@ -353,12 +371,16 @@ def speed_report_view(request):
                     'latitude':location_qs.latitude,
                     'longitude':location_qs.longitude,
                     'timestamp':location_qs.timestamp,
+                    'angle':location_qs.angle,
                     'speed':location_qs.speed,
                     'address':location_qs.address,
                     'attributes':json.loads(location_qs.attributes),
                 })
             if len(locations) == 0:
                 return render(request,'reports/speed-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'speed':data['speed'],
                     'units':units,
                     'form':form,
                     'error':'No existe un recorrido para analizar.'
@@ -367,6 +389,9 @@ def speed_report_view(request):
             speed_limit = int(data['speed_limit'])
             speed_report = device_reader.generate_speed_report(locations,speed_limit)
             return render(request,'reports/speed-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'speed_limit':data['speed_limit'],
                 'unit_name':unit.name,
                 'speed_report':speed_report,
                 'units':units,
@@ -383,7 +408,6 @@ def speed_report_view(request):
         'units':units,
     })
 
-
 @login_required
 def mileage_report_view(request):
     #POST
@@ -395,7 +419,7 @@ def mileage_report_view(request):
         form = MileageReportForm(data)
         if form.is_valid():
             try:
-                initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
                 # convertir a zona horaria
                 initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
@@ -403,10 +427,10 @@ def mileage_report_view(request):
                 initial_timestamp = datetime.timestamp(initial_datetime_obj)
             except Exception as e:
                 print(e)
-                form.add_error('initial_date', e)
+                form.add_error('initial_datetime', e)
             #
             try:
-                final_datetime_str = f"{data['final_date']} 00:00:00"
+                final_datetime_str = f"{data['final_datetime']}:00"
                 final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
                 # convertir a zona horaria
                 final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
@@ -414,7 +438,7 @@ def mileage_report_view(request):
                 final_timestamp = datetime.timestamp(final_datetime_obj)
                 final_timestamp = final_timestamp+86400
             except Exception as e:
-                form.add_error('final_date', e)
+                form.add_error('final_datetime', e)
 
             if len(form.errors) != 0:
                 print(form.errors)
@@ -448,8 +472,8 @@ def mileage_report_view(request):
                 result.append(
                     {
                         "unit":unit.name,
-                        "initial_date":data['initial_date'],
-                        "final_date":data['final_date'],
+                        "initial_date":data['initial_datetime'],
+                        "final_date":data['final_datetime'],
                         "distance":round(distance_sum,2),
                         "odometer":round(unit.odometer,2),
                     }
