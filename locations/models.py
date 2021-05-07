@@ -23,8 +23,6 @@ class Location(models.Model):
         indexes = [
             models.Index(fields=['unitid', 'timestamp',]),
         ]
-        """
         unique_together = (
             ('unitid','timestamp',),
         )
-        """

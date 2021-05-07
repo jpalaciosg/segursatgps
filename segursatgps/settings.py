@@ -101,6 +101,7 @@ DATABASES = {
     'history_db': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'read_default_file': '/srv/segursatgps/segursatgps/my2.cnf',
         },
     },

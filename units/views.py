@@ -44,7 +44,7 @@ def units_view(request):
                     try:
                         unit = Device.objects.create(
                             name = data['unit_name'],
-                            description = form_data['description'],
+                            description = data['description'],
                             uniqueid = data['uniqueid'],
                             imei = data['imei'],
                             sim_phonenumber = data['sim_phonenumber'],
