@@ -9,6 +9,7 @@ import websocket
 import json
 import channels.layers
 import requests
+import redis
 from datetime import datetime
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
@@ -19,7 +20,7 @@ from .serializers import InsertLocationSerializer,LocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
-from .config import GEOCODING_SERVER,GEOCODING_PORT
+from .config import GEOCODING_SERVER,GEOCODING_PORT,TARGETS
 
 # Create your views here.
 
@@ -53,6 +54,27 @@ def insert_location(request):
         unit.last_angle = data['angle']
         unit.last_speed = data['speed']
         unit.last_attributes = json.dumps(data['attributes'])
+        # reenviar a getposition
+        for target in TARGETS:
+            if target['enable']:
+                for u in target['units']:
+                    device_reader = DeviceReader(unit.uniqueid)
+                    ignition = device_reader.detect_ignition_event({
+                        'attributes':json.loads(unit.last_attributes)
+                    })
+                    payload = {
+                        "provider":target['name'],
+                        "unit_name":unit.name,
+                        "timestamp":unit.last_timestamp,
+                        "latitude":unit.last_latitude,
+                        "longitude":unit.last_longitude,
+                        "altitude":unit.last_altitude,
+                        "angle":unit.last_angle,
+                        "speed":unit.last_speed,
+                        "ignition":ignition,
+                    }
+                    redisClient = redis.StrictRedis(host='localhost',port=6379,db=0)
+                    redisClient.rpush('tracklogSegursatQueue', json.dumps(payload))
         # CALCULAR UBICACION PREVIA
         if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
             if data['latitude'] != 0.0 and data['longitude'] != 0.0:

@@ -66,6 +66,7 @@ def users_view(request):
                     else:
                         user = User.objects.create_user(
                             username = form_data['username'],
+                            email = form_data['username'],
                             first_name = form_data['firstname'],
                             last_name = form_data['lastname'],
                             password = form_data['password']
