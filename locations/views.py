@@ -55,26 +55,30 @@ def insert_location(request):
         unit.last_speed = data['speed']
         unit.last_attributes = json.dumps(data['attributes'])
         # reenviar a getposition
-        for target in TARGETS:
-            if target['enable']:
-                for u in target['units']:
-                    device_reader = DeviceReader(unit.uniqueid)
-                    ignition = device_reader.detect_ignition_event({
-                        'attributes':json.loads(unit.last_attributes)
-                    })
-                    payload = {
-                        "provider":target['name'],
-                        "unit_name":unit.name,
-                        "timestamp":unit.last_timestamp,
-                        "latitude":unit.last_latitude,
-                        "longitude":unit.last_longitude,
-                        "altitude":unit.last_altitude,
-                        "angle":unit.last_angle,
-                        "speed":unit.last_speed,
-                        "ignition":ignition,
-                    }
-                    redisClient = redis.StrictRedis(host='localhost',port=6379,db=0)
-                    redisClient.rpush('tracklogSegursatQueue', json.dumps(payload))
+        try:
+            for target in TARGETS:
+                if target['enable']:
+                    for u in target['units']:
+                        if u == unit.name:
+                            device_reader = DeviceReader(unit.uniqueid)
+                            ignition = device_reader.detect_ignition_event({
+                                'attributes':json.loads(unit.last_attributes)
+                            })
+                            payload = {
+                                "provider":target['name'],
+                                "unit_name":unit.name,
+                                "timestamp":unit.last_timestamp,
+                                "latitude":unit.last_latitude,
+                                "longitude":unit.last_longitude,
+                                "altitude":unit.last_altitude,
+                                "angle":unit.last_angle,
+                                "speed":unit.last_speed,
+                                "ignition":ignition,
+                            }
+                            redisClient = redis.StrictRedis(host='localhost',port=6379,db=0)
+                            redisClient.rpush('tracklogSegursatQueue', json.dumps(payload))
+        except Exception as e:
+            print(e)
         # CALCULAR UBICACION PREVIA
         if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
             if data['latitude'] != 0.0 and data['longitude'] != 0.0:
