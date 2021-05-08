@@ -64,5 +64,6 @@ urlpatterns = [
     path('web/api/alerts/alert-search/<str:alert_date>/<str:unit_name>/', alerts_views.alert_search),
     path('web/api/alerts/get-alert/<int:id>/', alerts_views.get_alert),
     path('web/api/locations/insert-location/', locations_views.insert_location),
+    path('web/api/locations/insert-location-batch/', locations_views.insert_location_batch),
     path('web/api/locations/get-location-history/<str:unit_name>/<str:initial_date>/<str:final_date>/', locations_views.get_location_history),
 ]
