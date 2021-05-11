@@ -38,6 +38,7 @@ PyHamcrest==2.0.2
 pylint==2.6.0
 pyOpenSSL==20.0.1
 pytz==2020.4
+redis==3.5.3
 requests==2.25.1
 service-identity==18.1.0
 Shapely==1.7.1
