@@ -162,7 +162,7 @@ def insert_location(request):
 def insert_location_batch(request):
     data_list = request.data
     error_list = []
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = Device.objects.all()
     for data in data_list:
         serializer = InsertLocationSerializer2(data=data)
         if serializer.is_valid():
