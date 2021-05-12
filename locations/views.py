@@ -214,15 +214,21 @@ def insert_location_batch(request):
                         unit.odometer += distance
                 unit.previous_location = json.dumps(previous_location)
                 # FIN CALCULAR UBICACION PREVIA
-                try:
-                    api_url = f"http://{GEOCODING_SERVER}:{GEOCODING_PORT}/nominatim/reverse?format=jsonv2&lat={data['latitude']}&lon={data['longitude']}&addressdetails=1"
-                    headers = {'Content-Type': 'application/json'}
-                    response = requests.get(api_url, headers=headers, timeout=5)
-                    address = json.loads(response.content.decode('utf-8'))['display_name']
-                except Exception as e:
-                    address = ""
+                # CALCULAR DIRECCION
+                address = None
+                if 'address' in data.keys():
+                    address = data['address']
+                else:
+                    try:
+                        api_url = f"http://{GEOCODING_SERVER}:{GEOCODING_PORT}/nominatim/reverse?format=jsonv2&lat={data['latitude']}&lon={data['longitude']}&addressdetails=1"
+                        headers = {'Content-Type': 'application/json'}
+                        response = requests.get(api_url, headers=headers, timeout=5)
+                        address = json.loads(response.content.decode('utf-8'))['display_name']
+                    except Exception as e:
+                        address = ""
                 unit.last_address = address
                 unit.save()
+                # FIN CALCULAR DIRECCION
                 # INTRODUCIR UBICACION EN EL HISTORICO
                 integrity_error = False
                 try:
