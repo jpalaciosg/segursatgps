@@ -436,7 +436,6 @@ def mileage_report_view(request):
                 final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
                 # --
                 final_timestamp = datetime.timestamp(final_datetime_obj)
-                final_timestamp = final_timestamp+86400
             except Exception as e:
                 form.add_error('final_datetime', e)
 
