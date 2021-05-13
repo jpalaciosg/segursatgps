@@ -453,6 +453,7 @@ def mileage_report_view(request):
                     timestamp__gte=initial_timestamp,
                     timestamp__lte=final_timestamp
                 ).order_by('timestamp')
+                locations = locations.exclude(latitude=0.0,longitude=0.0)
                 distance_sum = 0
                 for i in range(len(locations)):
                     if i != 0:
