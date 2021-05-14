@@ -317,7 +317,7 @@ def get_address(request,latitude,longitude):
         return Response(status=500)
 
 @api_view(['GET'])
-def get_location_history(request,unit_name,initial_date,final_date):
+def get_location_history(request,unit_name,initial_datetime,final_datetime):
     initial_timestamp = None
     final_timestamp = None
     try:
@@ -328,18 +328,19 @@ def get_location_history(request,unit_name,initial_date,final_date):
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     try:
-        initial_datetime_str = f'{initial_date} 00:00:00'
+        initial_datetime_str = f"{initial_datetime}:00"
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
         initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
         initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        print(initial_timestamp)
         #
-        final_datetime_str = f'{final_date} 00:00:00'
+        final_datetime_str = f"{final_datetime}:00"
         final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
         final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
         final_timestamp = datetime.timestamp(final_datetime_obj)
-        final_timestamp = final_timestamp+86400
-        print(final_timestamp)
     except Exception as e:
         error = {
             'error':str(e)
