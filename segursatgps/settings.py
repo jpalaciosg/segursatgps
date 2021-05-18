@@ -105,6 +105,13 @@ DATABASES = {
             'read_default_file': '/srv/segursatgps/segursatgps/my2.cnf',
         },
     },
+    'history_db_replica': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'read_default_file': '/srv/segursatgps/segursatgps/my3.cnf',
+        },
+    },
 }
 
 

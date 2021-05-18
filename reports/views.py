@@ -105,8 +105,9 @@ def detailed_report_view(request):
                 return render(request,'reports/detailed-report.html',{
                     'units':units,
                     'form':form,
-                })  
-            locations = Location.objects.filter(
+                })
+            #locations = Location.objects.filter(  
+            locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
@@ -183,7 +184,7 @@ def travel_report_view(request):
                 })
 
             # Aqui va la logica del resultado
-            locations_qs = Location.objects.filter(
+            locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
@@ -273,7 +274,7 @@ def stop_report_view(request):
                 })
 
             # Aqui va la logica del resultado
-            locations_qs = Location.objects.filter(
+            locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
@@ -359,7 +360,7 @@ def speed_report_view(request):
                 })
 
             # Aqui va la logica del resultado
-            locations_qs = Location.objects.filter(
+            locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
@@ -447,7 +448,7 @@ def mileage_report_view(request):
                 })
             result = []
             for unit in units:
-                locations = Location.objects.filter(
+                locations = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
                     timestamp__lte=final_timestamp
