@@ -188,7 +188,7 @@ def insert_location_batch(request):
                     'altitude':unit.last_altitude,
                     'angle':unit.last_angle,
                     'speed':unit.last_speed,
-                    'attributes':unit.last_attributes,
+                    'attributes':json.loads(unit.last_attributes),
                     'address':unit.last_address
                 }
                 unit.last_timestamp = data['timestamp']
