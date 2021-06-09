@@ -20,6 +20,10 @@ class DeviceReader:
     def detect_panic_event(self,location):
 	    reader = Teltonika(self.deviceid)
 	    return reader.detect_panic_event(location)
+
+    def detect_battery_disconnection_event(self,current_location,previous_location):
+        reader = Teltonika(self.deviceid)
+        return reader.detect_battery_disconnection_event
 	
     def generate_stop_report(self,locations,initial_timestamp,final_timestamp):
 	    reader = Teltonika(self.deviceid)

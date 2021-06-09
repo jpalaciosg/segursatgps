@@ -78,6 +78,11 @@ class Teltonika:
             print(e)
             return False
 
+    def detect_battery_disconnection_event(self,current_location,previous_location):
+        if previous_location['attributes']['power'] > 10 and current_location['attributes']['power'] < 1:
+            return True
+        return False
+
     def detect_motor_lock_event(self,location):
         try:
             try:
