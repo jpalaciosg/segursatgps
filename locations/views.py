@@ -181,6 +181,10 @@ def insert_location_batch(request):
                 error_list.append(errors)
             
             if errors == None:
+                try:
+                    attributes = json.loads(unit.last_attributes)
+                except Exception as e:
+                    attributes = json.loads("{}")
                 previous_location = {
                     'timestamp':unit.last_timestamp,
                     'latitude':unit.last_latitude,
@@ -188,7 +192,7 @@ def insert_location_batch(request):
                     'altitude':unit.last_altitude,
                     'angle':unit.last_angle,
                     'speed':unit.last_speed,
-                    'attributes':json.loads(unit.last_attributes),
+                    'attributes':attributes,
                     'address':unit.last_address
                 }
                 unit.last_timestamp = data['timestamp']
