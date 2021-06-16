@@ -37,6 +37,8 @@ def login_view(request):
         return render(request,'users/login-autoplan.html')
     if account == "civa":
         return render(request,'users/login-civa.html')
+    if account == "renting":
+        return render(request,'users/login-renting.html')
     
     return render(request,'users/login.html')
 
