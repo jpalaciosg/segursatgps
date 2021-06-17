@@ -204,6 +204,14 @@ def get_unit(request,name):
             data['last_attributes'] = json.loads(data['last_attributes'])
         except:
             data['last_attributes'] = ''
+        try:
+            data['previous_location'] = json.loads(data['previous_location'])
+        except:
+            data['previous_location'] = ''
+        try:
+            data['previous_location']['attributes'] = json.loads(data['previous_location']['attributes'])
+        except:
+            data['previous_location']['attributes'] = ''
         last_report = datetime.fromtimestamp(unit.last_timestamp)
         last_report = gmt_conversor.convert_utctolocaltime(last_report)
         data['last_report'] = last_report.strftime("%d-%m-%Y %H:%M:%S")
