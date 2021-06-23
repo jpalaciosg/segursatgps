@@ -455,7 +455,7 @@ def mileage_report_view(request):
                 })
             result = []
             print(data['unit_name'])
-            if data['unit_name'] == 'ALL':
+            if data['unit_name'].upper() == 'ALL':
                 for unit in units:
                     locations = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
