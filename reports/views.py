@@ -340,6 +340,9 @@ def speed_report_view(request):
             try:
                 initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+                # --
                 initial_timestamp = datetime.timestamp(initial_datetime_obj)
             except Exception as e:
                 print(e)
@@ -348,8 +351,11 @@ def speed_report_view(request):
             try:
                 final_datetime_str = f"{data['final_datetime']}:00"
                 final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+                # --
                 final_timestamp = datetime.timestamp(final_datetime_obj)
-                final_timestamp = final_timestamp+86400
+
             except Exception as e:
                 print(e)
                 form.add_error('final_datetime', e)
