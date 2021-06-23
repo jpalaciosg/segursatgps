@@ -73,7 +73,7 @@ class DeviceReader:
                 previous_point = Point(previous_location['longitude'],previous_location['latitude'])
                 current_point = Point(current_location['longitude'],current_location['latitude'])
                 for geofence in geofences:
-                    feature = geofence.geojson['features'][0]
+                    feature = json.loads(geofence.geojson)['features'][0]
                     s = shape(feature['geometry'])
                     if s.contains(previous_point) == False and s.contains(current_point) == True:
                         geofence_event_report.append({
