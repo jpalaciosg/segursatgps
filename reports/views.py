@@ -496,3 +496,14 @@ def mileage_report_view(request):
         'units':units,
         'form':form,
     })
+
+# GEOFENCE REPORT
+@login_required
+def geofence_report_view(request):
+    #GET
+    units = Device.objects.filter(account=request.user.profile.account)
+    #form = MileageReportForm()
+    return render(request,'reports/geofence-report.html',{
+        'units':units,
+        #'form':form,
+    })

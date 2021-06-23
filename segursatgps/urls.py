@@ -45,6 +45,7 @@ urlpatterns = [
     path('reports/travel-report/', reports_views.travel_report_view, name='travel-report'),
     path('reports/stop-report/', reports_views.stop_report_view, name='stop-report'),
     path('reports/mileage-report/', reports_views.mileage_report_view, name='mileage-report'),
+    path('reports/geofence-report/', reports_views.geofence_report_view, name='geofence-report'),
     path('maps/', maps_views.map_view, name='map'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
     path('alerts/triggers/', alerts_views.triggers_view, name='triggers'),
