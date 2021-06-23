@@ -101,7 +101,7 @@ class DeviceReader:
                         'duration': geofence_event_report[i]['timestamp'] - initial_timestamp
                     })
             else:
-                if i == len(geofence_event_report)-1 and geofence_event_report[i-1]['event'] == 'INPUT':
+                if i == len(geofence_event_report)-1 and geofence_event_report[i]['event'] == 'INPUT':
                     geofence_report.append({
                         'name': geofence_event_report[i]['name'],
                         'initial_timestamp': geofence_event_report[i]['timestamp'],
