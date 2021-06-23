@@ -7,6 +7,7 @@ from pytz import timezone
 from geopy.distance import great_circle
 
 from locations.models import Location
+from geofences.models import Geofence
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 
@@ -500,10 +501,96 @@ def mileage_report_view(request):
 # GEOFENCE REPORT
 @login_required
 def geofence_report_view(request):
+    #POST
+    if request.method == 'POST':
+        data = request.POST
+        units = Device.objects.filter(account=request.user.profile.account)
+        initial_timestamp = None
+        final_timestamp = None
+        form = ReportForm(data)
+        if form.is_valid():
+            try:
+                unit = Device.objects.get(name=data['unit_name'])
+            except Exception as e:
+                print(e)
+                form.add_error('unit_name', e)
+            #
+            try:
+                initial_datetime_str = f"{data['initial_datetime']}:00"
+                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+                # --
+                initial_timestamp = datetime.timestamp(initial_datetime_obj)
+            except Exception as e:
+                print(e)
+                form.add_error('initial_datetime', e)
+            #
+            try:
+                final_datetime_str = f"{data['final_datetime']}:00"
+                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+                # --
+                final_timestamp = datetime.timestamp(final_datetime_obj)
+            except Exception as e:
+                form.add_error('final_datetime', e)
+
+            if len(form.errors) != 0:
+                return render(request,'reports/geofence-report.html',{
+                    'units':units,
+                    'form':form,
+                })
+
+            # Aqui va la logica del resultado
+            locations_qs = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=initial_timestamp,
+                timestamp__lte=final_timestamp
+            ).order_by('id')
+            locations_qs = locations_qs.order_by('timestamp')
+            locations = []
+            for location_qs in locations_qs:
+                locations.append({
+                    'latitude':location_qs.latitude,
+                    'longitude':location_qs.longitude,
+                    'timestamp':location_qs.timestamp,
+                    'angle':location_qs.angle,
+                    'speed':location_qs.speed,
+                    'address':location_qs.address,
+                    'attributes':json.loads(location_qs.attributes),
+                })
+            if len(locations) == 0:
+                return render(request,'reports/geofence-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'units':units,
+                    'form':form,
+                    'error':'No existe un recorrido para analizar.'
+                })
+            device_reader = DeviceReader(unit.uniqueid)
+            geofences_qs = Geofence.objects.filter(
+                account = request.profile.account
+            )
+            geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
+            return render(request,'reports/geofence-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'unit_name':unit.name,
+                'stop_report':geofence_report,
+                'units':units,
+                'form':form,
+                #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
+            })
+        return render(request,'reports/geofence-report.html',{
+            'units':units,
+            'form':form,
+        })
+
     #GET
     units = Device.objects.filter(account=request.user.profile.account)
-    #form = MileageReportForm()
+    form = ReportForm()
     return render(request,'reports/geofence-report.html',{
         'units':units,
-        #'form':form,
+        'form':form,
     })
