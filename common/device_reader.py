@@ -120,4 +120,6 @@ class DeviceReader:
                             'final_speed': geofence_event_report[i]['speed'],
                             'duration': geofence_event_report[i]['timestamp'] - geofence_event_report[i-1]['timestamp']
                         })
+        print(geofence_event_report)
+        print(geofence_report)
         return geofence_report
