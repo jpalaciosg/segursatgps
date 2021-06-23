@@ -454,38 +454,40 @@ def mileage_report_view(request):
                     'form':form,
                 })
             result = []
-            for unit in units:
-                locations = Location.objects.using('history_db_replica').filter(
-                    unitid=unit.id,
-                    timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
-                ).order_by('timestamp')
-                locations = locations.exclude(latitude=0.0,longitude=0.0)
-                distance_sum = 0
-                for i in range(len(locations)):
-                    if i != 0:
-                        if locations[i-1].latitude != 0.0 and locations[i-1].longitude != 0.0:
-                            if locations[i].latitude != 0.0 and locations[i].longitude != 0.0:
-                                distance = great_circle(
-                                    (
-                                        locations[i-1].latitude,
-                                        locations[i-1].longitude
-                                    ),
-                                    (
-                                        locations[i].latitude,
-                                        locations[i].longitude
-                                    ),
-                                ).km
-                                distance_sum += distance
-                result.append(
-                    {
-                        "unit":unit.name,
-                        "initial_date":data['initial_datetime'],
-                        "final_date":data['final_datetime'],
-                        "distance":round(distance_sum,2),
-                        "odometer":round(unit.odometer,2),
-                    }
-                )
+            print(data['unit_name'])
+            if data['unit_name'] == 'ALL':
+                for unit in units:
+                    locations = Location.objects.using('history_db_replica').filter(
+                        unitid=unit.id,
+                        timestamp__gte=initial_timestamp,
+                        timestamp__lte=final_timestamp
+                    ).order_by('timestamp')
+                    locations = locations.exclude(latitude=0.0,longitude=0.0)
+                    distance_sum = 0
+                    for i in range(len(locations)):
+                        if i != 0:
+                            if locations[i-1].latitude != 0.0 and locations[i-1].longitude != 0.0:
+                                if locations[i].latitude != 0.0 and locations[i].longitude != 0.0:
+                                    distance = great_circle(
+                                        (
+                                            locations[i-1].latitude,
+                                            locations[i-1].longitude
+                                        ),
+                                        (
+                                            locations[i].latitude,
+                                            locations[i].longitude
+                                        ),
+                                    ).km
+                                    distance_sum += distance
+                    result.append(
+                        {
+                            "unit":unit.name,
+                            "initial_date":data['initial_datetime'],
+                            "final_date":data['final_datetime'],
+                            "distance":round(distance_sum,2),
+                            "odometer":round(unit.odometer,2),
+                        }
+                    )
 
             return render(request,'reports/mileage-report.html',{
                 'units':units,

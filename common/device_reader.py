@@ -63,6 +63,9 @@ class DeviceReader:
             sr['dt'] = gmt_conversor.convert_utctolocaltime(sr['dt']).strftime("%d/%m/%Y, %H:%M:%S")
         return speed_report
 
+    def generate_mileage_report(self,locations):
+        pass
+
     def generate_geofence_report(self,locations,geofences,initial_timestamp,final_timestamp):
         geofence_event_report = []
         geofence_report = []
