@@ -577,7 +577,7 @@ def geofence_report_view(request):
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
                 'unit_name':unit.name,
-                'stop_report':geofence_report,
+                'geofence_report':geofence_report,
                 'units':units,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
