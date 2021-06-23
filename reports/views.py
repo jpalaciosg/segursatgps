@@ -570,7 +570,7 @@ def geofence_report_view(request):
                 })
             device_reader = DeviceReader(unit.uniqueid)
             geofences_qs = Geofence.objects.filter(
-                account = request.profile.account
+                account = request.user.profile.account
             )
             geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
             return render(request,'reports/geofence-report.html',{
