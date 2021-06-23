@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime,timedelta
 from shapely.geometry import Point,shape
 import json
 
@@ -125,4 +125,5 @@ class DeviceReader:
             gr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(gr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
             gr['final_datetime'] = datetime.fromtimestamp(gr['final_datetime'])
             gr['final_datetime'] = gmt_conversor.convert_utctolocaltime(gr['final_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+            gr['duration'] = str(timedelta(seconds=gr['duration']))
         return geofence_report
