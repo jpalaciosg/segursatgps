@@ -120,6 +120,9 @@ class DeviceReader:
                             'final_speed': geofence_event_report[i]['speed'],
                             'duration': geofence_event_report[i]['timestamp'] - geofence_event_report[i-1]['timestamp']
                         })
-        print(geofence_event_report)
-        print(geofence_report)
+        for gr in geofence_report:
+            gr['initial_datetime'] = datetime.fromtimestamp(gr['initial_datetime'])
+            gr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(gr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+            gr['final_datetime'] = datetime.fromtimestamp(gr['final_datetime'])
+            gr['final_datetime'] = gmt_conversor.convert_utctolocaltime(gr['final_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
         return geofence_report
