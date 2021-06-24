@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime,timedelta
 import json
 from pytz import timezone
-from geopy.distance import great_circle
 
 from locations.models import Location
 from geofences.models import Geofence
@@ -426,6 +425,14 @@ def mileage_report_view(request):
         final_timestamp = None
         form = MileageReportForm(data)
         if form.is_valid():
+            unit = None
+            if data['unit_name'].upper() != 'ALL':
+                try:
+                    unit = Device.objects.get(name=data['unit_name'])
+                except Exception as e:
+                    print(e)
+                    form.add_error('unit_name', e)
+                #
             try:
                 initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -454,7 +461,6 @@ def mileage_report_view(request):
                     'form':form,
                 })
             result = []
-            print(data['unit_name'])
             if data['unit_name'].upper() == 'ALL':
                 for unit in units:
                     locations = Location.objects.using('history_db_replica').filter(
@@ -463,22 +469,8 @@ def mileage_report_view(request):
                         timestamp__lte=final_timestamp
                     ).order_by('timestamp')
                     locations = locations.exclude(latitude=0.0,longitude=0.0)
-                    distance_sum = 0
-                    for i in range(len(locations)):
-                        if i != 0:
-                            if locations[i-1].latitude != 0.0 and locations[i-1].longitude != 0.0:
-                                if locations[i].latitude != 0.0 and locations[i].longitude != 0.0:
-                                    distance = great_circle(
-                                        (
-                                            locations[i-1].latitude,
-                                            locations[i-1].longitude
-                                        ),
-                                        (
-                                            locations[i].latitude,
-                                            locations[i].longitude
-                                        ),
-                                    ).km
-                                    distance_sum += distance
+                    device_reader = DeviceReader(unit.uniqueid)
+                    distance_sum = device_reader.generate_mileage_report(locations)
                     result.append(
                         {
                             "unit":unit.name,
@@ -488,7 +480,24 @@ def mileage_report_view(request):
                             "odometer":round(unit.odometer,2),
                         }
                     )
-
+            else:
+                locations = Location.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lte=final_timestamp
+                ).order_by('timestamp')
+                locations = locations.exclude(latitude=0.0,longitude=0.0)
+                device_reader = DeviceReader(unit.uniqueid)
+                distance_sum = device_reader.generate_mileage_report(locations)
+                result.append(
+                    {
+                        "unit":unit.name,
+                        "initial_date":data['initial_datetime'],
+                        "final_date":data['final_datetime'],
+                        "distance":round(distance_sum,2),
+                        "odometer":round(unit.odometer,2),
+                    }
+                )
             return render(request,'reports/mileage-report.html',{
                 'units':units,
                 'result':result,

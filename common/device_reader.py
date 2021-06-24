@@ -1,12 +1,13 @@
-from datetime import datetime,timedelta
-from shapely.geometry import Point,shape
-import json
-
 from units.models import Device
 from units.serializers import DeviceSerializer
 
 from common.protocols.teltonika import Teltonika
 from common.gmt_conversor import GMTConversor
+
+from datetime import datetime,timedelta
+from shapely.geometry import Point,shape
+from geopy.distance import great_circle
+import json
 
 gmt_conversor = GMTConversor()
 
@@ -64,7 +65,23 @@ class DeviceReader:
         return speed_report
 
     def generate_mileage_report(self,locations):
-        pass
+        distance_sum = 0
+        for i in range(len(locations)):
+            if i != 0:
+                if locations[i-1].latitude != 0.0 and locations[i-1].longitude != 0.0:
+                    if locations[i].latitude != 0.0 and locations[i].longitude != 0.0:
+                        distance = great_circle(
+                            (
+                                locations[i-1].latitude,
+                                locations[i-1].longitude
+                            ),
+                            (
+                                locations[i].latitude,
+                                locations[i].longitude
+                            ),
+                        ).km
+                        distance_sum += distance
+        return distance_sum
 
     def generate_geofence_report(self,locations,geofences,initial_timestamp,final_timestamp):
         geofence_event_report = []
