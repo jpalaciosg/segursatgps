@@ -301,8 +301,9 @@ def group_trip_report_view(request):
                         'error':'No existe un recorrido para analizar.'
                     })
                 device_reader = DeviceReader(unit.uniqueid)
-                travel_report = device_reader.generate_travel_report(locations)
-                group_trip_report.append(travel_report)
+                trip_report = device_reader.generate_travel_report(locations)
+                for item in trip_report: 
+                    group_trip_report.append(item)
             return render(request,'reports/group-trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
