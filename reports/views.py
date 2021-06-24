@@ -457,6 +457,8 @@ def mileage_report_view(request):
             if len(form.errors) != 0:
                 print(form.errors)
                 return render(request,'reports/mileage-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
                     'units':units,
                     'form':form,
                 })
@@ -499,6 +501,8 @@ def mileage_report_view(request):
                     }
                 )
             return render(request,'reports/mileage-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
                 'units':units,
                 'result':result,
                 'form':form,
