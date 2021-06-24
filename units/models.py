@@ -62,6 +62,7 @@ class DeviceDigitaOutput(models.Model):
 class Group(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=200,blank=True)
+    units = models.ManyToManyField(Device)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
