@@ -302,7 +302,8 @@ def group_trip_report_view(request):
                     })
                 device_reader = DeviceReader(unit.uniqueid)
                 trip_report = device_reader.generate_travel_report(locations)
-                for item in trip_report: 
+                for item in trip_report:
+                    item['unit_name'] = unit.name 
                     group_trip_report.append(item)
             return render(request,'reports/group-trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
