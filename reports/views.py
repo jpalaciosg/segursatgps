@@ -819,6 +819,100 @@ def mileage_report_view(request):
 # GROUP MILEAGE REPORT
 @login_required
 def group_mileage_report_view(request):
+    if request.method == 'POST':
+        data = request.POST
+        groups = Group.objects.filter(account=request.user.profile.account)
+        initial_timestamp = None
+        final_timestamp = None
+        form = GroupReportForm(data)
+        if form.is_valid():
+            try:
+                group = Group.objects.get(name=data['group_name'])
+            except Exception as e:
+                print(e)
+                form.add_error('group_name', e)
+            #
+            try:
+                initial_datetime_str = f"{data['initial_datetime']}:00"
+                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+                # --
+                initial_timestamp = datetime.timestamp(initial_datetime_obj)
+
+            except Exception as e:
+                print(e)
+                form.add_error('initial_datetime', e)
+            #
+            try:
+                final_datetime_str = f"{data['final_datetime']}:00"
+                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+                # --
+                final_timestamp = datetime.timestamp(final_datetime_obj)
+            except Exception as e:
+                print(e)
+                form.add_error('final_datetime', e)
+
+            if len(form.errors) != 0:
+                return render(request,'reports/group-mileage-report.html',{
+                    'groups':groups,
+                    'form':form,
+                })
+            
+            # Aqui va la logica del resultado
+            group_mileage_report = []
+            for unit in group.units.all():
+                locations_qs = Location.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lte=final_timestamp
+                ).order_by('id')
+                locations_qs = locations_qs.order_by('timestamp')
+                locations_qs = locations.exclude(latitude=0.0,longitude=0.0)
+                locations = []
+                for location_qs in locations_qs:
+                    locations.append({
+                        'latitude':location_qs.latitude,
+                        'longitude':location_qs.longitude,
+                        'timestamp':location_qs.timestamp,
+                        'angle':location_qs.angle,
+                        'speed':location_qs.speed,
+                        'address':location_qs.address,
+                        'attributes':json.loads(location_qs.attributes),
+                    })
+                if len(locations) == 0:
+                    return render(request,'reports/group-mileage-report.html',{
+                        'initial_datetime':data['initial_datetime'],
+                        'final_datetime':data['final_datetime'],
+                        'groups':groups,
+                        'form':form,
+                        'error':'No existe un recorrido para analizar.'
+                    })
+                device_reader = DeviceReader(unit.uniqueid)
+                distance_sum = device_reader.generate_mileage_report(locations)
+                group_mileage_report.append(
+                    {
+                        "unit":unit.name,
+                        "initial_date":data['initial_datetime'],
+                        "final_date":data['final_datetime'],
+                        "distance":round(distance_sum,2),
+                        "odometer":round(unit.odometer,2),
+                    }
+                )
+            
+            return render(request,'reports/group-mileage-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'group_name':group.name,
+                'group_mileage_report':group_mileage_report,
+                'groups':groups,
+                'form':form,
+                #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
+            })
+                
+
     # GET
     groups = Group.objects.filter(account=request.user.profile.account)
     return render(request,'reports/group-mileage-report.html',{
