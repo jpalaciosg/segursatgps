@@ -42,6 +42,7 @@ urlpatterns = [
     path('reports/fleet-status/', reports_views.fleet_status_view, name='fleet-status'),
     path('reports/detailed-report/', reports_views.detailed_report_view, name='detailed-report'),
     path('reports/speed-report/', reports_views.speed_report_view, name='speed-report'),
+    path('reports/group-speed-report/', reports_views.group_speed_report_view, name='group-speed-report'),
     path('reports/travel-report/', reports_views.travel_report_view, name='travel-report'),
     path('reports/group-trip-report/', reports_views.group_trip_report_view, name='group-trip-report'),
     path('reports/stop-report/', reports_views.stop_report_view, name='stop-report'),
