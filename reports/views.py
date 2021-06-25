@@ -488,8 +488,8 @@ def group_stop_report_view(request):
                         'error':'No existe un recorrido para analizar.'
                     })
                 device_reader = DeviceReader(unit.uniqueid)
-                trip_report = device_reader.generate_travel_report(locations)
-                for item in trip_report:
+                stop_report = device_reader.generate_stop_report(locations)
+                for item in stop_report:
                     item['unit_name'] = unit.name 
                     group_stop_report.append(item)
             return render(request,'reports/group-stop-report.html',{
