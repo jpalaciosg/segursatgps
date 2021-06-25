@@ -68,16 +68,16 @@ class DeviceReader:
         distance_sum = 0
         for i in range(len(locations)):
             if i != 0:
-                if locations[i-1].latitude != 0.0 and locations[i-1].longitude != 0.0:
-                    if locations[i].latitude != 0.0 and locations[i].longitude != 0.0:
+                if locations[i-1]['latitude'] != 0.0 and locations[i-1]['longitude'] != 0.0:
+                    if locations[i]['latitude'] != 0.0 and locations[i]['longitude'] != 0.0:
                         distance = great_circle(
                             (
-                                locations[i-1].latitude,
-                                locations[i-1].longitude
+                                locations[i-1]['latitude'],
+                                locations[i-1]['longitude']
                             ),
                             (
-                                locations[i].latitude,
-                                locations[i].longitude
+                                locations[i]['latitude'],
+                                locations[i]['longitude']
                             ),
                         ).km
                         distance_sum += distance
