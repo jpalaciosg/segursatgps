@@ -496,7 +496,7 @@ def group_stop_report_view(request):
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
                 'group_name':group.name,
-                'group_trip_report':group_stop_report,
+                'group_stop_report':group_stop_report,
                 'groups':groups,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
