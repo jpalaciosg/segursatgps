@@ -19,3 +19,9 @@ class GroupReportForm(forms.Form):
     initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
     final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
     group_name = forms.CharField(max_length=50,required=True,label='Grupo')
+
+class GroupSpeedReportForm(forms.Form):
+    initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
+    final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
+    group_name = forms.CharField(max_length=50,required=True,label='Grupo')
+    speed_limit = forms.IntegerField(required=True)
