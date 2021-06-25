@@ -762,12 +762,23 @@ def mileage_report_view(request):
             result = []
             if data['unit_name'].upper() == 'ALL':
                 for unit in units:
-                    locations = Location.objects.using('history_db_replica').filter(
+                    locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
                         timestamp__gte=initial_timestamp,
                         timestamp__lte=final_timestamp
                     ).order_by('timestamp')
-                    locations = locations.exclude(latitude=0.0,longitude=0.0)
+                    locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+                    locations = []
+                    for location_qs in locations_qs:
+                        locations.append({
+                            'latitude':location_qs.latitude,
+                            'longitude':location_qs.longitude,
+                            'timestamp':location_qs.timestamp,
+                            'angle':location_qs.angle,
+                            'speed':location_qs.speed,
+                            'address':location_qs.address,
+                            'attributes':json.loads(location_qs.attributes),
+                        })
                     device_reader = DeviceReader(unit.uniqueid)
                     distance_sum = device_reader.generate_mileage_report(locations)
                     result.append(
