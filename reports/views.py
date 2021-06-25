@@ -1115,7 +1115,7 @@ def group_geofence_report_view(request):
                 geofences_qs = Geofence.objects.filter(
                     account = request.user.profile.account
                 )
-                geofence_report = device_reader.generate_stop_report(
+                geofence_report = device_reader.generate_geofence_report(
                     locations,
                     geofences_qs,
                     initial_timestamp,
