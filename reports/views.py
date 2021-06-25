@@ -491,8 +491,8 @@ def group_stop_report_view(request):
                 device_reader = DeviceReader(unit.uniqueid)
                 stop_report = device_reader.generate_stop_report(
                     locations,
-                    data['initial_datetime'],
-                    data['final_datetime']
+                    initial_timestamp,
+                    final_timestamp
                 )
                 for item in stop_report:
                     item['unit_name'] = unit.name 
