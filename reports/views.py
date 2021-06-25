@@ -488,7 +488,11 @@ def group_stop_report_view(request):
                         'error':'No existe un recorrido para analizar.'
                     })
                 device_reader = DeviceReader(unit.uniqueid)
-                stop_report = device_reader.generate_stop_report(locations)
+                stop_report = device_reader.generate_stop_report(
+                    locations,
+                    data['initial_datetime'],
+                    data['final_datetime']
+                )
                 for item in stop_report:
                     item['unit_name'] = unit.name 
                     group_stop_report.append(item)
