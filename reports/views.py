@@ -476,6 +476,7 @@ def group_stop_report_view(request):
                         'longitude':location.longitude,
                         'timestamp':location.timestamp,
                         'speed':location.speed,
+                        'angle':location.angle,
                         'address':location.address,
                         'attributes':json.loads(location.attributes),
                     })
