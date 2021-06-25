@@ -870,7 +870,7 @@ def group_mileage_report_view(request):
                     timestamp__lte=final_timestamp
                 ).order_by('id')
                 locations_qs = locations_qs.order_by('timestamp')
-                locations_qs = locations.exclude(latitude=0.0,longitude=0.0)
+                locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                 locations = []
                 for location_qs in locations_qs:
                     locations.append({
