@@ -175,7 +175,7 @@ def insert_location_batch(request):
                 errors = {
                     'id': data['id'],
                     'errors':{
-                        'deviceid':'El dispositivo no existe'
+                        'deviceid':f"El dispositivo {unit.name} no existe"
                     }
                 }
                 error_list.append(errors)
