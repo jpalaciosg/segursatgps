@@ -105,6 +105,7 @@ DATABASES = {
         #'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'read_default_file': '/srv/segursatgps/segursatgps/my1.cnf',
         },
     },
