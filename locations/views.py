@@ -15,7 +15,7 @@ from datetime import datetime
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
 
-from .models import Location
+from .models import Location,SutranLocation
 from units.models import Device
 from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2
 from common.gmt_conversor import GMTConversor
@@ -258,7 +258,28 @@ def insert_location_batch(request):
                         }
                     })
                 # FIN - INTRODUCIR UBICACION EN EL HISTORICO
-
+                # INTRODUCIR UBICACION SUTRAN
+                if request.user.profile.account.name == 'civa':
+                    try:
+                        if int(data['speed'] > 0): event = 'EN'
+                        else: event = 'PA'
+                        timestamp = data['timestamp']
+                        device_datetime = datetime.utcfromtimestamp(timestamp)
+                        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+                        sutran_location = SutranLocation.objects.create(
+                            unit_name = unit.name,
+                            latitude = data['latitude'],
+                            longitude = data['longitude'],
+                            angle = data['angle'],
+                            speed = data['speed'],
+                            event = event,
+                            device_datetime = device_datetime,
+                            server_datetime = datetime.utcnow(),
+                        )
+                    except:
+                        pass
+                      
+                # FIN - INTRODUCIR UBICACION SUTRAN
                 if integrity_error == False:
 
                     # ALERTAS

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.fields import BigAutoField, BigIntegerField
 
 # Create your models here.
 class Location(models.Model):
@@ -27,3 +28,15 @@ class Location(models.Model):
             ('unitid','timestamp',),
             ('reference','timestamp')
         )
+
+class SutranLocation(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    unit_name = models.CharField(max_length=100)
+    latitude = models.FloatField(default=0.0)
+    longitude = models.FloatField(default=0.0)
+    angle = models.IntegerField(default=-1)
+    speed = models.IntegerField(default=-1)
+    event = models.CharField(max_length=2)
+    device_datetime = models.DateTimeField()
+    server_datetime = models.DateTimeField()
+    status = BigIntegerField(default=0)
