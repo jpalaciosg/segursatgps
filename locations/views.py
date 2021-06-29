@@ -274,7 +274,7 @@ def insert_location_batch(request):
                             speed = data['speed'],
                             event = event,
                             device_datetime = device_datetime,
-                            server_datetime = datetime.utcnow(),
+                            server_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
                         )
                     except:
                         pass
