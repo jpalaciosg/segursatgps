@@ -259,7 +259,7 @@ def insert_location_batch(request):
                     })
                 # FIN - INTRODUCIR UBICACION EN EL HISTORICO
                 # INTRODUCIR UBICACION SUTRAN
-                if request.user.profile.account.name == 'civa':
+                if unit.account.name == 'civa':
                     try:
                         if int(data['speed'] > 0): event = 'EN'
                         else: event = 'PA'
