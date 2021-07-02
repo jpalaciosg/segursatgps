@@ -5,8 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from .models import Trigger,Alert
-from .forms import TriggerCreateForm
+from .models import Alert
 from .serializers import AlertSerializer
 from datetime import datetime
 
@@ -32,7 +31,7 @@ def alerts_view(request):
     return render(request,'alerts/alerts.html',{
         'alerts':alerts
     })
-
+"""
 @login_required
 def triggers_view(request):
     form = TriggerCreateForm()
@@ -41,6 +40,7 @@ def triggers_view(request):
         'triggers':triggers,
         'form':form,
     })
+"""
 
 @login_required
 def alert_history_view(request):

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'geofences',
     'reports',
     'maps',
+    'triggers',
     'alerts',
     'locations',
     'maintenances',

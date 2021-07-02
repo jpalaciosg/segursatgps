@@ -22,6 +22,7 @@ import geofences.views as geofences_views
 import reports.views as reports_views
 import maps.views as maps_views
 import alerts.views as alerts_views
+import triggers.views as triggers_views
 import locations.views as locations_views
 import maintenances.views as maintenances_views
 
@@ -52,8 +53,8 @@ urlpatterns = [
     path('reports/geofence-report/', reports_views.geofence_report_view, name='geofence-report'),
     path('reports/group-geofence-report/', reports_views.group_geofence_report_view, name='group-geofence-report'),
     path('maps/', maps_views.map_view, name='map'),
+    path('triggers/', triggers_views.triggers_view, name='triggers'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
-    path('alerts/triggers/', alerts_views.triggers_view, name='triggers'),
     path('alerts/delete-trigger/<int:id>/', alerts_views.delete_trigger, name='delete-trigger'),
     path('alerts/history/', alerts_views.alert_history_view, name='alert-history'),
     path('maintenances/', maintenances_views.maintenances_view, name='maintenances'),

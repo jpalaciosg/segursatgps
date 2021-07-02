@@ -1,4 +1,4 @@
-from alerts.models import Trigger,Alert
+from alerts.models import Alert
 from units.models import Device,DeviceDigitalInput
 
 from datetime import datetime,timezone,timedelta
