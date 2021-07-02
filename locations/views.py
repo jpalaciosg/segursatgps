@@ -234,7 +234,7 @@ def insert_location_batch(request):
                         angle = data['angle'],
                         speed = data['speed'],
                         attributes = json.dumps(data['attributes']),
-                        address = address,
+                        address = data['address'],
                         reference = unit.name
                     )
                 except IntegrityError as e:
