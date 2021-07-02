@@ -36,12 +36,16 @@ class Alert(models.Model):
         choices=PRIORITY_CHOICES,
         default='L',
     )
-    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+    reference = models.CharField(max_length=50,blank=True)
+    #account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
+        app_label = 'alerts'
         unique_together = (('alert_type','unitid','timestamp'),)
-    def __str__(self):
-        return f"{self.account}_{self.id}"
+        indexes = [
+            models.Index(fields=['unitid','timestamp',]),
+            models.Index(fields=['reference','timestamp',]),
+        ]
 
     
