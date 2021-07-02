@@ -17,30 +17,7 @@ gmt_conversor = GMTConversor() #conversor zona horaria
 # Create your views here.
 @login_required
 def alerts_view(request):
-    account = request.user.profile.account
-    alerts = Alert.objects.filter(account=account).order_by('-id')[:100]
-    for alert in alerts:
-        try:
-            unit = Device.objects.get(id=alert.unitid)
-            alert.unit_name = unit.name
-        except Alert.DoesNotExist:
-            unit_name = None
-        dt = datetime.fromtimestamp(alert.timestamp)
-        dt = gmt_conversor.convert_utctolocaltime(dt)
-        alert.datetime = dt.strftime("%Y/%m/%d %H:%M:%S")
-    return render(request,'alerts/alerts.html',{
-        'alerts':alerts
-    })
-"""
-@login_required
-def triggers_view(request):
-    form = TriggerCreateForm()
-    triggers = Trigger.objects.filter(account=request.user.profile.account)
-    return render(request,'alerts/triggers.html',{
-        'triggers':triggers,
-        'form':form,
-    })
-"""
+    return render(request,'alerts/alerts.html')
 
 @login_required
 def alert_history_view(request):
