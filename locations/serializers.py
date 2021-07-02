@@ -26,3 +26,4 @@ class InsertLocationSerializer2(serializers.Serializer):
     speed = serializers.IntegerField()
     angle = serializers.IntegerField()
     protocol = serializers.CharField()
+    address = serializers.CharField(max_length=400)
