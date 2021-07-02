@@ -13,7 +13,6 @@ class AlertReader:
 	def __init__(self, unit):
 		self.unit = unit
 
-	"""
 	def __detect_geofence_event(self,current_location,previous_location):
 		response = []
 		geofences = Geofence.objects.all()
@@ -41,11 +40,16 @@ class AlertReader:
 					"alert_type":f"ALERTA DE SALIDA DE GEOCERCA - {geofence.name}"
 				})
 		return response
-	"""
 	
 	def __detect_battery_disconnection_alert(self,current_location,previous_location):
 		device_reader = DeviceReader(self.deviceid)
 		return device_reader.detect_battery_disconnection_event(current_location,previous_location)
+
+	def __detect_speed_alert(self,speed_limit):
+		if self.unit.last_speed > speed_limit:
+			return True
+		else:
+			return False
 
 	def run(self):
 		previous_location = json.loads(self.unit.previous_location)
@@ -114,9 +118,10 @@ class AlertReader:
 			file = open("/tmp/alert_log.log",'a')
 			file.write(f"{str(e)}")
 			file.close()
-		# FIN ALERTA DE EVENTOS DE GEOCERCA
 		"""
+		# FIN ALERTA DE EVENTOS DE GEOCERCA
 		# ALERTA DE DESCONEXION DE BATERIA
+		"""
 		try:
 			if self.__detect_battery_disconnection_alert(self,current_location,previous_location):
 				alert = Alert.objects.create(
@@ -151,7 +156,6 @@ class AlertReader:
 						}
 					}
 				)
-				"""
 				async_to_sync(channel_layer.group_send)(
 					f'chat_{unit.account.name}',
 					{
@@ -165,10 +169,63 @@ class AlertReader:
 						}
 					}
 				)
-				"""
 		except Exception as e:
 			file = open("/tmp/alert_log.log",'a')
 			file.write(f"{str(e)}")
 			file.close()
+		"""
 		# FIN ALERTA DE DESCONEXION DE BATERIA
-		
+		# ALERTA DE VELOCIDAD GENERAL
+		try:
+			if self.__detect_speed_alert(90):
+				alert = Alert.objects.create(
+					unitid = self.unit.id,
+					timestamp = self.unit.last_timestamp,
+					latitude = self.unit.last_latitude,
+					longitude = self.unit.last_longitude,
+					speed = self.unit.last_speed,
+					angle = self.unit.last_angle,
+					alert_type = "ALERTA DE EXCESO DE VELOCIDAD",
+					alert_priority = "H",
+					#account = self.unit.account.name
+				)
+				channel_layer = channels.layers.get_channel_layer()
+				async_to_sync(channel_layer.group_send)(
+					f'chat_{self.unit.account.name}',
+					{
+						'type': 'send_message',
+						'message': {
+							'type':'update_alert',
+							'payload': {
+								'unit_id': self.unit.id,
+								'unit_name': self.unit.name,
+								'timestamp': alert.timestamp,
+								'latitude': alert.latitude,
+								'longitude': alert.longitude,
+								'speed': alert.speed,
+								'angle': alert.angle,
+								'alert_type': alert.alert_type,
+								'alert_priority': alert.alert_priority,
+								'alert_id': alert.id
+							}
+						}
+					}
+				)
+				async_to_sync(channel_layer.group_send)(
+					f'chat_{self.unit.account.name}',
+					{
+						'type': 'send_message',
+						'message': {
+							'type':'notification',
+							'payload': {
+								'title': self.unit.name,
+								'message': alert.alert_type,
+							}
+						}
+					}
+				)
+		except Exception as e:
+			file = open("/tmp/alert_log.log",'a')
+			file.write(f"{str(e)}")
+			file.close()
+		# FIN ALERTA DE VELOCIDAD GENERAL

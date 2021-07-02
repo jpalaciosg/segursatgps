@@ -283,8 +283,8 @@ def insert_location_batch(request):
                 if integrity_error == False:
 
                     # ALERTAS
-                    #alert_reader = AlertReader(unit.uniqueid)
-                    #alert_reader.run(data)
+                    alert_reader = AlertReader(unit)
+                    alert_reader.run()
                     # FIN - ALERTAS
 
                     # ACTUALIZAR UNIDADES EN EL MAPA
