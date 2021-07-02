@@ -15,7 +15,7 @@ from datetime import datetime
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
 
-from .models import Location,SutranLocation
+from .models import Location,SutranLocation,PanderoLocation
 from units.models import Device
 from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2
 from common.gmt_conversor import GMTConversor
@@ -245,6 +245,23 @@ def insert_location_batch(request):
                             'integrity_error': 'Ya existe una ubicación con la misma fecha/hora.'
                         }
                     })
+                if unit.account.name == 'leasy':
+                    try:
+                        location2 = PanderoLocation.objects.create(
+                            unitid = unit.id,
+                            protocol= data['protocol'],
+                            timestamp = data['timestamp'],
+                            latitude = data['latitude'],
+                            longitude = data['longitude'],
+                            altitude = data['altitude'],
+                            angle = data['angle'],
+                            speed = data['speed'],
+                            attributes = json.dumps(data['attributes']),
+                            address = data['address'],
+                            reference = unit.name
+                        )
+                    except IntegrityError as e:
+                        pass
                 # FIN - INTRODUCIR UBICACION EN EL HISTORICO
                 # INTRODUCIR UBICACION SUTRAN
                 if unit.account.name == 'civa':
@@ -382,3 +399,37 @@ def get_location(request,id):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_pandero_location_history(request,initial_datetime,final_datetime):
+    initial_timestamp = None
+    final_timestamp = None
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    locations = PanderoLocation.objects.filter(timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('timestamp')
+    serializer = LocationSerializer(locations,many=True)
+    data = serializer.data
+    data1 = []
+    for i in range(len(data)):
+        data[i]['attributes'] = json.loads(data[i]['attributes'])
+        if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
+            data1.append(data[i])
+        data[i]['unit_name'] = data[i]['reference']
+    return Response(data1,status=status.HTTP_200_OK)
