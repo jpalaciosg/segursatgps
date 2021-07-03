@@ -15,7 +15,7 @@ from datetime import datetime
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
 
-from .models import Location,SutranLocation,PanderoLocation
+from .models import Location,SutranLocation
 from units.models import Device
 from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2
 from common.gmt_conversor import GMTConversor
@@ -246,26 +246,6 @@ def insert_location_batch(request):
                         }
                     })
                 # FIN - INTRODUCIR UBICACION EN EL HISTORICO
-                # INTRODUCIR EN LA TABLA PANDERO
-                PANDERO_DEMO = ['BSJ-322','BSJ-627','BPY-670','BPY-669','BPY-636']
-                if unit.name in PANDERO_DEMO:
-                    try:
-                        location2 = PanderoLocation.objects.create(
-                            unitid = unit.id,
-                            protocol= data['protocol'],
-                            timestamp = data['timestamp'],
-                            latitude = data['latitude'],
-                            longitude = data['longitude'],
-                            altitude = data['altitude'],
-                            angle = data['angle'],
-                            speed = data['speed'],
-                            attributes = json.dumps(data['attributes']),
-                            address = data['address'],
-                            reference = unit.name
-                        )
-                    except IntegrityError as e:
-                        pass
-                # FIN - INTRODUCIR EN LA TABLA PANDERO
                 # INTRODUCIR UBICACION SUTRAN
                 if unit.account.name == 'civa':
                     try:
