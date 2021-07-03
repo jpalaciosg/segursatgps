@@ -218,7 +218,7 @@ def insert_location_batch(request):
                         unit.odometer += distance
                 unit.previous_location = json.dumps(previous_location)
                 # FIN CALCULAR UBICACION PREVIA
-                
+                unit.last_address = data['address']
                 unit.save()
 
                 # INTRODUCIR UBICACION EN EL HISTORICO
