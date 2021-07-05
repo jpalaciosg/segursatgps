@@ -21,6 +21,7 @@ class Device(models.Model):
     last_attributes = models.TextField(blank=True,default="")
     last_address = models.TextField(blank=True,default="")
     previous_location = models.TextField(blank=True,default="")
+    sutran_retransmission = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
