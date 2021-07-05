@@ -245,7 +245,8 @@ def insert_location_batch(request):
                             'integrity_error': 'Ya existe una ubicación con la misma fecha/hora.'
                         }
                     })
-                if unit.account.name == 'leasy':
+                PANDERO_DEMO = ['BSJ-322','BSJ-627','BPY-670','BPY-669','BPY-636']
+                if unit.account.name in PANDERO_DEMO:
                     try:
                         location2 = PanderoLocation.objects.create(
                             unitid = unit.id,
