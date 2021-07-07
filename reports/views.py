@@ -213,7 +213,7 @@ def travel_report_view(request):
             return render(request,'reports/travel-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'unit_name':unit.name,
+                'selected_unit':unit,
                 'travel_report':travel_report,
                 'units':units,
                 'form':form,
