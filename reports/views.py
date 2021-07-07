@@ -124,7 +124,7 @@ def detailed_report_view(request):
             return render(request,'reports/detailed-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'unit_name':unit.name,
+                'selected_unit':unit,
                 'units':units,
                 'locations':locations,
             })
