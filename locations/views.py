@@ -387,6 +387,8 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
         if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
             data1.append(data[i])
         data[i]['unit_name'] = unit_name
+        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
+        data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
     return Response(data1,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
