@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '8rubv9!m-^=(!a-zn^fato38(bkq930n@y$$31xr_5k-hbp8&c'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -164,9 +164,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+"""
 STATICFILES_DIRS = [
     BASE_DIR / "templates/static",
 ]
+"""
+STATIC_ROOT = os.path.join(BASE_DIR, "templates/static")
 
 # Login variable
 LOGIN_URL = '/login/'
