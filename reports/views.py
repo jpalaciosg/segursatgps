@@ -400,7 +400,7 @@ def stop_report_view(request):
             return render(request,'reports/stop-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'unit_name':unit.name,
+                'selected_unit':unit,
                 'stop_report':stop_report,
                 'units':units,
                 'form':form,
