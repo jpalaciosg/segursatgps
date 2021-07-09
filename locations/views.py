@@ -22,6 +22,7 @@ from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
 from .config import GEOCODING_SERVER,GEOCODING_PORT,TARGETS
+from .tasks import insert_location_in_history
 
 # Create your views here.
 
@@ -220,9 +221,13 @@ def insert_location_batch(request):
                 # FIN CALCULAR UBICACION PREVIA
                 unit.last_address = data['address']
                 unit.save()
-
+                # INSERTAR UBICACION EN EL HISTORICO
+                data['unit_id'] = unit.id
+                data['unit_name'] = unit.name
+                data['account'] = unit.account.name
+                insert_location_in_history.delay(data)
+                """
                 # INTRODUCIR UBICACION EN EL HISTORICO
-                integrity_error = False
                 try:
                     location = Location.objects.create(
                         unitid = unit.id,
@@ -245,6 +250,8 @@ def insert_location_batch(request):
                             'integrity_error': 'Ya existe una ubicación con la misma fecha/hora.'
                         }
                     })
+                # FIN - INTRODUCIR UBICACION EN EL HISTORICO
+                # INTRODUCIR UBICACION PANDERO LOCATION
                 PANDERO_DEMO = ['BSJ-322','BSJ-627','BPY-670','BPY-669','BPY-636']
                 if unit.name in PANDERO_DEMO:
                     try:
@@ -263,7 +270,7 @@ def insert_location_batch(request):
                         )
                     except IntegrityError as e:
                         pass
-                # FIN - INTRODUCIR UBICACION EN EL HISTORICO
+                # FIN - INTRODUCIR UBICACION PANDERO LOCATION
                 # INTRODUCIR UBICACION SUTRAN
                 if unit.account.name == 'civa':
                     try:
@@ -283,45 +290,43 @@ def insert_location_batch(request):
                             server_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
                         )
                     except:
-                        pass
-                      
+                        pass   
                 # FIN - INTRODUCIR UBICACION SUTRAN
-                if integrity_error == False:
+                """
+                # ALERTAS
+                alert_reader = AlertReader(unit)
+                alert_reader.run()
+                # FIN - ALERTAS
 
-                    # ALERTAS
-                    alert_reader = AlertReader(unit)
-                    alert_reader.run()
-                    # FIN - ALERTAS
-
-                    # ACTUALIZAR UNIDADES EN EL MAPA
-                    account = unit.account.name
-                    last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(location.timestamp))
-                    last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
-                    channel_layer = channels.layers.get_channel_layer()
-                    async_to_sync(channel_layer.group_send)(
-                        f'chat_{account}',
-                        {
-                            'type': 'send_message',
-                            'message': {
-                                'type':'update_location',
-                                'payload': {
-                                    'unitid': location.unitid,
-                                    'unit_name': unit.name,
-                                    'timestamp': location.timestamp,
-                                    'latitude': location.latitude,
-                                    'longitude': location.longitude,
-                                    'altitude': location.altitude,
-                                    'angle': location.angle,
-                                    'speed': location.speed,
-                                    'attributes': data['attributes'],
-                                    'address': location.address,
-                                    'odometer': round(unit.odometer,2),
-                                    'last_report': last_report
-                                }
+                # ACTUALIZAR UNIDADES EN EL MAPA
+                account = unit.account.name
+                last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data['timestamp']))
+                last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+                channel_layer = channels.layers.get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f'chat_{account}',
+                    {
+                        'type': 'send_message',
+                        'message': {
+                            'type':'update_location',
+                            'payload': {
+                                'unitid': unit.id,
+                                'unit_name': unit.name,
+                                'timestamp': data['timestamp'],
+                                'latitude': data['latitude'],
+                                'longitude': data['longitude'],
+                                'altitude': data['altitude'],
+                                'angle': data['angle'],
+                                'speed': data['speed'],
+                                'attributes': data['attributes'],
+                                'address': data['address'],
+                                'odometer': round(unit.odometer,2),
+                                'last_report': last_report
                             }
                         }
-                    )
-                    # FIN - ACTUALIZAR UNIDADES EN EL MAPA
+                    }
+                )
+                # FIN - ACTUALIZAR UNIDADES EN EL MAPA
         else:
             errors = {
                 'errors':serializer.errors
