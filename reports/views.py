@@ -1020,7 +1020,7 @@ def geofence_report_view(request):
             return render(request,'reports/geofence-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'unit_name':unit.name,
+                'selected_unit':unit,
                 'geofence_report':geofence_report,
                 'units':units,
                 'form':form,
