@@ -596,7 +596,7 @@ def speed_report_view(request):
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
                 'speed_limit':data['speed_limit'],
-                'unit_name':unit.name,
+                'selected_unit':unit,
                 'speed_report':speed_report,
                 'units':units,
                 'form':form,
