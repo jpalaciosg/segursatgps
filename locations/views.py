@@ -11,6 +11,7 @@ import json
 import channels.layers
 import requests
 import redis
+from time import sleep
 from datetime import datetime
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
@@ -226,73 +227,7 @@ def insert_location_batch(request):
                 data['unit_name'] = unit.name
                 data['account'] = unit.account.name
                 insert_location_in_history.delay(data)
-                """
-                # INTRODUCIR UBICACION EN EL HISTORICO
-                try:
-                    location = Location.objects.create(
-                        unitid = unit.id,
-                        protocol= data['protocol'],
-                        timestamp = data['timestamp'],
-                        latitude = data['latitude'],
-                        longitude = data['longitude'],
-                        altitude = data['altitude'],
-                        angle = data['angle'],
-                        speed = data['speed'],
-                        attributes = json.dumps(data['attributes']),
-                        address = data['address'],
-                        reference = unit.name
-                    )
-                except IntegrityError as e:
-                    integrity_error = True
-                    error_list.append({
-                        'id': data['id'],
-                        'errors':{
-                            'integrity_error': 'Ya existe una ubicación con la misma fecha/hora.'
-                        }
-                    })
-                # FIN - INTRODUCIR UBICACION EN EL HISTORICO
-                # INTRODUCIR UBICACION PANDERO LOCATION
-                PANDERO_DEMO = ['BSJ-322','BSJ-627','BPY-670','BPY-669','BPY-636']
-                if unit.name in PANDERO_DEMO:
-                    try:
-                        location2 = PanderoLocation.objects.create(
-                            unitid = unit.id,
-                            protocol= data['protocol'],
-                            timestamp = data['timestamp'],
-                            latitude = data['latitude'],
-                            longitude = data['longitude'],
-                            altitude = data['altitude'],
-                            angle = data['angle'],
-                            speed = data['speed'],
-                            attributes = json.dumps(data['attributes']),
-                            address = data['address'],
-                            reference = unit.name
-                        )
-                    except IntegrityError as e:
-                        pass
-                # FIN - INTRODUCIR UBICACION PANDERO LOCATION
-                # INTRODUCIR UBICACION SUTRAN
-                if unit.account.name == 'civa':
-                    try:
-                        if int(data['speed'] > 0): event = 'EN'
-                        else: event = 'PA'
-                        timestamp = data['timestamp']
-                        device_datetime = datetime.utcfromtimestamp(timestamp)
-                        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-                        sutran_location = SutranLocation.objects.create(
-                            unit_name = unit.name,
-                            latitude = data['latitude'],
-                            longitude = data['longitude'],
-                            angle = data['angle'],
-                            speed = data['speed'],
-                            event = event,
-                            device_datetime = device_datetime,
-                            server_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
-                        )
-                    except:
-                        pass   
-                # FIN - INTRODUCIR UBICACION SUTRAN
-                """
+
                 # ALERTAS
                 alert_reader = AlertReader(unit)
                 alert_reader.run()
@@ -327,6 +262,7 @@ def insert_location_batch(request):
                     }
                 )
                 # FIN - ACTUALIZAR UNIDADES EN EL MAPA
+                sleep(0.001)
         else:
             errors = {
                 'errors':serializer.errors
