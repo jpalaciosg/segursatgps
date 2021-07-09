@@ -813,6 +813,7 @@ def mileage_report_view(request):
                 result.append(
                     {
                         "unit":unit.name,
+                        "description":unit.description,
                         "initial_date":data['initial_datetime'],
                         "final_date":data['final_datetime'],
                         "distance":round(distance_sum,2),
