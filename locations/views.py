@@ -23,7 +23,7 @@ from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
 from .config import GEOCODING_SERVER,GEOCODING_PORT,TARGETS
-from .tasks import insert_location_in_history
+from .tasks import insert_location_in_history,process_alert
 
 # Create your views here.
 
@@ -229,8 +229,7 @@ def insert_location_batch(request):
                 insert_location_in_history.delay(data)
 
                 # ALERTAS
-                alert_reader = AlertReader(unit)
-                alert_reader.run()
+                process_alert.delay(data)
                 # FIN - ALERTAS
 
                 # ACTUALIZAR UNIDADES EN EL MAPA
@@ -262,7 +261,7 @@ def insert_location_batch(request):
                     }
                 )
                 # FIN - ACTUALIZAR UNIDADES EN EL MAPA
-                sleep(0.001)
+                #sleep(0.001)
         else:
             errors = {
                 'errors':serializer.errors

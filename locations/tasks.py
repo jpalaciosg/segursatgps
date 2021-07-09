@@ -1,9 +1,11 @@
 from locations.models import Location,PanderoLocation,SutranLocation
+from units.models import Device
 from segursatgps.celery import celery_app
 
 from datetime import datetime
 import json
 
+from common.alert_reader import AlertReader
 from common.gmt_conversor import GMTConversor
 
 gmt_conversor = GMTConversor() #conversor zona horaria
@@ -69,4 +71,11 @@ def insert_location_in_history(data):
         except:
             print(e)   
     # FIN - INTRODUCIR UBICACION SUTRAN
+    return True
+
+@celery_app.task
+def process_alert(data):
+    unit = Device.objects.get(name=data['unit_name'])
+    alert_reader = AlertReader(unit.uniqueid)
+    alert_reader.run(data)
     return True
