@@ -22,7 +22,7 @@ from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocat
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
-from .config import GEOCODING_SERVER,GEOCODING_PORT,TARGETS
+from .config import GEOCODING_SERVER,GEOCODING_PORT
 from .tasks import insert_location_in_history,process_alert
 
 # Create your views here.
@@ -58,33 +58,6 @@ def insert_location(request):
         unit.last_speed = data['speed']
         unit.last_attributes = json.dumps(data['attributes'])
 
-        # reenviar a getposition
-        try:
-            for target in TARGETS:
-                if target['enable']:
-                    for u in target['units']:
-                        if u == unit.name:
-                            device_reader = DeviceReader(unit.uniqueid)
-                            ignition = device_reader.detect_ignition_event({
-                                'attributes':json.loads(unit.last_attributes)
-                            })
-                            payload = {
-                                "provider":target['name'],
-                                "unit_name":unit.name,
-                                "timestamp":unit.last_timestamp,
-                                "latitude":unit.last_latitude,
-                                "longitude":unit.last_longitude,
-                                "altitude":unit.last_altitude,
-                                "angle":unit.last_angle,
-                                "speed":unit.last_speed,
-                                "ignition":ignition,
-                            }
-                            redisClient = redis.StrictRedis(host='localhost',port=6379,db=0)
-                            redisClient.rpush('tracklogSegursatQueue', json.dumps(payload))
-        except Exception as e:
-            print(e)
-        # fin reenviar a getposition
-
         # CALCULAR UBICACION PREVIA
         if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
             if data['latitude'] != 0.0 and data['longitude'] != 0.0:
@@ -101,14 +74,7 @@ def insert_location(request):
                 unit.odometer += distance
         unit.previous_location = json.dumps(previous_location)
         # FIN CALCULAR UBICACION PREVIA
-        try:
-            api_url = f"http://{GEOCODING_SERVER}:{GEOCODING_PORT}/nominatim/reverse?format=jsonv2&lat={data['latitude']}&lon={data['longitude']}&addressdetails=1"
-            headers = {'Content-Type': 'application/json'}
-            response = requests.get(api_url, headers=headers, timeout=5)
-            address = json.loads(response.content.decode('utf-8'))['display_name']
-        except Exception as e:
-            address = ""
-        unit.last_address = address
+
         unit.save()
         # INSERTAR UBICACION EN EL HISTORICO
         location = Location.objects.create(
@@ -276,7 +242,7 @@ def get_address(request,latitude,longitude):
     try:
         latitude = float(latitude)
         longitude = float(longitude)
-        api_url = f'http://{GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
+        api_url = f'http://{GEOCODING_SERVER}:{GEOCODING_PORT}/nominatim/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
         headers = {'Content-Type': 'application/json'}
         response = requests.get(api_url, headers=headers)
         if response.status_code == 200:
