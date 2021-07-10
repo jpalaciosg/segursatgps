@@ -77,5 +77,5 @@ def insert_location_in_history(data):
 def process_alert(data):
     unit = Device.objects.get(name=data['unit_name'])
     alert_reader = AlertReader(unit.uniqueid)
-    alert_reader.run(data)
+    alert_reader.run()
     return True
