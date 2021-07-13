@@ -954,17 +954,12 @@ def geofence_report_view(request):
         final_timestamp = None
         form = GeofenceReportForm(data)
         if form.is_valid():
+            print("las nalgas de karol")
             try:
                 unit = Device.objects.get(name=data['unit_name'])
             except Exception as e:
                 print(e)
                 form.add_error('unit_name', e)
-            #
-            try:
-                geofence = geofences.get(name=data['geofence_name'])
-            except Exception as e:
-                print(e)
-                form.add_error('geofence_name', e)
             #
             try:
                 initial_datetime_str = f"{data['initial_datetime']}:00"
@@ -1022,7 +1017,14 @@ def geofence_report_view(request):
                     'error':'No existe un recorrido para analizar.'
                 })
             device_reader = DeviceReader(unit.uniqueid)
-            geofences_qs = [geofence]
+            geofence_list = data.getlist('geofence_name')
+            geofences_qs = []
+            for i in range(len(geofence_list)):
+                try:
+                    geofence = geofences.get(name=geofence_list[i])
+                    geofences_qs.append(geofence)
+                except Exception as e:
+                    print(e)
             # Esta funcion recibe un array de queryset en la variable de geocercas
             geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
             return render(request,'reports/geofence-report.html',{
