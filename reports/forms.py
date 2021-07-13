@@ -15,6 +15,12 @@ class MileageReportForm(forms.Form):
     initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
     final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
 
+class GeofenceReportForm(forms.Form):
+    initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
+    final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
+    unit_name = forms.CharField(max_length=50,required=True,label='Unidad')
+    geofence_name = forms.CharField(max_length=200,required=True,label='Geocerca')
+
 class GroupReportForm(forms.Form):
     initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
     final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')

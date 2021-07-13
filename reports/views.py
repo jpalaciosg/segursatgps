@@ -10,7 +10,7 @@ from geofences.models import Geofence
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 
-from .forms import ReportForm,SpeedReportForm,MileageReportForm,GroupReportForm,GroupSpeedReportForm
+from .forms import ReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm
 from units.models import Device,Group
 
 # Create your views here.
@@ -948,16 +948,23 @@ def geofence_report_view(request):
     #POST
     if request.method == 'POST':
         data = request.POST
+        geofences = Geofence.objects.filter(account=request.user.profile.account)
         units = Device.objects.filter(account=request.user.profile.account)
         initial_timestamp = None
         final_timestamp = None
-        form = ReportForm(data)
+        form = GeofenceReportForm(data)
         if form.is_valid():
             try:
                 unit = Device.objects.get(name=data['unit_name'])
             except Exception as e:
                 print(e)
                 form.add_error('unit_name', e)
+            #
+            try:
+                geofence = geofences.get(name=data['geofence_name'])
+            except Exception as e:
+                print(e)
+                form.add_error('geofence_name', e)
             #
             try:
                 initial_datetime_str = f"{data['initial_datetime']}:00"
@@ -983,6 +990,7 @@ def geofence_report_view(request):
             if len(form.errors) != 0:
                 return render(request,'reports/geofence-report.html',{
                     'units':units,
+                    'geofences':geofences,
                     'form':form,
                 })
 
@@ -1009,13 +1017,13 @@ def geofence_report_view(request):
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'units':units,
+                    'geofences':geofences,
                     'form':form,
                     'error':'No existe un recorrido para analizar.'
                 })
             device_reader = DeviceReader(unit.uniqueid)
-            geofences_qs = Geofence.objects.filter(
-                account = request.user.profile.account
-            )
+            geofences_qs = [geofence]
+            # Esta funcion recibe un array de queryset en la variable de geocercas
             geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
             return render(request,'reports/geofence-report.html',{
                 'initial_datetime':data['initial_datetime'],
@@ -1032,10 +1040,12 @@ def geofence_report_view(request):
         })
 
     #GET
+    geofences = Geofence.objects.filter(account=request.user.profile.account)
     units = Device.objects.filter(account=request.user.profile.account)
     form = ReportForm()
     return render(request,'reports/geofence-report.html',{
         'units':units,
+        'geofences':geofences,
         'form':form,
     })
 
