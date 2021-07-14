@@ -23,7 +23,7 @@ class Alert(models.Model):
         default='L',
     )
     reference = models.CharField(max_length=50,blank=True)
-    #account = models.ForeignKey(Account,on_delete=models.CASCADE)
+    accountid = models.IntegerField()
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
@@ -31,6 +31,7 @@ class Alert(models.Model):
         unique_together = (('alert_type','unitid','timestamp'),)
         indexes = [
             models.Index(fields=['unitid','timestamp',]),
+            models.Index(fields=['accountid','timestamp',]),
             models.Index(fields=['reference','timestamp',]),
             models.Index(fields=['unitid','alert_type','timestamp',]),
         ]

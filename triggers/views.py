@@ -13,3 +13,12 @@ def fleet_trigger_view(request):
         'triggers':triggers,
         'form':form,
     })
+
+@login_required
+def delete_fleet_trigger(request,id):
+    try:
+        trigger = FleetTrigger.objects.get(id=id,account=request.user.profile.account)
+        trigger.delete()
+        return redirect('triggers')
+    except:
+        return redirect('triggers')

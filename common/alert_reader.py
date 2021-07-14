@@ -82,8 +82,8 @@ class AlertReader:
                             alert_type = 1003,
                             alert_description = "ALERTA DE EXCESO DE VELOCIDAD",
                             alert_priority = "H",
-                            reference = unit.name
-                            #account = unit.account.name
+                            reference = unit.name,
+                            accountid = unit.account.id
                         )
                         channel_layer = channels.layers.get_channel_layer()
                         async_to_sync(channel_layer.group_send)(
@@ -115,8 +115,8 @@ class AlertReader:
                                 'message': {
                                     'type':'notification',
                                     'payload': {
-                                        'title': unit.name,
-                                        'message': alert.alert_type,
+                                        'title': f'{unit.name} - {unit.description}',
+                                        'message': alert.alert_description,
                                     }
                                 }
                             }

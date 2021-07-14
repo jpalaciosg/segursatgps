@@ -7,9 +7,11 @@ from rest_framework.decorators import api_view
 
 from .models import Alert
 from .serializers import AlertSerializer
+from units.models import Device
+from .forms import ReportForm
+
 from datetime import datetime
 
-from units.models import Device
 from common.gmt_conversor import GMTConversor
 
 gmt_conversor = GMTConversor() #conversor zona horaria
@@ -19,11 +21,76 @@ gmt_conversor = GMTConversor() #conversor zona horaria
 def alerts_view(request):
     return render(request,'alerts/alerts.html')
 
-@login_required
 def alert_history_view(request):
+    if request.method == 'POST':
+        data = request.POST
+        units = Device.objects.filter(account=request.user.profile.account)
+        initial_timestamp = None
+        final_timestamp = None
+        form = ReportForm(data)
+        if form.is_valid():
+            unit = None
+            if data['unit_name'].upper() != 'ALL':
+                try:
+                    unit = Device.objects.get(name=data['unit_name'])
+                except Exception as e:
+                    print(e)
+                    form.add_error('unit_name', e)
+            #
+            try:
+                initial_datetime_str = f"{data['initial_datetime']}:00"
+                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+                # --
+                initial_timestamp = datetime.timestamp(initial_datetime_obj)
+            except Exception as e:
+                print(e)
+                form.add_error('initial_date', e)
+            #
+            try:
+                final_datetime_str = f"{data['final_datetime']}:00"
+                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+                # --
+                final_timestamp = datetime.timestamp(final_datetime_obj)
+            except Exception as e:
+                form.add_error('final_date', e)
+
+            if len(form.errors) != 0:
+                return render(request,'alerts/alert-history.html',{
+                    'units':units,
+                    'form':form,
+                })
+
+            if data['unit_name'].upper() == 'ALL':
+                pass
+            else:
+                alerts = Alert.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lte=final_timestamp
+                ).order_by('id')
+                for alert in alerts:
+                    dt = datetime.utcfromtimestamp(alert.timestamp)
+                    dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                    alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+                return render(request,'alerts/alert-history.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'selected_unit':unit,
+                    'units':units,
+                    'alerts':alerts,
+                })
+        return render(request,'alerts/alert-history.html',{
+            'units':units,
+            'form':form,
+        })
+    #GET
     units = Device.objects.filter(account=request.user.profile.account)
     return render(request,'alerts/alert-history.html',{
-        'units':units
+        'units':units,
     })
 
 @api_view(['GET'])
@@ -86,12 +153,3 @@ def get_alert(request,id):
     except Exception as e:
         print(e)
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@login_required
-def delete_trigger(request,id):
-    try:
-        trigger = Trigger.objects.get(id=id,account=request.user.profile.account)
-        trigger.delete()
-        return redirect('triggers')
-    except:
-        return redirect('triggers')
