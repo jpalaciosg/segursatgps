@@ -15,7 +15,8 @@ class Alert(models.Model):
     longitude = models.FloatField()
     speed = models.IntegerField()
     angle = models.IntegerField()
-    alert_type = models.CharField(max_length=400)
+    alert_type = models.IntegerField()
+    alert_description = models.CharField(max_length=400)
     alert_priority = models.CharField(
         max_length=9,
         choices=PRIORITY_CHOICES,
@@ -31,6 +32,7 @@ class Alert(models.Model):
         indexes = [
             models.Index(fields=['unitid','timestamp',]),
             models.Index(fields=['reference','timestamp',]),
+            models.Index(fields=['unitid','alert_type','timestamp',]),
         ]
 
     

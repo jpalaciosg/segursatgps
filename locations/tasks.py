@@ -75,7 +75,7 @@ def insert_location_in_history(data):
 
 @celery_app.task
 def process_alert(data):
-    unit = Device.objects.get(name=data['unit_name'])
-    alert_reader = AlertReader(unit.uniqueid)
+    alert_reader = AlertReader(data['deviceid'])
     alert_reader.run()
+    del alert_reader
     return True
