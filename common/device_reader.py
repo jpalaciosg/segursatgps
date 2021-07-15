@@ -123,11 +123,11 @@ class DeviceReader:
                 elif i == len(geofence_event_report)-1 and geofence_event_report[i]['event'] == 'INPUT':
                     geofence_report.append({
                         'name': geofence_event_report[i]['name'],
-                        'initial_timestamp': initial_timestamp,
-                        'initial_speed': 'N/D',
-                        'final_timestamp': geofence_event_report[i]['timestamp'],
-                        'final_speed': geofence_event_report[i]['speed'],
-                        'duration': geofence_event_report[i]['timestamp'] - initial_timestamp
+                        'initial_timestamp': geofence_event_report[i]['timestamp'],
+                        'initial_speed': geofence_event_report[i]['speed'],
+                        'final_timestamp': final_timestamp,
+                        'final_speed': 'N/D',
+                        'duration': final_timestamp - geofence_event_report[i]['timestamp']
                     })
             else:
                 if i == len(geofence_event_report)-1 and geofence_event_report[i]['event'] == 'INPUT':
