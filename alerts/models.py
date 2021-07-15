@@ -15,6 +15,7 @@ class Alert(models.Model):
     longitude = models.FloatField()
     speed = models.IntegerField()
     angle = models.IntegerField()
+    address = models.TextField(blank=True,default="")
     alert_type = models.IntegerField()
     alert_description = models.CharField(max_length=400)
     alert_priority = models.CharField(
