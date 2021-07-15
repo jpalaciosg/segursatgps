@@ -65,7 +65,22 @@ def alert_history_view(request):
                 })
 
             if data['unit_name'].upper() == 'ALL':
-                pass
+                alerts = Alert.objects.using('history_db_replica').filter(
+                    accountid=request.user.profile.account.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lte=final_timestamp
+                ).order_by('id')
+                for alert in alerts:
+                    dt = datetime.utcfromtimestamp(alert.timestamp)
+                    dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                    alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+                return render(request,'alerts/alert-history.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'selected_unit':unit,
+                    'units':units,
+                    'alerts':alerts,
+                })
             else:
                 alerts = Alert.objects.using('history_db_replica').filter(
                     unitid=unit.id,
