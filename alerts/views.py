@@ -71,6 +71,9 @@ def alert_history_view(request):
                     timestamp__lte=final_timestamp
                 ).order_by('id')
                 for alert in alerts:
+                    unit = units.get(id=alert.unitid)
+                    alert.unit_name = unit.name
+                    alert.unit_description = unit.description
                     dt = datetime.utcfromtimestamp(alert.timestamp)
                     dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
                     alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
@@ -88,6 +91,8 @@ def alert_history_view(request):
                     timestamp__lte=final_timestamp
                 ).order_by('id')
                 for alert in alerts:
+                    alert.unit_name = unit.name
+                    alert.unit_description = unit.description
                     dt = datetime.utcfromtimestamp(alert.timestamp)
                     dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
                     alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
@@ -157,11 +162,14 @@ def get_alert(request,id):
         try:
             unit = Device.objects.get(id=alert.unitid)
             unit_name = unit.name
+            unit_description = unit.description
         except Alert.DoesNotExist:
             unit_name = None
+            unit_description = None
         serializer = AlertSerializer(alert, many=False)
         data = serializer.data
         data['unit_name'] = unit_name
+        data['unit_description'] = unit_description
         dt = datetime.fromtimestamp(data['timestamp'])
         data['datetime'] = dt.strftime("%Y/%m/%d %H:%M:%S")
         return Response(data,status=status.HTTP_200_OK)
