@@ -954,7 +954,6 @@ def geofence_report_view(request):
         final_timestamp = None
         form = GeofenceReportForm(data)
         if form.is_valid():
-            print("las nalgas de karol")
             try:
                 unit = Device.objects.get(name=data['unit_name'])
             except Exception as e:
