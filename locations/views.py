@@ -342,3 +342,44 @@ def get_pandero_location_history(request,initial_datetime,final_datetime):
             data1.append(data[i])
         data[i]['unit_name'] = data[i]['reference']
     return Response(data1,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def insert_history_location_batch(request):
+    data_list = request.data
+    error_list = []
+    units = Device.objects.all()
+    for data in data_list:
+        serializer = InsertLocationSerializer2(data=data)
+        if serializer.is_valid():
+            deviceid = data['deviceid']
+            errors = None
+            try:
+                unit = units.get(uniqueid=deviceid)
+            except Exception as e:
+                print(e)
+                errors = {
+                    'id': data['id'],
+                    'errors':{
+                        'deviceid':f"El dispositivo {data['deviceid']} no existe"
+                    }
+                }
+                error_list.append(errors)
+            
+            if errors == None:
+                # INSERTAR UBICACION EN EL HISTORICO
+                data['unit_id'] = unit.id
+                data['unit_name'] = unit.name
+                data['account'] = unit.account.name
+                insert_location_in_history.delay(data)
+
+                # ALERTAS
+                #process_alert.delay(data)
+                # FIN - ALERTAS
+        else:
+            errors = {
+                'errors':serializer.errors
+            }
+            return Response(errors)
+    if len(error_list) != 0:
+        return Response(error_list)
+    return Response([])   
