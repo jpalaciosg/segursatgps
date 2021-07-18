@@ -1,15 +1,18 @@
-from threading import Condition
 from triggers.models import FleetTrigger
 from units.models import Device
 from alerts.models import Alert
-
-#from common.protocols.teltonika import Teltonika
-from common.device_reader import DeviceReader
 from geofences.models import Geofence
 from shapely.geometry import Point,shape
+
 import json
+from datetime import datetime
 import channels.layers
 from asgiref.sync import async_to_sync
+
+from common.device_reader import DeviceReader
+from common.gmt_conversor import GMTConversor
+
+gmt_conversor = GMTConversor() #conversor zona horaria
 
 class AlertReader:
     def __init__(self, deviceid):
@@ -86,6 +89,8 @@ class AlertReader:
                             reference = unit.name,
                             accountid = unit.account.id
                         )
+                        dt = datetime.fromtimestamp(alert.timestamp)
+                        dt = dt.strftime("%Y/%m/%d %H:%M:%S")
                         channel_layer = channels.layers.get_channel_layer()
                         async_to_sync(channel_layer.group_send)(
                             f'chat_{unit.account.name}',
@@ -96,7 +101,9 @@ class AlertReader:
                                     'payload': {
                                         'unit_id': unit.id,
                                         'unit_name': unit.name,
+                                        'unit_description': unit.description,
                                         'timestamp': alert.timestamp,
+                                        'datetime': dt,
                                         'latitude': alert.latitude,
                                         'longitude': alert.longitude,
                                         'speed': alert.speed,
