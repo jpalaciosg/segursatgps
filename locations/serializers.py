@@ -27,3 +27,10 @@ class InsertLocationSerializer2(serializers.Serializer):
     angle = serializers.IntegerField()
     protocol = serializers.CharField()
     address = serializers.CharField(max_length=400)
+
+class InsertSutranLocationSerializer(serializers.Serializer):
+    unit_name = serializers.CharField(max_length=20)
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    speed = serializers.IntegerField()
+    angle = serializers.IntegerField()

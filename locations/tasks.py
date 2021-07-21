@@ -79,3 +79,10 @@ def process_alert(data):
     alert_reader.run()
     del alert_reader
     return True
+
+@celery_app.task
+def process_history_alert(data):
+    alert_reader = AlertReader(data['deviceid'])
+    alert_reader.run()
+    del alert_reader
+    return True

@@ -383,3 +383,10 @@ def insert_history_location_batch(request):
     if len(error_list) != 0:
         return Response(error_list)
     return Response([])   
+
+@api_view(['POST'])
+def insert_sutran_location(request):
+    data = request.data
+    serializer = InsertLocationSerializer(data=data)
+    if serializer.is_valid():
+        pass
