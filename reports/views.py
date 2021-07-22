@@ -53,8 +53,9 @@ def fleet_status_view(request):
     for unit in units:
         try:
             unit.odometer = round(unit.odometer,1)
-            unit.last_report = datetime.fromtimestamp(unit.last_timestamp)
-            unit.last_report = gmt_conversor.convert_utctolocaltime(unit.last_report)
+            dt = datetime.fromtimestamp(unit.last_timestamp)
+            dt = gmt_conversor.convert_utctolocaltime(dt)
+            unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
         except Exception as e:
             print(e)
     return render(request,'reports/fleet-status.html',{
