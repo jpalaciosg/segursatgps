@@ -170,7 +170,8 @@ def get_alert(request,id):
         data = serializer.data
         data['unit_name'] = unit_name
         data['unit_description'] = unit_description
-        dt = datetime.fromtimestamp(data['timestamp'])
+        dt = datetime.utcfromtimestamp(data['timestamp'])
+        dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
         data['datetime'] = dt.strftime("%Y/%m/%d %H:%M:%S")
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
