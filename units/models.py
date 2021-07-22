@@ -18,6 +18,7 @@ class Device(models.Model):
     last_altitude = models.IntegerField(default=0)
     last_speed = models.IntegerField(default=-1)
     last_angle = models.IntegerField(default=0)
+    last_movement = models.IntegerField(default=0)
     last_attributes = models.TextField(blank=True,default="")
     last_address = models.TextField(blank=True,default="")
     previous_location = models.TextField(blank=True,default="")

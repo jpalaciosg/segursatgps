@@ -9,6 +9,7 @@ ALERT_TYPE_CHOICES = [
     (1004, 'ALERTA DE INGRESO A GEOCERCA'),
     (1005, 'ALERTA DE SALIDA DE GEOCERCA'),
     (1006, 'ALERTA DE VELOCIDAD POR GEOCERCA'),
+    (1007, 'ALERTA DE PARADA EN GEOCERCA'),
 ]
 
 # Create your models here.
@@ -18,6 +19,11 @@ class FleetTriggerExtension1003(models.Model):
 
 class FleetTriggerExtension1006(models.Model):
     speed = models.IntegerField()
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
+class FleetTriggerExtension1007(models.Model):
+    seconds = models.IntegerField()
     geofences = models.ManyToManyField(Geofence)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
@@ -34,6 +40,7 @@ class FleetTrigger(models.Model):
     send_mail_notification = models.BooleanField(default=True)
     extension1003 = models.OneToOneField(FleetTriggerExtension1003,null=True,blank=True,on_delete=models.CASCADE)
     extension1006 = models.OneToOneField(FleetTriggerExtension1006,null=True,blank=True,on_delete=models.CASCADE)
+    extension1007 = models.OneToOneField(FleetTriggerExtension1007,null=True,blank=True,on_delete=models.CASCADE)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

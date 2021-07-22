@@ -169,6 +169,8 @@ def insert_location_batch(request):
                 unit.last_altitude = data['altitude']
                 unit.last_angle = data['angle']
                 unit.last_speed = data['speed']
+                if int(data['speed']) > 0:
+                    unit.last_movement = unit.last_timestamp = data['timestamp']
                 unit.last_attributes = json.dumps(data['attributes'])
                 # CALCULAR UBICACION PREVIA
                 if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
