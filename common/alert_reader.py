@@ -100,7 +100,8 @@ class AlertReader:
                             accountid = unit.account.id
                         )
                         dt = datetime.fromtimestamp(alert.timestamp)
-                        dt = dt.strftime("%Y/%m/%d %H:%M:%S")
+                        dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                        dt = dt.strftime("%d/%m/%Y %H:%M:%S")
                         channel_layer = channels.layers.get_channel_layer()
                         async_to_sync(channel_layer.group_send)(
                             f'chat_{unit.account.name}',
@@ -172,7 +173,8 @@ class AlertReader:
                                     accountid = unit.account.id
                                 )
                                 dt = datetime.fromtimestamp(alert.timestamp)
-                                dt = dt.strftime("%Y/%m/%d %H:%M:%S")
+                                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                                dt = dt.strftime("%d/%m/%Y %H:%M:%S")
                                 channel_layer = channels.layers.get_channel_layer()
                                 async_to_sync(channel_layer.group_send)(
                                     f'chat_{unit.account.name}',
@@ -244,7 +246,8 @@ class AlertReader:
                                     accountid = unit.account.id
                                 )
                                 dt = datetime.fromtimestamp(alert.timestamp)
-                                dt = dt.strftime("%Y/%m/%d %H:%M:%S")
+                                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                                dt = dt.strftime("%d/%m/%Y %H:%M:%S")
                                 channel_layer = channels.layers.get_channel_layer()
                                 async_to_sync(channel_layer.group_send)(
                                     f'chat_{unit.account.name}',
