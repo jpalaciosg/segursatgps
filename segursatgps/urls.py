@@ -68,7 +68,6 @@ urlpatterns = [
     path('web/api/drivers/get-driver/<int:id>/', drivers_views.get_driver),
     path('web/api/geofences/get-geofences/', geofences_views.get_geofences),
     path('web/api/geofences/get-geofence/<int:id>/', geofences_views.get_geofence),
-    path('web/api/alerts/alert-search/<str:alert_date>/<str:unit_name>/', alerts_views.alert_search),
     path('web/api/alerts/get-alert/<int:id>/', alerts_views.get_alert),
     path('web/api/locations/insert-location/', locations_views.insert_location),
     path('web/api/locations/insert-location-batch/', locations_views.insert_location_batch),

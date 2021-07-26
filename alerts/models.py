@@ -35,6 +35,7 @@ class Alert(models.Model):
             models.Index(fields=['accountid','timestamp',]),
             models.Index(fields=['reference','timestamp',]),
             models.Index(fields=['unitid','alert_type','timestamp',]),
+            models.Index(fields=['alert_type','timestamp',]),
         ]
 
     

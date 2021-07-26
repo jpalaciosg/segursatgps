@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from .models import Alert
 from .serializers import AlertSerializer
 from units.models import Device
-from .forms import ReportForm
+from .forms import AlertHistoryForm
 
 from datetime import datetime
 
@@ -27,7 +27,7 @@ def alert_history_view(request):
         units = Device.objects.filter(account=request.user.profile.account)
         initial_timestamp = None
         final_timestamp = None
-        form = ReportForm(data)
+        form = AlertHistoryForm(data)
         if form.is_valid():
             unit = None
             if data['unit_name'].upper() != 'ALL':
@@ -68,7 +68,8 @@ def alert_history_view(request):
                 alerts = Alert.objects.using('history_db_replica').filter(
                     accountid=request.user.profile.account.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lte=final_timestamp,
+                    alert_type=data['alert_type']
                 ).order_by('id')
                 for alert in alerts:
                     unit = units.get(id=alert.unitid)
@@ -81,6 +82,7 @@ def alert_history_view(request):
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'selected_unit':unit,
+                    'alert_type':data['alert_type'],
                     'units':units,
                     'alerts':alerts,
                 })
@@ -88,7 +90,8 @@ def alert_history_view(request):
                 alerts = Alert.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lte=final_timestamp,
+                    alert_type=data['alert_type']
                 ).order_by('id')
                 for alert in alerts:
                     alert.unit_name = unit.name
@@ -100,6 +103,7 @@ def alert_history_view(request):
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'selected_unit':unit,
+                    'alert_type':data['alert_type'],
                     'units':units,
                     'alerts':alerts,
                 })
@@ -112,45 +116,6 @@ def alert_history_view(request):
     return render(request,'alerts/alert-history.html',{
         'units':units,
     })
-
-@api_view(['GET'])
-def alert_search(request,alert_date,unit_name):
-    try:
-        initial_timestamp = None
-        final_timestamp = None
-        try:
-            date_time_str = f'{alert_date} 00:00:00'
-            date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
-            initial_timestamp = datetime.timestamp(date_time_obj)
-            final_timestamp = initial_timestamp+86400
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        if unit_name == 'all':
-            alerts = Alert.objects.filter(
-            account = request.user.profile.account,
-            timestamp__gte=initial_timestamp,
-            timestamp__lte=final_timestamp
-        )
-        else:
-            alerts = Alert.objects.filter(
-                account = request.user.profile.account,
-                unit_name = unit_name,
-                timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
-            )
-        serializer = AlertSerializer(alerts,many=True)
-        data = serializer.data
-        for item in data:
-            dt = datetime.fromtimestamp(item['timestamp'])
-            item['datetime'] = dt.strftime("%Y/%m/%d %H:%M:%S")
-        return Response(data,status=status.HTTP_200_OK)
-    except Exception as e:
-        print(e)
-        error = {'error':str(e)}
-        return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def get_alert(request,id):
