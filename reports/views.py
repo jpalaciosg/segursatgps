@@ -50,17 +50,31 @@ def dashboard_view(request):
 def fleet_status_view(request):
     units = Device.objects.filter(account=request.user.profile.account)
     now = datetime.now()
+    current_timestamp = int(datetime.timestamp(now))
+    units_not_transmitted = 0
+    units_in_motion = 0
+    units_stopped = 0
     for unit in units:
-        try:
-            unit.odometer = round(unit.odometer,1)
-            dt = datetime.fromtimestamp(unit.last_timestamp)
-            dt = gmt_conversor.convert_utctolocaltime(dt)
-            unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
-        except Exception as e:
-            print(e)
+        unit.odometer = round(unit.odometer,1)
+        dt = datetime.fromtimestamp(unit.last_timestamp)
+        dt = gmt_conversor.convert_utctolocaltime(dt)
+        unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
+        ## sumarizar totales
+        timeout = current_timestamp - unit.last_timestamp
+        if timeout > 86400:
+            units_not_transmitted += 1
+        if unit.last_speed > 0:
+            units_in_motion += 1
+        else:
+            units_stopped += 1
+    units_transmitting = len(units) - units_not_transmitted
     return render(request,'reports/fleet-status.html',{
         'units': units,
         'now': gmt_conversor.convert_utctolocaltime(now),
+        'units_transmitting': str(units_transmitting),
+        'units_not_transmitted': units_not_transmitted,
+        'units_in_motion': units_in_motion,
+        'units_stopped': units_stopped,
     })
 
 @login_required
