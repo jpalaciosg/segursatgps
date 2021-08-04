@@ -1,5 +1,6 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum,Count
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -78,6 +79,15 @@ def alert_history_view(request):
                     dt = datetime.utcfromtimestamp(alert.timestamp)
                     dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
                     alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+                summarization = []
+                for unit in units:
+                    count = alerts.filter(unitid=unit.id).count()
+                    if count > 0:
+                        summarization.append({
+                            'unit_name':unit.name,
+                            'unit_description':unit.description,
+                            'count':count,
+                        })
                 return render(request,'alerts/alert-history.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
@@ -85,6 +95,7 @@ def alert_history_view(request):
                     'alert_type':data['alert_type'],
                     'units':units,
                     'alerts':alerts,
+                    'summarization':summarization,
                 })
             else:
                 alerts = Alert.objects.using('history_db_replica').filter(
@@ -99,6 +110,15 @@ def alert_history_view(request):
                     dt = datetime.utcfromtimestamp(alert.timestamp)
                     dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
                     alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+                summarization = []
+                for unit in units:
+                    count = alerts.filter(unitid=unit.id).count()
+                    if count > 0:
+                        summarization.append({
+                            'unit_name':unit.name,
+                            'unit_description':unit.description,
+                            'count':count,
+                        })
                 return render(request,'alerts/alert-history.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
@@ -106,6 +126,7 @@ def alert_history_view(request):
                     'alert_type':data['alert_type'],
                     'units':units,
                     'alerts':alerts,
+                    'summarization':summarization,
                 })
         return render(request,'alerts/alert-history.html',{
             'units':units,
