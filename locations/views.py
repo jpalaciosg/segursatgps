@@ -214,6 +214,7 @@ def insert_location_batch(request):
                             'payload': {
                                 'unitid': unit.id,
                                 'unit_name': unit.name,
+                                'unit_description': unit.description,
                                 'timestamp': data['timestamp'],
                                 'latitude': data['latitude'],
                                 'longitude': data['longitude'],
