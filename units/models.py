@@ -23,6 +23,8 @@ class Device(models.Model):
     last_address = models.TextField(blank=True,default="")
     previous_location = models.TextField(blank=True,default="")
     sutran_retransmission = models.BooleanField(default=False)
+    show_unit_name_in_map = models.BooleanField(default=True)
+    show_unit_description_in_map = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
