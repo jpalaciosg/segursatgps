@@ -16,8 +16,10 @@ from .forms import UnitCreateForm,UnitUpdateForm
 from .serializers import DeviceSerializer
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
+from common.privilege import Privilege
 
 gmt_conversor = GMTConversor() #conversor zona horaria
+privilege = Privilege()
 
 # Create your views here.  
 @login_required
@@ -27,7 +29,7 @@ def units_view(request):
         data._mutable = True
         # Unit create
         if data['form_type'] == 'create_form':
-            units = Device.objects.filter(account=request.user.profile.account)
+            units = privilege.get_units(request.profile)
             create_form = UnitCreateForm(data)
             if create_form.is_valid():
                 data = create_form.cleaned_data
@@ -71,7 +73,7 @@ def units_view(request):
             })
         # Unit update
         if data['form_type'] == 'update_form':
-            units = Device.objects.filter(account=request.user.profile.account)
+            units = privilege.get_units(request.profile)
             create_form = UnitCreateForm()
             update_form = UnitUpdateForm(data,auto_id=False)
             try:
@@ -154,7 +156,7 @@ def units_view(request):
                      
     # GET
     create_form = UnitCreateForm()
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.profile)
     """
     for unit in units:
         try:
@@ -174,7 +176,7 @@ def units_view(request):
 
 @login_required
 def unit_group_view(request):
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.profile)
     groups = Group.objects.filter(account=request.user.profile.account)
     for group in groups:
         group.modified = gmt_conversor.convert_utctolocaltime(group.modified) # convertir a zona horaria
@@ -187,7 +189,7 @@ def unit_group_view(request):
 @api_view(['GET'])
 def get_units(request):
     try:
-        units = Device.objects.filter(account=request.user.profile.account)
+        units = privilege.get_units(request.user.profile)
         serializer = DeviceSerializer(units,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
     except Exception as e:

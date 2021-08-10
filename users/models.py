@@ -14,10 +14,13 @@ class Account(models.Model):
     def __str__(self):
         return self.name
 
+from units.models import Device
+
 class Profile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
+    units = models.ManyToManyField(Device)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):

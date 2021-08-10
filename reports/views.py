@@ -9,6 +9,7 @@ from locations.models import Location
 from geofences.models import Geofence
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
+from common.privilege import Privilege
 
 from .forms import ReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm
 from units.models import Device,Group
@@ -16,10 +17,11 @@ from units.models import Device,Group
 # Create your views here.
 
 gmt_conversor = GMTConversor() #conversor zona horaria
+privilege = Privilege()
 
 @login_required
 def dashboard_view(request):
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     now = datetime.now()
     units_not_transmitted = 0
     current_timestamp = int(datetime.timestamp(now))
@@ -48,7 +50,7 @@ def dashboard_view(request):
 
 @login_required
 def fleet_status_view(request):
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
     units_not_transmitted = 0
@@ -81,7 +83,7 @@ def fleet_status_view(request):
 def detailed_report_view(request):
     if request.method == 'POST':
         data = request.POST
-        units = Device.objects.filter(account=request.user.profile.account)
+        units = privilege.get_units(request.user.profile)
         initial_timestamp = None
         final_timestamp = None
         form = ReportForm(data)
@@ -148,7 +150,7 @@ def detailed_report_view(request):
             'form':form,
         })
     #GET
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     return render(request,'reports/detailed-report.html',{
         'units':units,
     })
@@ -158,7 +160,7 @@ def detailed_report_view(request):
 def travel_report_view(request):
     if request.method == 'POST':
         data = request.POST
-        units = Device.objects.filter(account=request.user.profile.account)
+        units = privilege.get_units(request.user.profile)
         initial_timestamp = None
         final_timestamp = None
         form = ReportForm(data)
@@ -239,7 +241,7 @@ def travel_report_view(request):
             'form':form,
         })
     # GET
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     return render(request,'reports/travel-report.html',{
         'units':units,
     })
@@ -345,7 +347,7 @@ def group_trip_report_view(request):
 def stop_report_view(request):
     if request.method == 'POST':
         data = request.POST
-        units = Device.objects.filter(account=request.user.profile.account)
+        units = privilege.get_units(request.user.profile)
         initial_timestamp = None
         final_timestamp = None
         form = ReportForm(data)
@@ -426,7 +428,7 @@ def stop_report_view(request):
             'form':form,
         })
     # GET
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     return render(request,'reports/stop-report.html',{
         'units':units,
     })
@@ -537,7 +539,7 @@ def group_stop_report_view(request):
 def speed_report_view(request):
     if request.method == 'POST':
         data = request.POST
-        units = Device.objects.filter(account=request.user.profile.account)
+        units = privilege.get_units(request.user.profile)
         initial_timestamp = None
         final_timestamp = None
         form = SpeedReportForm(data)
@@ -622,7 +624,7 @@ def speed_report_view(request):
             'form':form,
         })
     # GET
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     return render(request,'reports/speed-report.html',{
         'units':units,
     })
@@ -732,7 +734,7 @@ def mileage_report_view(request):
     #POST
     if request.method == 'POST':
         data = request.POST
-        units = Device.objects.filter(account=request.user.profile.account)
+        units = privilege.get_units(request.user.profile)
         initial_timestamp = None
         final_timestamp = None
         form = MileageReportForm(data)
@@ -847,7 +849,7 @@ def mileage_report_view(request):
             'form':form,
         })
     #GET
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     form = MileageReportForm()
     return render(request,'reports/mileage-report.html',{
         'units':units,
@@ -964,7 +966,7 @@ def geofence_report_view(request):
     if request.method == 'POST':
         data = request.POST
         geofences = Geofence.objects.filter(account=request.user.profile.account)
-        units = Device.objects.filter(account=request.user.profile.account)
+        units = privilege.get_units(request.user.profile)
         initial_timestamp = None
         final_timestamp = None
         form = GeofenceReportForm(data)
@@ -1058,7 +1060,7 @@ def geofence_report_view(request):
 
     #GET
     geofences = Geofence.objects.filter(account=request.user.profile.account)
-    units = Device.objects.filter(account=request.user.profile.account)
+    units = privilege.get_units(request.user.profile)
     form = ReportForm()
     return render(request,'reports/geofence-report.html',{
         'units':units,
