@@ -7,6 +7,7 @@ class Geofence(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     geojson = models.TextField()
+    show_geofence_on_map = models.BooleanField(default=True)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
