@@ -29,7 +29,7 @@ def units_view(request):
         data._mutable = True
         # Unit create
         if data['form_type'] == 'create_form':
-            units = privilege.get_units(request.profile)
+            units = privilege.get_units(request.user.profile)
             create_form = UnitCreateForm(data)
             if create_form.is_valid():
                 data = create_form.cleaned_data
@@ -73,7 +73,7 @@ def units_view(request):
             })
         # Unit update
         if data['form_type'] == 'update_form':
-            units = privilege.get_units(request.profile)
+            units = privilege.get_units(request.user.profile)
             create_form = UnitCreateForm()
             update_form = UnitUpdateForm(data,auto_id=False)
             try:
@@ -156,7 +156,7 @@ def units_view(request):
                      
     # GET
     create_form = UnitCreateForm()
-    units = privilege.get_units(request.profile)
+    units = privilege.get_units(request.user.profile)
     """
     for unit in units:
         try:
@@ -176,7 +176,7 @@ def units_view(request):
 
 @login_required
 def unit_group_view(request):
-    units = privilege.get_units(request.profile)
+    units = privilege.get_units(request.user.profile)
     groups = Group.objects.filter(account=request.user.profile.account)
     for group in groups:
         group.modified = gmt_conversor.convert_utctolocaltime(group.modified) # convertir a zona horaria
