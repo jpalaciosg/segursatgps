@@ -91,7 +91,7 @@ def alert_history_view(request):
                 return render(request,'alerts/alert-history.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
-                    'selected_unit':unit,
+                    'selected_unit':data['unit_name'],
                     'alert_type':data['alert_type'],
                     'units':units,
                     'alerts':alerts,
