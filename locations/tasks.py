@@ -51,7 +51,7 @@ def insert_location_in_history(data):
             print(e)
     # FIN - INTRODUCIR UBICACION PANDERO LOCATION
     # INTRODUCIR UBICACION SUTRAN
-    if data['account'] == 'civa':
+    if data['account'] == 'civa' and data['account'] == 'alcas':
         try:
             if int(data['speed'] > 0): event = 'EN'
             else: event = 'PA'
