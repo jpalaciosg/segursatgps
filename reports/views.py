@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime,timedelta
 import json
 from pytz import timezone
+from geopy.distance import great_circle
 
 from locations.models import Location
 from geofences.models import Geofence
@@ -129,6 +130,7 @@ def detailed_report_view(request):
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
             ).order_by('id')
+            """
             for location in locations:
                 dt = datetime.utcfromtimestamp(location.timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
@@ -138,6 +140,30 @@ def detailed_report_view(request):
                 location.ignition = device_reader.detect_ignition_event({
                     'attributes':json.loads(location.attributes)
                 })
+            """
+            for i in range(len(locations)):
+                dt = datetime.utcfromtimestamp(locations[i].timestamp)
+                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+                # ignicion
+                device_reader = DeviceReader(unit.uniqueid)
+                locations[i].ignition = device_reader.detect_ignition_event({
+                    'attributes':json.loads(locations[i].attributes)
+                })
+                if i == 0:
+                    locations[i].distance = 0
+                else:
+                    distance = great_circle(
+                        (
+                            locations[i-1]['latitude'],
+                            locations[i-1]['longitude']
+                        ),
+                        (
+                            locations[i]['latitude'],
+                            locations[i]['longitude']
+                        ),
+                    ).km
+                    locations[i].distance = distance
             return render(request,'reports/detailed-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
