@@ -128,6 +128,7 @@ def detailed_report_view(request):
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
             ).order_by('id')
+            accumulated_distance = 0.0
             for i in range(len(locations)):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
@@ -139,6 +140,7 @@ def detailed_report_view(request):
                 })
                 if i == 0:
                     locations[i].distance = 0.0
+                    locations[i].accumulated_distance = 0.0
                 else:
                     distance = great_circle(
                         (
@@ -151,6 +153,8 @@ def detailed_report_view(request):
                         ),
                     ).km
                     locations[i].distance = round(distance,2)
+                    accumulated_distance += distance
+                    locations[i].accumulated_distance = round(accumulated_distance,2)
             return render(request,'reports/detailed-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
