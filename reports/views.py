@@ -88,7 +88,6 @@ def detailed_report_view(request):
         initial_timestamp = None
         final_timestamp = None
         form = ReportForm(data)
-        print(data)
         if form.is_valid():
             try:
                 unit = Device.objects.get(name=data['unit_name'])
@@ -117,8 +116,7 @@ def detailed_report_view(request):
                 final_timestamp = datetime.timestamp(final_datetime_obj)
             except Exception as e:
                 form.add_error('final_date', e)
-            print(initial_timestamp)
-            print(final_timestamp)
+
             if len(form.errors) != 0:
                 return render(request,'reports/detailed-report.html',{
                     'units':units,
@@ -155,12 +153,12 @@ def detailed_report_view(request):
                 else:
                     distance = great_circle(
                         (
-                            locations[i-1]['latitude'],
-                            locations[i-1]['longitude']
+                            locations[i-1].latitude,
+                            locations[i-1].longitude
                         ),
                         (
-                            locations[i]['latitude'],
-                            locations[i]['longitude']
+                            locations[i].latitude,
+                            locations[i].longitude
                         ),
                     ).km
                     locations[i].distance = distance
