@@ -122,12 +122,15 @@ def detailed_report_view(request):
                     'units':units,
                     'form':form,
                 })
-            #locations = Location.objects.filter(  
+            #locations = Location.objects.filter(
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
-            ).order_by('id')
+            ).order_by('timestamp').exclude(
+                latitude=0.0,
+                longitude=0.0
+            )
             accumulated_distance = 0.0
             for i in range(len(locations)):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
@@ -224,7 +227,10 @@ def detailed_mileage_report_view(request):
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
-            ).order_by('id')
+            ).order_by('timestamp').exclude(
+                latitude=0.0,
+                longitude=0.0
+            )
             accumulated_distance = mileage
             for i in range(len(locations)):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
