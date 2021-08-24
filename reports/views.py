@@ -209,6 +209,11 @@ def detailed_mileage_report_view(request):
             except Exception as e:
                 form.add_error('final_date', e)
 
+            try:
+                mileage = float(data['mileage'])
+            except Exception as e:
+                form.add_error('mileage', e)
+
             if len(form.errors) != 0:
                 return render(request,'reports/detailed-mileage-report.html',{
                     'units':units,
@@ -220,7 +225,7 @@ def detailed_mileage_report_view(request):
                 timestamp__gte=initial_timestamp,
                 timestamp__lte=final_timestamp
             ).order_by('id')
-            accumulated_distance = float(data['mileage'])
+            accumulated_distance = mileage
             for i in range(len(locations)):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
@@ -244,9 +249,9 @@ def detailed_mileage_report_view(request):
                             locations[i].longitude
                         ),
                     ).km
-                    locations[i].distance = round(distance,2)
+                    locations[i].distance = round(distance,3)
                     accumulated_distance += distance
-                    locations[i].accumulated_distance = round(accumulated_distance,2)
+                    locations[i].accumulated_distance = round(accumulated_distance,3)
             return render(request,'reports/detailed-mileage-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],

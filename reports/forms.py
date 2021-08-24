@@ -36,4 +36,4 @@ class DetailedMileageReportForm(forms.Form):
     initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
     final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
     unit_name = forms.CharField(max_length=50,required=True,label='Unidad')
-    mileage = forms.IntegerField(required=True)
+    mileage = forms.CharField(max_length=50,required=True,label='Kilometraje')
