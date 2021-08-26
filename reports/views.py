@@ -70,6 +70,7 @@ def fleet_status_view(request):
             units_in_motion += 1
         else:
             units_stopped += 1
+        unit.timeout = int(timeout)
     units_transmitting = len(units) - units_not_transmitted
     return render(request,'reports/fleet-status.html',{
         'units': units,
