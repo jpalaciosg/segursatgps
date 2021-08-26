@@ -74,3 +74,15 @@ class Group(models.Model):
         unique_together = (("name","account"),)
     def __str__(self):
         return self.name
+
+class LastAlert(models.Model):
+    unit = models.ForeignKey(Device,on_delete=models.CASCADE)
+    timestamp = models.PositiveIntegerField()
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    speed = models.IntegerField()
+    angle = models.IntegerField()
+    address = models.TextField(blank=True,default="")
+    alert_type = models.IntegerField()
+    alert_description = models.CharField(max_length=400)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
