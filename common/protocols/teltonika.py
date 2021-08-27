@@ -1,5 +1,5 @@
 from alerts.models import Alert
-from units.models import Device,DeviceDigitalInput
+from units.models import Device,DeviceDigitalInput,DeviceDigitalOutput
 
 from datetime import datetime,timezone,timedelta
 import requests

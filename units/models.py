@@ -48,7 +48,7 @@ class DeviceDigitalInput(models.Model):
             ('device','input','input_event'),
         )
 
-class DeviceDigitaOutput(models.Model):
+class DeviceDigitalOutput(models.Model):
     OUTPUT_EVENT_CHOICES = [
         ('MOTOR_LOCK', 'MOTOR_LOCK'),
     ]

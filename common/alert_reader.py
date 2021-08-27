@@ -79,6 +79,71 @@ class AlertReader:
         }
         triggers = FleetTrigger.objects.filter(account=unit.account)
         for trigger in triggers:
+            # ALERTA DE DESCONEXION DE BATERIA
+            if trigger.alert_type == 1002:
+                try:
+                    if self.__detect_battery_disconnection_alert(current_location,previous_location):
+                        alert = Alert.objects.create(
+                            unitid = unit.id,
+                            timestamp = unit.last_timestamp,
+                            latitude = unit.last_latitude,
+                            longitude = unit.last_longitude,
+                            speed = unit.last_speed,
+                            angle = unit.last_angle,
+                            address = unit.last_address,
+                            alert_type = 1002,
+                            alert_description = "ALERTA DE DESCONEXION DE BATERIA",
+                            alert_priority = "M",
+                            reference = unit.name,
+                            accountid = unit.account.id
+                        )
+                        dt = datetime.fromtimestamp(alert.timestamp)
+                        dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                        dt = dt.strftime("%d/%m/%Y %H:%M:%S")
+                        channel_layer = channels.layers.get_channel_layer()
+                        async_to_sync(channel_layer.group_send)(
+                            f'chat_{unit.account.name}',
+                            {
+                                'type': 'send_message',
+                                'message': {
+                                    'type':'update_alert',
+                                    'payload': {
+                                        'unit_id': unit.id,
+                                        'unit_name': unit.name,
+                                        'unit_description': unit.description,
+                                        'timestamp': alert.timestamp,
+                                        'datetime': dt,
+                                        'latitude': alert.latitude,
+                                        'longitude': alert.longitude,
+                                        'speed': alert.speed,
+                                        'angle': alert.angle,
+                                        'address': alert.address,
+                                        'alert_type': alert.alert_type,
+                                        'alert_description': alert.alert_description,
+                                        'alert_priority': alert.alert_priority,
+                                        'alert_id': alert.id
+                                    }
+                                }
+                            }
+                        )
+                        async_to_sync(channel_layer.group_send)(
+                            f'chat_{unit.account.name}',
+                            {
+                                'type': 'send_message',
+                                'message': {
+                                    'type':'notification',
+                                    'payload': {
+                                        'title': f'{unit.name} - {unit.description}',
+                                        'message': alert.alert_description,
+                                    }
+                                }
+                            }
+                        )
+                except Exception as e:
+                    file = open("/tmp/alert_log.log",'a')
+                    file.write(f"{str(e)}")
+                    file.close()
+            # FIN ALERTA DE DESCONEXION DE BATERIA
             # ALERTA DE VELOCIDAD GENERAL
             if trigger.alert_type == 1003:
                 try:
