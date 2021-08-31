@@ -140,7 +140,7 @@ class AlertReader:
                             }
                         )
                 except Exception as e:
-                    file = open("/tmp/alert_log.log",'a')
+                    file = open("/tmp/battery.log",'a')
                     file.write(f"{str(e)}")
                     file.close()
             # FIN ALERTA DE DESCONEXION DE BATERIA
