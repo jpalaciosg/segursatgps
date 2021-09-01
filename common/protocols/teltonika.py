@@ -79,7 +79,9 @@ class Teltonika:
             return False
 
     def detect_battery_disconnection_event(self,current_location,previous_location):
-        if previous_location['attributes']['power'] > 10 and current_location['attributes']['power'] < 1:
+        previous_power = float(previous_location['attributes']['power'])
+        current_power = float(current_location['attributes']['power'])
+        if previous_power > 10 and current_power < 1:
             return True
         return False
 
