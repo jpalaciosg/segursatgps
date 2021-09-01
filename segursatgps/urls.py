@@ -44,6 +44,7 @@ urlpatterns = [
     path('reports/detailed-report/', reports_views.detailed_report_view, name='detailed-report'),
     path('reports/detailed-mileage-report/', reports_views.detailed_mileage_report_view, name='detailed-mileage-report'),
     path('reports/detailed-report-with-attributes/', reports_views.detailed_report_with_attributes_view, name='detailed-report-with-attributes'),
+    path('reports/driving-style-report/', reports_views.driving_style_report_view, name='driving-style-report'),
     path('reports/speed-report/', reports_views.speed_report_view, name='speed-report'),
     path('reports/group-speed-report/', reports_views.group_speed_report_view, name='group-speed-report'),
     path('reports/travel-report/', reports_views.travel_report_view, name='travel-report'),

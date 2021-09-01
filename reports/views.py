@@ -371,6 +371,84 @@ def detailed_report_with_attributes_view(request):
         'units':units,
     })
 
+@login_required
+def driving_style_report_view(request):
+    if request.method == 'POST':
+        data = request.POST
+        units = privilege.get_units(request.user.profile)
+        initial_timestamp = None
+        final_timestamp = None
+        form = ReportForm(data)
+        if form.is_valid():
+            try:
+                unit = Device.objects.get(name=data['unit_name'])
+            except Exception as e:
+                form.add_error('unit_name', e)
+            #
+            try:
+                #initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                initial_datetime_str = f"{data['initial_datetime']}:00"
+                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+                # --
+                initial_timestamp = datetime.timestamp(initial_datetime_obj)
+            except Exception as e:
+                print(e)
+                form.add_error('initial_date', e)
+            #
+            try:
+                #final_datetime_str = f"{data['final_date']} 00:00:00"
+                final_datetime_str = f"{data['final_datetime']}:00"
+                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+                # --
+                final_timestamp = datetime.timestamp(final_datetime_obj)
+            except Exception as e:
+                form.add_error('final_date', e)
+
+            if len(form.errors) != 0:
+                return render(request,'reports/driving-style-report.html',{
+                    'units':units,
+                    'form':form,
+                })
+            #locations = Location.objects.filter(
+            locations = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=initial_timestamp,
+                timestamp__lte=final_timestamp
+            ).order_by('timestamp').exclude(
+                latitude=0.0,
+                longitude=0.0
+            )
+            harsh_driving_report = []
+            for i in range(len(locations)):
+                dt = datetime.utcfromtimestamp(locations[i].timestamp)
+                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+                try:
+                    locations[i].driving = json.loads(locations[i].attributes)['alarm']
+                    harsh_driving_report.append(locations[i])
+                except Exception as e:
+                    print(e)
+            return render(request,'reports/driving-style-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'selected_unit':unit,
+                'units':units,
+                'locations':harsh_driving_report,
+            })
+        return render(request,'reports/driving-style-report.html',{
+            'units':units,
+            'form':form,
+        })
+    #GET
+    units = privilege.get_units(request.user.profile)
+    return render(request,'reports/driving-style-report.html',{
+        'units':units,
+    })
+
 
 # TRAVEL REPORT
 @login_required
