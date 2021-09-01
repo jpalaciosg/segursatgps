@@ -25,7 +25,7 @@ class DeviceReader:
 
     def detect_battery_disconnection_event(self,current_location,previous_location):
         reader = Teltonika(self.deviceid)
-        return reader.detect_battery_disconnection_event
+        return reader.detect_battery_disconnection_event(current_location,previous_location)
 
     def get_unit_status(self,unit):
         serializer = DeviceSerializer(unit,many=False)
@@ -46,6 +46,12 @@ class DeviceReader:
     def generate_travel_report(self,locations):
 	    reader = Teltonika(self.deviceid)
 	    return reader.generate_travel_report(locations)
+
+    """
+    def generate_driving_style_report(self,locations):
+        reader = Teltonika(self.deviceid)
+        return reader.generate_driving_style_report(locations)
+    """
 
     def generate_speed_report(self,locations,speed_limit):
         speed_report = []
