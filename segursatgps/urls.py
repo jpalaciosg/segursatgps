@@ -72,7 +72,6 @@ urlpatterns = [
     path('web/api/geofences/get-geofences/', geofences_views.get_geofences),
     path('web/api/geofences/get-geofence/<int:id>/', geofences_views.get_geofence),
     path('web/api/alerts/get-alert/<int:id>/', alerts_views.get_alert),
-    path('web/api/locations/insert-location/', locations_views.insert_location),
     path('web/api/locations/insert-location-batch/', locations_views.insert_location_batch),
     path('web/api/locations/insert-history-location-batch/', locations_views.insert_history_location_batch),
     path('web/api/locations/get-location-history/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_location_history),

@@ -22,109 +22,11 @@ from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocat
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
-from .config import GEOCODING_SERVER,GEOCODING_PORT
 from .tasks import insert_location_in_history,process_alert
 
 # Create your views here.
 
 gmt_conversor = GMTConversor() #conversor zona horaria
-
-@api_view(['POST'])
-def insert_location(request):
-    data = request.data
-    serializer = InsertLocationSerializer(data=data)
-    if serializer.is_valid():
-        try:
-            deviceid = data['deviceid']
-            unit = Device.objects.get(uniqueid=deviceid)
-            previous_location = {
-                'timestamp':unit.last_timestamp,
-                'latitude':unit.last_latitude,
-                'longitude':unit.last_longitude,
-                'altitude':unit.last_altitude,
-                'angle':unit.last_angle,
-                'speed':unit.last_speed,
-                'attributes':unit.last_attributes,
-                'address':unit.last_address
-            }
-        except Exception as e:
-            error = {'error':str(e)}
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        unit.last_timestamp = data['timestamp']
-        unit.last_latitude = data['latitude']
-        unit.last_longitude = data['longitude']
-        unit.last_altitude = data['altitude']
-        unit.last_angle = data['angle']
-        unit.last_speed = data['speed']
-        unit.last_attributes = json.dumps(data['attributes'])
-
-        # CALCULAR UBICACION PREVIA
-        if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
-            if data['latitude'] != 0.0 and data['longitude'] != 0.0:
-                distance = great_circle(
-                    (
-                        previous_location['latitude'],
-                        previous_location['longitude']
-                    ),
-                    (
-                        data['latitude'],
-                        data['longitude']
-                    ),
-                ).km
-                unit.odometer += distance
-        unit.previous_location = json.dumps(previous_location)
-        # FIN CALCULAR UBICACION PREVIA
-
-        unit.save()
-        # INSERTAR UBICACION EN EL HISTORICO
-        location = Location.objects.create(
-            unitid = unit.id,
-            protocol= data['protocol'],
-            timestamp = data['timestamp'],
-            latitude = data['latitude'],
-            longitude = data['longitude'],
-            altitude = data['altitude'],
-            angle = data['angle'],
-            speed = data['speed'],
-            attributes = json.dumps(data['attributes']),
-            address = address,
-            reference = unit.name
-        )
-        # FIN INSERTAR UBICACION EN EL HISTORICO
-        account = unit.account.name
-        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(location.timestamp))
-        last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
-        channel_layer = channels.layers.get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            f'chat_{account}',
-            {
-                'type': 'send_message',
-                'message': {
-                    'type':'update_location',
-                    'payload': {
-                        'unitid': location.unitid,
-                        'unit_name': unit.name,
-                        'timestamp': location.timestamp,
-                        'latitude': location.latitude,
-                        'longitude': location.longitude,
-                        'altitude': location.altitude,
-                        'angle': location.angle,
-                        'speed': location.speed,
-                        'attributes': data['attributes'],
-                        'address': location.address,
-                        'odometer': round(unit.odometer,2),
-                        'last_report': last_report
-                    }
-                }
-            }
-        )
-        # ALERTAS
-        #alert_reader = AlertReader(unit.uniqueid)
-        #alert_reader.run(data)
-        # FIN ALERTAS
-        return Response(serializer.data)
-    else:
-        return Response(serializer.errors)
 
 @api_view(['POST'])
 def insert_location_batch(request):
