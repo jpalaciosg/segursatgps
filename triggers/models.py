@@ -47,11 +47,6 @@ class FleetTrigger(models.Model):
     alert_type = models.IntegerField(
         choices=ALERT_TYPE_CHOICES,
     )
-    alert_priority = models.CharField(
-        max_length=9,
-        choices=PRIORITY_CHOICES,
-        default='L',
-    )
     is_active = models.BooleanField(default=True)
     send_notification = models.BooleanField(default=True)
     send_mail_notification = models.BooleanField(default=True)
