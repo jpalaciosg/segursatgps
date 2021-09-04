@@ -12,7 +12,7 @@ from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
 
-from .forms import ReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,DetailedMileageReportForm
+from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,DetailedMileageReportForm
 from units.models import Device,Group
 
 # Create your views here.
@@ -645,7 +645,7 @@ def stop_report_view(request):
         units = privilege.get_units(request.user.profile)
         initial_timestamp = None
         final_timestamp = None
-        form = ReportForm(data)
+        form = StopReportForm(data)
         if form.is_valid():
             try:
                 unit = Device.objects.get(name=data['unit_name'])

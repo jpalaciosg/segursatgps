@@ -5,6 +5,12 @@ class ReportForm(forms.Form):
     final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
     unit_name = forms.CharField(max_length=50,required=True,label='Unidad')
 
+class StopReportForm(forms.Form):
+    initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
+    final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
+    stopped_time = forms.IntegerField(required=True)
+    unit_name = forms.CharField(max_length=50,required=True,label='Unidad')
+
 class SpeedReportForm(forms.Form):
     initial_datetime = forms.CharField(max_length=50,required=True,label='Fecha inicial')
     final_datetime = forms.CharField(max_length=50,required=True,label='Fecha final')
