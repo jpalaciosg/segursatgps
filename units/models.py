@@ -76,6 +76,12 @@ class Group(models.Model):
         return self.name
 
 class LastAlert(models.Model):
+    PRIORITY_CHOICES = [
+        ('L', 'LOW'),
+        ('M', 'MEDIUM'),
+        ('H', 'HIGH'),
+        ('V', 'VERY HIGH'),
+    ]
     unit = models.ForeignKey(Device,on_delete=models.CASCADE)
     timestamp = models.PositiveIntegerField()
     latitude = models.FloatField()
@@ -84,5 +90,10 @@ class LastAlert(models.Model):
     angle = models.IntegerField()
     address = models.TextField(blank=True,default="")
     alert_type = models.IntegerField()
+    alert_priority = models.CharField(
+        max_length=9,
+        choices=PRIORITY_CHOICES,
+        default='L',
+    )
     alert_description = models.CharField(max_length=400)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)

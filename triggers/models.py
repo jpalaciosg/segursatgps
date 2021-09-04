@@ -13,6 +13,13 @@ ALERT_TYPE_CHOICES = [
     (1008, 'ALERTA DE PARADA FUERA DE GEOCERCA'),
 ]
 
+PRIORITY_CHOICES = [
+        ('L', 'LOW'),
+        ('M', 'MEDIUM'),
+        ('H', 'HIGH'),
+        ('V', 'VERY HIGH'),
+    ]
+
 # Create your models here.
 class FleetTriggerExtension1003(models.Model):
     speed = models.IntegerField()
@@ -40,7 +47,11 @@ class FleetTrigger(models.Model):
     alert_type = models.IntegerField(
         choices=ALERT_TYPE_CHOICES,
     )
-    #condition = models.TextField()
+    alert_priority = models.CharField(
+        max_length=9,
+        choices=PRIORITY_CHOICES,
+        default='L',
+    )
     is_active = models.BooleanField(default=True)
     send_notification = models.BooleanField(default=True)
     send_mail_notification = models.BooleanField(default=True)
