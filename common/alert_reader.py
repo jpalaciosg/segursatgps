@@ -1,5 +1,5 @@
 from triggers.models import FleetTrigger
-from units.models import Device
+from units.models import Device,LastAlert
 from alerts.models import Alert
 from geofences.models import Geofence
 from shapely.geometry import Point,shape
@@ -83,6 +83,38 @@ class AlertReader:
             if trigger.alert_type == 1002:
                 try:
                     if self.__detect_battery_disconnection_alert(current_location,previous_location):
+                        # ACTUALIZAR ULTIMA ALERTA
+                        try:
+                            last_alert = LastAlert.objects.get(unit__id=unit.id)
+                        except:
+                            last_alert = None
+                        if last_alert:
+                            last_alert.timestamp = unit.last_timestamp
+                            last_alert.latitude = unit.last_latitude
+                            last_alert.longitude = unit.last_longitude
+                            last_alert.speed = unit.last_speed
+                            last_alert.angle = unit.last_angle
+                            last_alert.address = unit.last_address
+                            last_alert.alert_type = 1002
+                            last_alert.alert_description = "ALERTA DE DESCONEXION DE BATERIA"
+                            last_alert.alert_priority = trigger.alert_priority
+                            last_alert.account = unit.account
+                            last_alert.save()
+                        else:
+                            last_alert = LastAlert.objects.create(
+                                unit = unit,
+                                timestamp = unit.last_timestamp,
+                                latitude = unit.last_latitude,
+                                longitude = unit.last_longitude,
+                                speed = unit.last_speed,
+                                angle = unit.last_angle,
+                                address = unit.last_address,
+                                alert_type = 1002,
+                                alert_description = "ALERTA DE DESCONEXION DE BATERIA",
+                                alert_priority = trigger.alert_priority,
+                                account = unit.account
+                            )  
+                        # FIN - ACTUALIZAR ULTIMA ALERTA
                         alert = Alert.objects.create(
                             unitid = unit.id,
                             timestamp = unit.last_timestamp,
@@ -93,7 +125,7 @@ class AlertReader:
                             address = unit.last_address,
                             alert_type = 1002,
                             alert_description = "ALERTA DE DESCONEXION DE BATERIA",
-                            alert_priority = "M",
+                            alert_priority = trigger.alert_priority,
                             reference = unit.name,
                             accountid = unit.account.id
                         )
@@ -140,16 +172,49 @@ class AlertReader:
                             }
                         )
                 except Exception as e:
-                    file = open("/tmp/battery.log",'a')
+                    file = open("/tmp/alert_log.log",'a')
                     file.write(f"{str(e)}")
                     file.close()
             # FIN ALERTA DE DESCONEXION DE BATERIA
+            
             # ALERTA DE VELOCIDAD GENERAL
             if trigger.alert_type == 1003:
                 try:
                     #condition = json.loads(trigger.condition)
                     speed_limit = trigger.extension1003.speed
                     if self.__detect_speed_event(unit.last_speed,speed_limit):
+                        # ACTUALIZAR ULTIMA ALERTA
+                        try:
+                            last_alert = LastAlert.objects.get(unit__id=unit.id)
+                        except:
+                            last_alert = None
+                        if last_alert:
+                            last_alert.timestamp = unit.last_timestamp
+                            last_alert.latitude = unit.last_latitude
+                            last_alert.longitude = unit.last_longitude
+                            last_alert.speed = unit.last_speed
+                            last_alert.angle = unit.last_angle
+                            last_alert.address = unit.last_address
+                            last_alert.alert_type = 1003
+                            last_alert.alert_description = "ALERTA DE EXCESO DE VELOCIDAD"
+                            last_alert.alert_priority = trigger.alert_priority
+                            last_alert.account = unit.account
+                            last_alert.save()
+                        else:
+                            last_alert = LastAlert.objects.create(
+                                unit = unit,
+                                timestamp = unit.last_timestamp,
+                                latitude = unit.last_latitude,
+                                longitude = unit.last_longitude,
+                                speed = unit.last_speed,
+                                angle = unit.last_angle,
+                                address = unit.last_address,
+                                alert_type = 1003,
+                                alert_description = "ALERTA DE EXCESO DE VELOCIDAD",
+                                alert_priority = trigger.alert_priority,
+                                account = unit.account
+                            )  
+                        # FIN - ACTUALIZAR ULTIMA ALERTA
                         alert = Alert.objects.create(
                             unitid = unit.id,
                             timestamp = unit.last_timestamp,
@@ -160,7 +225,7 @@ class AlertReader:
                             address = unit.last_address,
                             alert_type = 1003,
                             alert_description = "ALERTA DE EXCESO DE VELOCIDAD",
-                            alert_priority = "H",
+                            alert_priority = trigger.alert_priority,
                             reference = unit.name,
                             accountid = unit.account.id
                         )
@@ -223,6 +288,38 @@ class AlertReader:
                             s = shape(feature['geometry'])
                             point = Point(unit.last_longitude,unit.last_latitude)
                             if s.contains(point):
+                                # ACTUALIZAR ULTIMA ALERTA
+                                try:
+                                    last_alert = LastAlert.objects.get(unit__id=unit.id)
+                                except:
+                                    last_alert = None
+                                if last_alert:
+                                    last_alert.timestamp = unit.last_timestamp
+                                    last_alert.latitude = unit.last_latitude
+                                    last_alert.longitude = unit.last_longitude
+                                    last_alert.speed = unit.last_speed
+                                    last_alert.angle = unit.last_angle
+                                    last_alert.address = unit.last_address
+                                    last_alert.alert_type = 1006
+                                    last_alert.alert_description = f"ALERTA DE EXCESO DE VELOCIDAD - {geofence.name}"
+                                    last_alert.alert_priority = trigger.alert_priority
+                                    last_alert.account = unit.account
+                                    last_alert.save()
+                                else:
+                                    last_alert = LastAlert.objects.create(
+                                        unit = unit,
+                                        timestamp = unit.last_timestamp,
+                                        latitude = unit.last_latitude,
+                                        longitude = unit.last_longitude,
+                                        speed = unit.last_speed,
+                                        angle = unit.last_angle,
+                                        address = unit.last_address,
+                                        alert_type = 1006,
+                                        alert_description = f"ALERTA DE EXCESO DE VELOCIDAD - {geofence.name}",
+                                        alert_priority = trigger.alert_priority,
+                                        account = unit.account
+                                    )  
+                                # FIN - ACTUALIZAR ULTIMA ALERTA
                                 alert = Alert.objects.create(
                                     unitid = unit.id,
                                     timestamp = unit.last_timestamp,
@@ -233,7 +330,7 @@ class AlertReader:
                                     address = unit.last_address,
                                     alert_type = 1006,
                                     alert_description = f"ALERTA DE EXCESO DE VELOCIDAD - {geofence.name}",
-                                    alert_priority = "H",
+                                    alert_priority = trigger.alert_priority,
                                     reference = unit.name,
                                     accountid = unit.account.id
                                 )
@@ -296,6 +393,38 @@ class AlertReader:
                             s = shape(feature['geometry'])
                             point = Point(unit.last_longitude,unit.last_latitude)
                             if s.contains(point):
+                                # ACTUALIZAR ULTIMA ALERTA
+                                try:
+                                    last_alert = LastAlert.objects.get(unit__id=unit.id)
+                                except:
+                                    last_alert = None
+                                if last_alert:
+                                    last_alert.timestamp = unit.last_timestamp
+                                    last_alert.latitude = unit.last_latitude
+                                    last_alert.longitude = unit.last_longitude
+                                    last_alert.speed = unit.last_speed
+                                    last_alert.angle = unit.last_angle
+                                    last_alert.address = unit.last_address
+                                    last_alert.alert_type = 1007
+                                    last_alert.alert_description = f"ALERTA DE PARADA EN GEOCERCA - {geofence.name}"
+                                    last_alert.alert_priority = trigger.alert_priority
+                                    last_alert.account = unit.account
+                                    last_alert.save()
+                                else:
+                                    last_alert = LastAlert.objects.create(
+                                        unit = unit,
+                                        timestamp = unit.last_timestamp,
+                                        latitude = unit.last_latitude,
+                                        longitude = unit.last_longitude,
+                                        speed = unit.last_speed,
+                                        angle = unit.last_angle,
+                                        address = unit.last_address,
+                                        alert_type = 1007,
+                                        alert_description = f"ALERTA DE PARADA EN GEOCERCA - {geofence.name}",
+                                        alert_priority = trigger.alert_priority,
+                                        account = unit.account
+                                    )  
+                                # FIN - ACTUALIZAR ULTIMA ALERTA
                                 alert = Alert.objects.create(
                                     unitid = unit.id,
                                     timestamp = unit.last_timestamp,
@@ -306,7 +435,7 @@ class AlertReader:
                                     address = unit.last_address,
                                     alert_type = 1007,
                                     alert_description = f"ALERTA DE PARADA EN GEOCERCA - {geofence.name}",
-                                    alert_priority = "H",
+                                    alert_priority = trigger.alert_priority,
                                     reference = unit.name,
                                     accountid = unit.account.id
                                 )
