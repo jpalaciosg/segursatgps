@@ -839,12 +839,14 @@ def speed_report_view(request):
         final_timestamp = None
         form = SpeedReportForm(data)
         if form.is_valid():
-            try:
-                unit = Device.objects.get(name=data['unit_name'])
-            except Exception as e:
-                print(e)
-                form.add_error('unit_name', e)
-            #
+            unit = None
+            if data['unit_name'].upper() != 'ALL':
+                try:
+                    unit = Device.objects.get(name=data['unit_name'])
+                except Exception as e:
+                    print(e)
+                    form.add_error('unit_name', e)
+                #
             try:
                 initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -875,45 +877,82 @@ def speed_report_view(request):
                 })
 
             # Aqui va la logica del resultado
-            locations_qs = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
-            ).order_by('id')
-            locations_qs = locations_qs.order_by('timestamp')
-            locations = []
-            for location_qs in locations_qs:
-                locations.append({
-                    'latitude':location_qs.latitude,
-                    'longitude':location_qs.longitude,
-                    'timestamp':location_qs.timestamp,
-                    'angle':location_qs.angle,
-                    'speed':location_qs.speed,
-                    'address':location_qs.address,
-                    'attributes':json.loads(location_qs.attributes),
-                })
-            if len(locations) == 0:
+            if data['unit_name'].upper() == 'ALL':
+                speed_report = []
+                for unit in units:
+                    locations_qs = Location.objects.using('history_db_replica').filter(
+                        unitid=unit.id,
+                        timestamp__gte=initial_timestamp,
+                        timestamp__lte=final_timestamp
+                    ).order_by('timestamp')
+                    locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+                    locations = []
+                    for location_qs in locations_qs:
+                        locations.append({
+                            'latitude':location_qs.latitude,
+                            'longitude':location_qs.longitude,
+                            'timestamp':location_qs.timestamp,
+                            'angle':location_qs.angle,
+                            'speed':location_qs.speed,
+                            'address':location_qs.address,
+                            'attributes':json.loads(location_qs.attributes),
+                        })
+                    device_reader = DeviceReader(unit.uniqueid)
+                    speed_limit = int(data['speed_limit'])
+                    unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
+                    for item in unit_speed_report:
+                        item['unit_name'] = unit.name 
+                        speed_report.append(item)
                 return render(request,'reports/speed-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
-                    'speed':data['speed'],
+                    'speed_limit':data['speed_limit'],
+                    'selected_unit':unit,
+                    'speed_report':speed_report,
                     'units':units,
                     'form':form,
-                    'error':'No existe un recorrido para analizar.'
+                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
+                })   
+            else:
+                locations_qs = Location.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lte=final_timestamp
+                ).order_by('id')
+                locations_qs = locations_qs.order_by('timestamp')
+                locations = []
+                for location_qs in locations_qs:
+                    locations.append({
+                        'latitude':location_qs.latitude,
+                        'longitude':location_qs.longitude,
+                        'timestamp':location_qs.timestamp,
+                        'angle':location_qs.angle,
+                        'speed':location_qs.speed,
+                        'address':location_qs.address,
+                        'attributes':json.loads(location_qs.attributes),
+                    })
+                if len(locations) == 0:
+                    return render(request,'reports/speed-report.html',{
+                        'initial_datetime':data['initial_datetime'],
+                        'final_datetime':data['final_datetime'],
+                        'speed':data['speed'],
+                        'units':units,
+                        'form':form,
+                        'error':'No existe un recorrido para analizar.'
+                    })
+                device_reader = DeviceReader(unit.uniqueid)
+                speed_limit = int(data['speed_limit'])
+                speed_report = device_reader.generate_speed_report(locations,speed_limit)
+                return render(request,'reports/speed-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'speed_limit':data['speed_limit'],
+                    'selected_unit':unit,
+                    'speed_report':speed_report,
+                    'units':units,
+                    'form':form,
+                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
                 })
-            device_reader = DeviceReader(unit.uniqueid)
-            speed_limit = int(data['speed_limit'])
-            speed_report = device_reader.generate_speed_report(locations,speed_limit)
-            return render(request,'reports/speed-report.html',{
-                'initial_datetime':data['initial_datetime'],
-                'final_datetime':data['final_datetime'],
-                'speed_limit':data['speed_limit'],
-                'selected_unit':unit,
-                'speed_report':speed_report,
-                'units':units,
-                'form':form,
-                #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-            })      
         return render(request,'reports/speed-report.html',{
             'units':units,
             'form':form,
