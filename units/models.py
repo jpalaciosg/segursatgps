@@ -82,7 +82,8 @@ class LastAlert(models.Model):
         ('H', 'HIGH'),
         ('V', 'VERY HIGH'),
     ]
-    unit = models.ForeignKey(Device,on_delete=models.CASCADE)
+    unit = models.ForeignKey(Device,on_delete=models.CASCADE,unique=True)
+    #unit = models.OneToOneField(Device,on_delete=models.CASCADE)
     timestamp = models.PositiveIntegerField()
     latitude = models.FloatField()
     longitude = models.FloatField()
