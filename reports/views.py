@@ -1110,6 +1110,7 @@ def mileage_report_view(request):
                     'units':units,
                     'form':form,
                 })
+            # Aqui va la logica del resultado
             result = []
             if data['unit_name'].upper() == 'ALL':
                 for unit in units:
@@ -1305,12 +1306,13 @@ def geofence_report_view(request):
         final_timestamp = None
         form = GeofenceReportForm(data)
         if form.is_valid():
-            try:
-                unit = Device.objects.get(name=data['unit_name'])
-            except Exception as e:
-                print(e)
-                form.add_error('unit_name', e)
-            #
+            unit = None
+            if data['unit_name'].upper() != 'ALL':
+                try:
+                    unit = Device.objects.get(name=data['unit_name'])
+                except Exception as e:
+                    print(e)
+                    form.add_error('unit_name', e)
             try:
                 initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -1340,53 +1342,56 @@ def geofence_report_view(request):
                 })
 
             # Aqui va la logica del resultado
-            locations_qs = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
-            ).order_by('id')
-            locations_qs = locations_qs.order_by('timestamp')
-            locations = []
-            for location_qs in locations_qs:
-                locations.append({
-                    'latitude':location_qs.latitude,
-                    'longitude':location_qs.longitude,
-                    'timestamp':location_qs.timestamp,
-                    'angle':location_qs.angle,
-                    'speed':location_qs.speed,
-                    'address':location_qs.address,
-                    'attributes':json.loads(location_qs.attributes),
-                })
-            if len(locations) == 0:
+            if data['unit_name'].upper() == 'ALL':
+                pass
+            else:
+                locations_qs = Location.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lte=final_timestamp
+                ).order_by('id')
+                locations_qs = locations_qs.order_by('timestamp')
+                locations = []
+                for location_qs in locations_qs:
+                    locations.append({
+                        'latitude':location_qs.latitude,
+                        'longitude':location_qs.longitude,
+                        'timestamp':location_qs.timestamp,
+                        'angle':location_qs.angle,
+                        'speed':location_qs.speed,
+                        'address':location_qs.address,
+                        'attributes':json.loads(location_qs.attributes),
+                    })
+                if len(locations) == 0:
+                    return render(request,'reports/geofence-report.html',{
+                        'initial_datetime':data['initial_datetime'],
+                        'final_datetime':data['final_datetime'],
+                        'units':units,
+                        'geofences':geofences,
+                        'form':form,
+                        'error':'No existe un recorrido para analizar.'
+                    })
+                device_reader = DeviceReader(unit.uniqueid)
+                geofence_list = data.getlist('geofence_name')
+                geofences_qs = []
+                for i in range(len(geofence_list)):
+                    try:
+                        geofence = geofences.get(name=geofence_list[i])
+                        geofences_qs.append(geofence)
+                    except Exception as e:
+                        print(e)
+                # Esta funcion recibe un array de queryset en la variable de geocercas
+                geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
                 return render(request,'reports/geofence-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
-                    'units':units,
+                    'selected_unit':unit,
+                    'geofence_report':geofence_report,
                     'geofences':geofences,
+                    'units':units,
                     'form':form,
-                    'error':'No existe un recorrido para analizar.'
+                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
                 })
-            device_reader = DeviceReader(unit.uniqueid)
-            geofence_list = data.getlist('geofence_name')
-            geofences_qs = []
-            for i in range(len(geofence_list)):
-                try:
-                    geofence = geofences.get(name=geofence_list[i])
-                    geofences_qs.append(geofence)
-                except Exception as e:
-                    print(e)
-            # Esta funcion recibe un array de queryset en la variable de geocercas
-            geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
-            return render(request,'reports/geofence-report.html',{
-                'initial_datetime':data['initial_datetime'],
-                'final_datetime':data['final_datetime'],
-                'selected_unit':unit,
-                'geofence_report':geofence_report,
-                'geofences':geofences,
-                'units':units,
-                'form':form,
-                #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-            })
         return render(request,'reports/geofence-report.html',{
             'units':units,
             'form':form,
