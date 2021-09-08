@@ -684,7 +684,7 @@ def stop_report_view(request):
                 print(e)
                 form.add_error('final_datetime', e)
             # tiempo para descartar
-            seconds = data['stopped_time'] * 60
+            seconds = int(data['stopped_time']) * 60
             # fin - tiempo para descartar
 
             if len(form.errors) != 0:
