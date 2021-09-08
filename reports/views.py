@@ -1145,7 +1145,6 @@ def mileage_report_view(request):
                     timestamp__lte=final_timestamp
                 ).order_by('timestamp')
                 locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
-                device_reader = DeviceReader(unit.uniqueid)
                 locations = []
                 for location_qs in locations_qs:
                     locations.append({
@@ -1157,6 +1156,16 @@ def mileage_report_view(request):
                         'address':location_qs.address,
                         'attributes':json.loads(location_qs.attributes),
                     })
+                if len(locations) == 0:
+                    return render(request,'reports/speed-report.html',{
+                        'initial_datetime':data['initial_datetime'],
+                        'final_datetime':data['final_datetime'],
+                        'speed_limit':data['speed_limit'],
+                        'units':units,
+                        'form':form,
+                        'error':'No existe un recorrido para analizar.'
+                    })
+                device_reader = DeviceReader(unit.uniqueid)
                 distance_sum = device_reader.generate_mileage_report(locations)
                 result.append(
                     {
@@ -1168,6 +1177,16 @@ def mileage_report_view(request):
                         "odometer":round(unit.odometer,2),
                     }
                 )
+            if len(result) == 0:
+                return render(request,'reports/speed-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'speed_limit':data['speed_limit'],
+                    'selected_unit':unit,
+                    'units':units,
+                    'form':form,
+                    'error':'No existen datos para mostrar.',
+                })
             return render(request,'reports/mileage-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
