@@ -901,7 +901,8 @@ def speed_report_view(request):
                     speed_limit = int(data['speed_limit'])
                     unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
                     for item in unit_speed_report:
-                        item['unit_name'] = unit.name 
+                        item['unit_name'] = unit.name
+                        item['unit_description'] = unit.description
                         speed_report.append(item)
                 return render(request,'reports/speed-report.html',{
                     'initial_datetime':data['initial_datetime'],
@@ -1343,7 +1344,49 @@ def geofence_report_view(request):
 
             # Aqui va la logica del resultado
             if data['unit_name'].upper() == 'ALL':
-                pass
+                geofence_report = []
+                for unit in units:
+                    locations_qs = Location.objects.using('history_db_replica').filter(
+                        unitid=unit.id,
+                        timestamp__gte=initial_timestamp,
+                        timestamp__lte=final_timestamp
+                    ).order_by('timestamp')
+                    locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+                    locations = []
+                    for location_qs in locations_qs:
+                        locations.append({
+                            'latitude':location_qs.latitude,
+                            'longitude':location_qs.longitude,
+                            'timestamp':location_qs.timestamp,
+                            'angle':location_qs.angle,
+                            'speed':location_qs.speed,
+                            'address':location_qs.address,
+                            'attributes':json.loads(location_qs.attributes),
+                        })
+                    device_reader = DeviceReader(unit.uniqueid)
+                    geofence_list = data.getlist('geofence_name')
+                    geofences_qs = []
+                    for i in range(len(geofence_list)):
+                        try:
+                            geofence = geofences.get(name=geofence_list[i])
+                            geofences_qs.append(geofence)
+                        except Exception as e:
+                            print(e)
+                    unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
+                    for item in unit_geofence_report:
+                        item['unit_name'] = unit.name
+                        item['unit_description'] = unit.description
+                        geofence_report.append(item)
+                return render(request,'reports/geofence-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'selected_unit':unit,
+                    'geofence_report':geofence_report,
+                    'geofences':geofences,
+                    'units':units,
+                    'form':form,
+                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
+                })
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
