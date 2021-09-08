@@ -894,15 +894,6 @@ def speed_report_view(request):
                             'address':location_qs.address,
                             'attributes':json.loads(location_qs.attributes),
                         })
-                    if len(locations) == 0:
-                        return render(request,'reports/speed-report.html',{
-                            'initial_datetime':data['initial_datetime'],
-                            'final_datetime':data['final_datetime'],
-                            'speed_limit':data['speed_limit'],
-                            'units':units,
-                            'form':form,
-                            'error':'No existe un recorrido para analizar.'
-                        })
                     device_reader = DeviceReader(unit.uniqueid)
                     speed_limit = int(data['speed_limit'])
                     unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
