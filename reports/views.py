@@ -898,8 +898,8 @@ def speed_report_view(request):
                     speed_limit = int(data['speed_limit'])
                     unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
                     for item in unit_speed_report:
-                        item['unit_name'] = "prueba01"
-                        item['unit_description'] = "prueba02"
+                        item['unit_name'] = unit.name
+                        item['unit_description'] = unit.description
                         speed_report.append(item) 
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
