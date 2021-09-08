@@ -683,6 +683,9 @@ def stop_report_view(request):
             except Exception as e:
                 print(e)
                 form.add_error('final_datetime', e)
+            # tiempo para descartar
+            seconds = data['stopped_time'] * 60
+            # fin - tiempo para descartar
 
             if len(form.errors) != 0:
                 return render(request,'reports/stop-report.html',{
@@ -712,7 +715,7 @@ def stop_report_view(request):
                             'attributes':json.loads(location_qs.attributes),
                         })
                     device_reader = DeviceReader(unit.uniqueid)
-                    unit_stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp)
+                    unit_stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
                     for item in unit_stop_report:
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
@@ -736,7 +739,7 @@ def stop_report_view(request):
                         'attributes':json.loads(location.attributes),
                     })
                 device_reader = DeviceReader(unit.uniqueid)
-                unit_stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp)
+                unit_stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
                 for item in unit_stop_report:
                     item['unit_name'] = unit.name
                     item['unit_description'] = unit.description

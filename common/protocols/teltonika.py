@@ -109,7 +109,7 @@ class Teltonika:
             print(e)
             return False
 
-    def generate_stop_report(self,locations,initial_timestamp,final_timestamp):
+    def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
         stop_report = []
         for i in range(len(locations)):
             if i != 0:
@@ -145,15 +145,18 @@ class Teltonika:
                 #stop_report[-1]['final_timestamp'] = locations[i]['timestamp']
                 stop_report[-1]['final_timestamp'] = final_timestamp
 
+        final_stop_report = []
         for sr in stop_report:
             duration = sr['final_timestamp'] - sr['initial_timestamp']
-            sr['duration'] = str(timedelta(seconds=duration))
-            sr['initial_datetime'] = datetime.fromtimestamp(sr['initial_timestamp'])
-            sr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(sr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
-            sr['final_datetime'] = datetime.fromtimestamp(sr['final_timestamp'])
-            sr['final_datetime'] = gmt_conversor.convert_utctolocaltime(sr['final_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
-
-        return stop_report
+            if duration > seconds:
+                sr['duration'] = str(timedelta(seconds=duration))
+                sr['initial_datetime'] = datetime.fromtimestamp(sr['initial_timestamp'])
+                sr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(sr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+                sr['final_datetime'] = datetime.fromtimestamp(sr['final_timestamp'])
+                sr['final_datetime'] = gmt_conversor.convert_utctolocaltime(sr['final_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+                final_stop_report.append(sr)
+        
+        return final_stop_report
 
     def generate_travel_report(self,locations):
         travel_report = []

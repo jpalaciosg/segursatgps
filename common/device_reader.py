@@ -39,9 +39,9 @@ class DeviceReader:
         )
         return data
 	
-    def generate_stop_report(self,locations,initial_timestamp,final_timestamp):
+    def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
 	    reader = Teltonika(self.deviceid)
-	    return reader.generate_stop_report(locations,initial_timestamp,final_timestamp)
+	    return reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
 
     def generate_travel_report(self,locations):
 	    reader = Teltonika(self.deviceid)
