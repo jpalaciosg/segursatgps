@@ -898,7 +898,7 @@ def speed_report_view(request):
                         return render(request,'reports/speed-report.html',{
                             'initial_datetime':data['initial_datetime'],
                             'final_datetime':data['final_datetime'],
-                            'speed':data['speed'],
+                            'speed_limit':data['speed_limit'],
                             'units':units,
                             'form':form,
                             'error':'No existe un recorrido para analizar.'
@@ -930,7 +930,7 @@ def speed_report_view(request):
                     return render(request,'reports/speed-report.html',{
                         'initial_datetime':data['initial_datetime'],
                         'final_datetime':data['final_datetime'],
-                        'speed':data['speed'],
+                        'speed_limit':data['speed_limit'],
                         'units':units,
                         'form':form,
                         'error':'No existe un recorrido para analizar.'
