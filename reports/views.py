@@ -1163,7 +1163,7 @@ def mileage_report_view(request):
                         'attributes':json.loads(location_qs.attributes),
                     })
                 if len(locations) == 0:
-                    return render(request,'reports/speed-report.html',{
+                    return render(request,'reports/mileage-report.html',{
                         'initial_datetime':data['initial_datetime'],
                         'final_datetime':data['final_datetime'],
                         'speed_limit':data['speed_limit'],
@@ -1184,7 +1184,7 @@ def mileage_report_view(request):
                     }
                 )
             if len(result) == 0:
-                return render(request,'reports/speed-report.html',{
+                return render(request,'reports/mileage-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'speed_limit':data['speed_limit'],
