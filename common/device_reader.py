@@ -71,7 +71,7 @@ class DeviceReader:
         return speed_report
 
     def generate_mileage_report(self,locations):
-        distance_sum = 0
+        distance_sum = 0.0
         for i in range(len(locations)):
             if i != 0:
                 if locations[i-1]['latitude'] != 0.0 and locations[i-1]['longitude'] != 0.0:
