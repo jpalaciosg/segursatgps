@@ -874,8 +874,8 @@ def speed_report_view(request):
                     'form':form,
                 })
             # Aqui va la logica del resultado
+            speed_report = []
             if data['unit_name'].upper() == 'ALL':
-                speed_report = []
                 for unit in units:
                     locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
@@ -938,6 +938,16 @@ def speed_report_view(request):
                 device_reader = DeviceReader(unit.uniqueid)
                 speed_limit = int(data['speed_limit'])
                 speed_report = device_reader.generate_speed_report(locations,speed_limit)
+            if len(speed_report) == 0:
+                return render(request,'reports/speed-report.html',{
+                    'initial_datetime':data['initial_datetime'],
+                    'final_datetime':data['final_datetime'],
+                    'speed_limit':data['speed_limit'],
+                    'selected_unit':unit,
+                    'units':units,
+                    'form':form,
+                    'error':'No existen datos para mostrar.',
+                })
             return render(request,'reports/speed-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
