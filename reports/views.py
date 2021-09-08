@@ -1434,6 +1434,7 @@ def geofence_report_view(request):
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'selected_unit':unit,
+                    'geofences':geofences,
                     'units':units,
                     'form':form,
                     'error':'No existen datos para mostrar.',
