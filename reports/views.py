@@ -865,17 +865,14 @@ def speed_report_view(request):
                 final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
                 # --
                 final_timestamp = datetime.timestamp(final_datetime_obj)
-
             except Exception as e:
                 print(e)
                 form.add_error('final_datetime', e)
-
             if len(form.errors) != 0:
                 return render(request,'reports/speed-report.html',{
                     'units':units,
                     'form':form,
                 })
-
             # Aqui va la logica del resultado
             if data['unit_name'].upper() == 'ALL':
                 speed_report = []
@@ -897,23 +894,20 @@ def speed_report_view(request):
                             'address':location_qs.address,
                             'attributes':json.loads(location_qs.attributes),
                         })
+                    if len(locations) == 0:
+                        return render(request,'reports/speed-report.html',{
+                            'initial_datetime':data['initial_datetime'],
+                            'final_datetime':data['final_datetime'],
+                            'speed':data['speed'],
+                            'units':units,
+                            'form':form,
+                            'error':'No existe un recorrido para analizar.'
+                        })
                     device_reader = DeviceReader(unit.uniqueid)
                     speed_limit = int(data['speed_limit'])
                     unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
                     for item in unit_speed_report:
-                        item['unit_name'] = unit.name
-                        item['unit_description'] = unit.description
-                        speed_report.append(item)
-                return render(request,'reports/speed-report.html',{
-                    'initial_datetime':data['initial_datetime'],
-                    'final_datetime':data['final_datetime'],
-                    'speed_limit':data['speed_limit'],
-                    'selected_unit':unit,
-                    'speed_report':speed_report,
-                    'units':units,
-                    'form':form,
-                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-                })   
+                        speed_report.append(item) 
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
@@ -944,16 +938,16 @@ def speed_report_view(request):
                 device_reader = DeviceReader(unit.uniqueid)
                 speed_limit = int(data['speed_limit'])
                 speed_report = device_reader.generate_speed_report(locations,speed_limit)
-                return render(request,'reports/speed-report.html',{
-                    'initial_datetime':data['initial_datetime'],
-                    'final_datetime':data['final_datetime'],
-                    'speed_limit':data['speed_limit'],
-                    'selected_unit':unit,
-                    'speed_report':speed_report,
-                    'units':units,
-                    'form':form,
-                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-                })
+            return render(request,'reports/speed-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'speed_limit':data['speed_limit'],
+                'selected_unit':unit,
+                'speed_report':speed_report,
+                'units':units,
+                'form':form,
+                #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
+            })
         return render(request,'reports/speed-report.html',{
             'units':units,
             'form':form,
@@ -1137,7 +1131,6 @@ def mileage_report_view(request):
                     result.append(
                         {
                             "unit":unit.name,
-                            "unit_description":unit.description,
                             "initial_date":data['initial_datetime'],
                             "final_date":data['final_datetime'],
                             "distance":round(distance_sum,2),
