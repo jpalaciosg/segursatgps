@@ -1353,8 +1353,8 @@ def geofence_report_view(request):
                 })
 
             # Aqui va la logica del resultado
+            geofence_report = []
             if data['unit_name'].upper() == 'ALL':
-                geofence_report = []
                 for unit in units:
                     locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
@@ -1387,16 +1387,6 @@ def geofence_report_view(request):
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
                         geofence_report.append(item)
-                return render(request,'reports/geofence-report.html',{
-                    'initial_datetime':data['initial_datetime'],
-                    'final_datetime':data['final_datetime'],
-                    'selected_unit':unit,
-                    'geofence_report':geofence_report,
-                    'geofences':geofences,
-                    'units':units,
-                    'form':form,
-                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-                })
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
@@ -1434,17 +1424,30 @@ def geofence_report_view(request):
                     except Exception as e:
                         print(e)
                 # Esta funcion recibe un array de queryset en la variable de geocercas
-                geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
+                unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
+                for item in unit_geofence_report:
+                    item['unit_name'] = unit.name
+                    item['unit_description'] = unit.description
+                    geofence_report.append(item)
+            if len(geofence_report) == 0:
                 return render(request,'reports/geofence-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'selected_unit':unit,
-                    'geofence_report':geofence_report,
-                    'geofences':geofences,
                     'units':units,
                     'form':form,
-                    #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
+                    'error':'No existen datos para mostrar.',
                 })
+            return render(request,'reports/geofence-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'selected_unit':unit,
+                'geofence_report':geofence_report,
+                'geofences':geofences,
+                'units':units,
+                'form':form,
+                #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
+            })
         return render(request,'reports/geofence-report.html',{
             'units':units,
             'form':form,
