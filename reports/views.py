@@ -655,12 +655,13 @@ def stop_report_view(request):
         final_timestamp = None
         form = StopReportForm(data)
         if form.is_valid():
-            try:
-                unit = Device.objects.get(name=data['unit_name'])
-            except Exception as e:
-                print(e)
-                form.add_error('unit_name', e)
-            #
+            unit = None
+            if data['unit_name'].upper() != 'ALL':
+                try:
+                    unit = Device.objects.get(name=data['unit_name'])
+                except Exception as e:
+                    print(e)
+                    form.add_error('unit_name', e)
             try:
                 initial_datetime_str = f"{data['initial_datetime']}:00"
                 initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -690,33 +691,65 @@ def stop_report_view(request):
                 })
 
             # Aqui va la logica del resultado
-            locations_qs = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
-            ).order_by('id')
-            locations_qs = locations_qs.order_by('timestamp')
-            locations = []
-            for location in locations_qs:
-                locations.append({
-                    'latitude':location.latitude,
-                    'longitude':location.longitude,
-                    'timestamp':location.timestamp,
-                    'angle':location.angle,
-                    'speed':location.speed,
-                    'address':location.address,
-                    'attributes':json.loads(location.attributes),
-                })
-            if len(locations) == 0:
-                return render(request,'reports/stop-report.html',{
+            stop_report = []
+            if data['unit_name'].upper() == 'ALL':
+                for unit in units:
+                    locations_qs = Location.objects.using('history_db_replica').filter(
+                        unitid=unit.id,
+                        timestamp__gte=initial_timestamp,
+                        timestamp__lte=final_timestamp
+                    ).order_by('timestamp')
+                    locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+                    locations = []
+                    for location_qs in locations_qs:
+                        locations.append({
+                            'latitude':location_qs.latitude,
+                            'longitude':location_qs.longitude,
+                            'timestamp':location_qs.timestamp,
+                            'angle':location_qs.angle,
+                            'speed':location_qs.speed,
+                            'address':location_qs.address,
+                            'attributes':json.loads(location_qs.attributes),
+                        })
+                    device_reader = DeviceReader(unit.uniqueid)
+                    unit_stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp)
+                    for item in unit_stop_report:
+                        item['unit_name'] = unit.name
+                        item['unit_description'] = unit.description
+                        stop_report.append(item)
+            else:
+                locations_qs = Location.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lte=final_timestamp
+                ).order_by('id')
+                locations_qs = locations_qs.order_by('timestamp')
+                locations = []
+                for location in locations_qs:
+                    locations.append({
+                        'latitude':location.latitude,
+                        'longitude':location.longitude,
+                        'timestamp':location.timestamp,
+                        'angle':location.angle,
+                        'speed':location.speed,
+                        'address':location.address,
+                        'attributes':json.loads(location.attributes),
+                    })
+                device_reader = DeviceReader(unit.uniqueid)
+                unit_stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp)
+                for item in unit_stop_report:
+                    item['unit_name'] = unit.name
+                    item['unit_description'] = unit.description
+                    stop_report.append(item)
+            if len(stop_report) == 0:
+                return render(request,'reports/speed-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
+                    'selected_unit':unit,
                     'units':units,
                     'form':form,
-                    'error':'No existe un recorrido para analizar.'
+                    'error':'No existen datos para mostrar.',
                 })
-            device_reader = DeviceReader(unit.uniqueid)
-            stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp)
             return render(request,'reports/stop-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
