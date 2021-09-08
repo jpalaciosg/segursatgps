@@ -1137,7 +1137,8 @@ def mileage_report_view(request):
                     distance_sum = device_reader.generate_mileage_report(locations)
                     result.append(
                         {
-                            "unit":unit.name,
+                            "unit_name":unit.name,
+                            "unit_description":unit.description,
                             "initial_date":data['initial_datetime'],
                             "final_date":data['final_datetime'],
                             "distance":round(distance_sum,2),
@@ -1166,7 +1167,6 @@ def mileage_report_view(request):
                     return render(request,'reports/mileage-report.html',{
                         'initial_datetime':data['initial_datetime'],
                         'final_datetime':data['final_datetime'],
-                        'speed_limit':data['speed_limit'],
                         'units':units,
                         'form':form,
                         'error':'No existe un recorrido para analizar.'
@@ -1175,8 +1175,8 @@ def mileage_report_view(request):
                 distance_sum = device_reader.generate_mileage_report(locations)
                 result.append(
                     {
-                        "unit":unit.name,
-                        "description":unit.description,
+                        "unit_name":unit.name,
+                        "unit_description":unit.description,
                         "initial_date":data['initial_datetime'],
                         "final_date":data['final_datetime'],
                         "distance":round(distance_sum,2),
@@ -1187,7 +1187,6 @@ def mileage_report_view(request):
                 return render(request,'reports/mileage-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
-                    'speed_limit':data['speed_limit'],
                     'selected_unit':unit,
                     'units':units,
                     'form':form,
@@ -1196,8 +1195,8 @@ def mileage_report_view(request):
             return render(request,'reports/mileage-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'units':units,
                 'result':result,
+                'units':units,
                 'form':form,
             })
         return render(request,'reports/mileage-report.html',{
