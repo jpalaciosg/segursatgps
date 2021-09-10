@@ -191,8 +191,8 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
     locations = Location.objects.filter(unitid=unit.id,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('timestamp')
     serializer = LocationSerializer(locations,many=True)
     data = serializer.data
-    data1 = []
-    data2 = []
+    markers = []
+    route = []
     for i in range(len(data)):
         if i == 0:
             data[i]['attributes'] = json.loads(data[i]['attributes'])
@@ -200,8 +200,8 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
                 data[i]['unit_name'] = unit_name
                 last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
                 data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
-                data1.append(data[i])
-                data2.append(data[i])
+                markers.append(data[i])
+                route.append(data[i])
         else:
             previous_location = data[i-1]
             current_location = data[i]
@@ -212,13 +212,13 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
                 last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
                 data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
                 if offset > 10:
-                    data1.append(data[i])
+                    markers.append(data[i])
+                    route.append(data[i])
                 else:
-                    data1.append(data[i])
-                    data2.append(data[i])
+                    route.append(data[i])
     result = {
-        'route': data2,
-        'markers': data1
+        'route': route,
+        'markers': markers
     }
     return Response(result,status=status.HTTP_200_OK)
 
