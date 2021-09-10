@@ -194,12 +194,24 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
     data = serializer.data
     data1 = []
     for i in range(len(data)):
-        data[i]['attributes'] = json.loads(data[i]['attributes'])
-        if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
-            data1.append(data[i])
-        data[i]['unit_name'] = unit_name
-        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
-        data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+        if i == 0:
+            data[i]['attributes'] = json.loads(data[i]['attributes'])
+            if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
+                data[i]['unit_name'] = unit_name
+                last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
+                data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+                data1.append(data[i])
+        else:
+            previous_location = data[i-1]
+            current_location = data[i]
+            offset = abs(current_location['angle'] - previous_location['angle'])
+            if offset > 10:
+                data[i]['attributes'] = json.loads(data[i]['attributes'])
+                if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
+                    data[i]['unit_name'] = unit_name
+                    last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
+                    data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+                    data1.append(data[i])
     return Response(data1,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
