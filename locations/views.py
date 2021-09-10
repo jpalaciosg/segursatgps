@@ -211,7 +211,7 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
                 data[i]['unit_name'] = unit_name
                 last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
                 data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
-                if offset > 15:
+                if offset > 12:
                     markers.append(data[i])
                     route.append(data[i])
                 else:
