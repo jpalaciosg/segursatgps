@@ -205,7 +205,7 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
             previous_location = data[i-1]
             current_location = data[i]
             offset = abs(current_location['angle'] - previous_location['angle'])
-            if offset > 50:
+            if offset > 25:
                 data[i]['attributes'] = json.loads(data[i]['attributes'])
                 if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
                     data[i]['unit_name'] = unit_name
