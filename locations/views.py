@@ -191,36 +191,15 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
     locations = Location.objects.filter(unitid=unit.id,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('timestamp')
     serializer = LocationSerializer(locations,many=True)
     data = serializer.data
-    markers = []
-    route = []
+    data1 = []
     for i in range(len(data)):
-        if i == 0:
+        if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
+            data[i]['unit_name'] = unit_name
             data[i]['attributes'] = json.loads(data[i]['attributes'])
-            if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
-                data[i]['unit_name'] = unit_name
-                last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
-                data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
-                markers.append(data[i])
-                route.append(data[i])
-        else:
-            previous_location = data[i-1]
-            current_location = data[i]
-            offset = abs(current_location['angle'] - previous_location['angle'])
-            data[i]['attributes'] = json.loads(data[i]['attributes'])
-            if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
-                data[i]['unit_name'] = unit_name
-                last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
-                data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
-                if offset > 10:
-                    markers.append(data[i])
-                    route.append(data[i])
-                else:
-                    route.append(data[i])
-    result = {
-        'route': route,
-        'markers': markers
-    }
-    return Response(result,status=status.HTTP_200_OK)
+            last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
+            data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+            data1.append(data[i])   
+    return Response(data1,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_location(request,id):
