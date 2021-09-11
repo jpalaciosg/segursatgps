@@ -437,6 +437,7 @@ def driving_style_report_view(request):
                 locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
                 try:
                     locations[i].driving = json.loads(locations[i].attributes)['alarm']
+                    locations[i].intensity = json.loads(locations[i].attributes)['io254']
                     harsh_driving_report.append(locations[i])
                 except Exception as e:
                     print(e)
