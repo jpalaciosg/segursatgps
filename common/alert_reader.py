@@ -158,19 +158,20 @@ class AlertReader:
                                 }
                             }
                         )
-                        async_to_sync(channel_layer.group_send)(
-                            f'chat_{unit.account.name}',
-                            {
-                                'type': 'send_message',
-                                'message': {
-                                    'type':'notification',
-                                    'payload': {
-                                        'title': f'{unit.name} - {unit.description}',
-                                        'message': alert.alert_description,
+                        if trigger.send_notification:
+                            async_to_sync(channel_layer.group_send)(
+                                f'chat_{unit.account.name}',
+                                {
+                                    'type': 'send_message',
+                                    'message': {
+                                        'type':'notification',
+                                        'payload': {
+                                            'title': f'{unit.name} - {unit.description}',
+                                            'message': alert.alert_description,
+                                        }
                                     }
                                 }
-                            }
-                        )
+                            )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
                     file.write(f"{str(e)}")
@@ -258,19 +259,20 @@ class AlertReader:
                                 }
                             }
                         )
-                        async_to_sync(channel_layer.group_send)(
-                            f'chat_{unit.account.name}',
-                            {
-                                'type': 'send_message',
-                                'message': {
-                                    'type':'notification',
-                                    'payload': {
-                                        'title': f'{unit.name} - {unit.description}',
-                                        'message': alert.alert_description,
+                        if trigger.send_notification:
+                            async_to_sync(channel_layer.group_send)(
+                                f'chat_{unit.account.name}',
+                                {
+                                    'type': 'send_message',
+                                    'message': {
+                                        'type':'notification',
+                                        'payload': {
+                                            'title': f'{unit.name} - {unit.description}',
+                                            'message': alert.alert_description,
+                                        }
                                     }
                                 }
-                            }
-                        )
+                            )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
                     file.write(f"{str(e)}")
@@ -363,19 +365,20 @@ class AlertReader:
                                         }
                                     }
                                 )
-                                async_to_sync(channel_layer.group_send)(
-                                    f'chat_{unit.account.name}',
-                                    {
-                                        'type': 'send_message',
-                                        'message': {
-                                            'type':'notification',
-                                            'payload': {
-                                                'title': f'{unit.name} - {unit.description}',
-                                                'message': alert.alert_description,
+                                if trigger.send_notification:
+                                    async_to_sync(channel_layer.group_send)(
+                                        f'chat_{unit.account.name}',
+                                        {
+                                            'type': 'send_message',
+                                            'message': {
+                                                'type':'notification',
+                                                'payload': {
+                                                    'title': f'{unit.name} - {unit.description}',
+                                                    'message': alert.alert_description,
+                                                }
                                             }
                                         }
-                                    }
-                                )
+                                    )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
                     file.write(f"{str(e)}")
@@ -475,19 +478,20 @@ class AlertReader:
                                             }
                                         }
                                     )
-                                    async_to_sync(channel_layer.group_send)(
-                                        f'chat_{unit.account.name}',
-                                        {
-                                            'type': 'send_message',
-                                            'message': {
-                                                'type':'notification',
-                                                'payload': {
-                                                    'title': f'{unit.name} - {unit.description}',
-                                                    'message': alert.alert_description,
+                                    if trigger.send_notification:
+                                        async_to_sync(channel_layer.group_send)(
+                                            f'chat_{unit.account.name}',
+                                            {
+                                                'type': 'send_message',
+                                                'message': {
+                                                    'type':'notification',
+                                                    'payload': {
+                                                        'title': f'{unit.name} - {unit.description}',
+                                                        'message': alert.alert_description,
+                                                    }
                                                 }
                                             }
-                                        }
-                                    )
+                                        )
                                 # FIN INSERTAR ALERTA EN EL HISTORIAL
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
