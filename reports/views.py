@@ -462,7 +462,7 @@ def driving_style_report_view(request):
 
 # TRAVEL REPORT
 @login_required
-def travel_report_view(request):
+def trip_report_view(request):
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
@@ -500,7 +500,7 @@ def travel_report_view(request):
                 form.add_error('final_datetime', e)
 
             if len(form.errors) != 0:
-                return render(request,'reports/travel-report.html',{
+                return render(request,'reports/trip-report.html',{
                     'units':units,
                     'form':form,
                 })
@@ -518,12 +518,13 @@ def travel_report_view(request):
                     'latitude':location.latitude,
                     'longitude':location.longitude,
                     'timestamp':location.timestamp,
+                    'angle':location.angle,
                     'speed':location.speed,
                     'address':location.address,
                     'attributes':json.loads(location.attributes),
                 })
             if len(locations) == 0:
-                return render(request,'reports/travel-report.html',{
+                return render(request,'reports/trip-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'units':units,
@@ -531,35 +532,41 @@ def travel_report_view(request):
                     'error':'No existe un recorrido para analizar.'
                 })
             device_reader = DeviceReader(unit.uniqueid)
-            travel_report = device_reader.generate_trip_report(locations)
+            trip_report = device_reader.generate_trip_report(locations)
+            stop_duration = 0
+            stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,1)
+            for sr in stop_report:
+                stop_duration += sr['duration']
+            driving_duration = final_timestamp - initial_timestamp - stop_duration
             summarization = {
                 "number_of_trips": 0,
                 "distance": 0.0,
                 "duration": 0,
             }
-            for tr in travel_report:
+            for tr in trip_report:
                 summarization['number_of_trips'] += 1
                 summarization['distance'] += tr['distance']
                 summarization['duration'] += tr['duration']
             summarization['time'] = str(timedelta(seconds=summarization['duration']))
+            summarization['driving_time'] = str(timedelta(seconds=driving_duration))
 
-            return render(request,'reports/travel-report.html',{
+            return render(request,'reports/trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
                 'selected_unit':unit,
-                'travel_report':travel_report,
+                'trip_report':trip_report,
                 'summarization':summarization,
                 'units':units,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
             })      
-        return render(request,'reports/travel-report.html',{
+        return render(request,'reports/trip-report.html',{
             'units':units,
             'form':form,
         })
     # GET
     units = privilege.get_units(request.user.profile)
-    return render(request,'reports/travel-report.html',{
+    return render(request,'reports/trip-report.html',{
         'units':units,
     })
 

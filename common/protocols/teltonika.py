@@ -156,7 +156,8 @@ class Teltonika:
         for sr in stop_report:
             duration = sr['final_timestamp'] - sr['initial_timestamp']
             if duration > seconds:
-                sr['duration'] = str(timedelta(seconds=duration))
+                sr['duration'] = duration
+                sr['time'] = str(timedelta(seconds=duration))
                 sr['initial_datetime'] = datetime.fromtimestamp(sr['initial_timestamp'])
                 sr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(sr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
                 sr['final_datetime'] = datetime.fromtimestamp(sr['final_timestamp'])
