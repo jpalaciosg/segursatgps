@@ -537,7 +537,12 @@ def trip_report_view(request):
             stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,1)
             for sr in stop_report:
                 stop_duration += sr['duration']
-            driving_duration = final_timestamp - initial_timestamp - stop_duration
+            driving_duration = None
+            current_timestamp = int(datetime.timestamp(datetime.now()))
+            if final_timestamp > current_timestamp:
+                driving_duration = current_timestamp - initial_timestamp - stop_duration
+            else:
+                driving_duration = final_timestamp - initial_timestamp - stop_duration
             summarization = {
                 "number_of_trips": 0,
                 "distance": 0.0,
