@@ -109,6 +109,13 @@ class Teltonika:
             print(e)
             return False
 
+    def get_odometer(self,location):
+        try:
+            odometer = location['attributes']['odometer']
+            return odometer
+        except:
+            return ""
+
     def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
         stop_report = []
         for i in range(len(locations)):

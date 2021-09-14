@@ -145,9 +145,11 @@ def detailed_report_view(request):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
                 locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
-                # ignicion
                 device_reader = DeviceReader(unit.uniqueid)
                 locations[i].ignition = device_reader.detect_ignition_event({
+                    'attributes':json.loads(locations[i].attributes)
+                })
+                locations[i].odometer = device_reader.get_odometer({
                     'attributes':json.loads(locations[i].attributes)
                 })
                 if i == 0:

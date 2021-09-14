@@ -27,6 +27,10 @@ class DeviceReader:
         reader = Teltonika(self.deviceid)
         return reader.detect_battery_disconnection_event(current_location,previous_location)
 
+    def get_odometer(self,location):
+	    reader = Teltonika(self.deviceid)
+	    return reader.get_odometer(location)
+
     def get_unit_status(self,unit):
         serializer = DeviceSerializer(unit,many=False)
         data = serializer.data
