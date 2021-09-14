@@ -158,7 +158,7 @@ class Teltonika:
         
         return final_stop_report
 
-    def generate_travel_report(self,locations):
+    def generate_trip_report(self,locations):
         travel_report = []
         for i in range(len(locations)):
             if i != 0:
@@ -202,7 +202,8 @@ class Teltonika:
 
         for tr in travel_report:
             duration = tr['final_timestamp'] - tr['initial_timestamp']
-            tr['duration'] = str(timedelta(seconds=duration))
+            tr['duration'] = duration
+            tr['time'] = str(timedelta(seconds=duration))
             tr['initial_datetime'] = datetime.fromtimestamp(tr['initial_timestamp'])
             tr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(tr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
             tr['final_datetime'] = datetime.fromtimestamp(tr['final_timestamp'])

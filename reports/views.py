@@ -458,7 +458,6 @@ def driving_style_report_view(request):
         'units':units,
     })
 
-
 # TRAVEL REPORT
 @login_required
 def travel_report_view(request):
@@ -530,12 +529,24 @@ def travel_report_view(request):
                     'error':'No existe un recorrido para analizar.'
                 })
             device_reader = DeviceReader(unit.uniqueid)
-            travel_report = device_reader.generate_travel_report(locations)
+            travel_report = device_reader.generate_trip_report(locations)
+            summarization = {
+                "number_of_trips": 0,
+                "distance": 0.0,
+                "duration": 0,
+            }
+            for tr in travel_report:
+                summarization['number_of_trips'] += 1
+                summarization['distance'] += tr['distance']
+                summarization['duration'] += tr['duration']
+            summarization['time'] = str(timedelta(seconds=summarization['duration']))
+
             return render(request,'reports/travel-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
                 'selected_unit':unit,
                 'travel_report':travel_report,
+                'summarization':summarization,
                 'units':units,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
@@ -622,7 +633,7 @@ def group_trip_report_view(request):
                         'error':'No existe un recorrido para analizar.'
                     })
                 device_reader = DeviceReader(unit.uniqueid)
-                trip_report = device_reader.generate_travel_report(locations)
+                trip_report = device_reader.generate_trip_report(locations)
                 for item in trip_report:
                     item['unit_name'] = unit.name 
                     group_trip_report.append(item)
