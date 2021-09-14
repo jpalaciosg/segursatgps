@@ -531,14 +531,19 @@ def trip_report_view(request):
                     'form':form,
                     'error':'No existe un recorrido para analizar.'
                 })
+
+            current_timestamp = int(datetime.timestamp(datetime.now()))
             device_reader = DeviceReader(unit.uniqueid)
             trip_report = device_reader.generate_trip_report(locations)
             stop_duration = 0
-            stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,1)
+            stop_report = None
+            if final_timestamp > current_timestamp:
+                stop_report = device_reader.generate_stop_report(locations,initial_timestamp,current_timestamp,1)
+            else:
+                stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,1)
             for sr in stop_report:
                 stop_duration += sr['duration']
             driving_duration = None
-            current_timestamp = int(datetime.timestamp(datetime.now()))
             if final_timestamp > current_timestamp:
                 driving_duration = current_timestamp - initial_timestamp - stop_duration
             else:
