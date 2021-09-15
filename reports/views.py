@@ -133,7 +133,7 @@ def detailed_report_view(request):
                 longitude=0.0
             )
             if len(locations) == 0:
-                return render(request,'reports/speed-report.html',{
+                return render(request,'reports/detailed-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'units':units,
