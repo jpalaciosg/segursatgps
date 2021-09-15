@@ -532,34 +532,50 @@ def trip_report_view(request):
                     'error':'No existe un recorrido para analizar.'
                 })
 
-            current_timestamp = int(datetime.timestamp(datetime.now()))
             device_reader = DeviceReader(unit.uniqueid)
             trip_report = device_reader.generate_trip_report(locations)
-            stop_duration = 0
-            stop_report = None
-            if final_timestamp > current_timestamp:
-                stop_report = device_reader.generate_stop_report(locations,initial_timestamp,current_timestamp,1)
-            else:
-                stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,1)
-            for sr in stop_report:
-                stop_duration += sr['duration']
-            driving_duration = None
-            if final_timestamp > current_timestamp:
-                driving_duration = current_timestamp - initial_timestamp - stop_duration
-            else:
-                driving_duration = final_timestamp - initial_timestamp - stop_duration
+            total_stop_duration = 0
             summarization = {
                 "number_of_trips": 0,
                 "distance": 0.0,
                 "duration": 0,
             }
+            print('las nalgas de lale')
             for tr in trip_report:
                 summarization['number_of_trips'] += 1
                 summarization['distance'] += tr['distance']
                 summarization['duration'] += tr['duration']
+                qs = locations_qs.filter(
+                    timestamp__gte=tr['initial_timestamp'],
+                    timestamp__lte=tr['final_timestamp']
+                )
+                locations = []
+                for item in qs:
+                    locations.append({
+                        'latitude':item.latitude,
+                        'longitude':item.longitude,
+                        'timestamp':item.timestamp,
+                        'angle':item.angle,
+                        'speed':item.speed,
+                        'address':item.address,
+                        'attributes':json.loads(item.attributes),
+                    })
+                stop_report = device_reader.generate_stop_report(
+                    locations,
+                    tr['initial_timestamp'],
+                    tr['final_timestamp'],
+                    0
+                )
+                stop_duration = 0
+                for sr in stop_report:
+                    stop_duration += sr['duration']
+                print(stop_duration)
+                total_stop_duration += stop_duration
             summarization['time'] = str(timedelta(seconds=summarization['duration']))
+            driving_duration = summarization['duration'] - total_stop_duration
             summarization['driving_time'] = str(timedelta(seconds=driving_duration))
-
+            print('##')
+            print(total_stop_duration)
             return render(request,'reports/trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
