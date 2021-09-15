@@ -21,6 +21,9 @@ class Profile(models.Model):
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     is_admin = models.BooleanField(default=False)
     units = models.ManyToManyField(Device,blank=True)
+    report_module = models.BooleanField(default=False)
+    alert_module = models.BooleanField(default=False)
+    geofence_module = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):

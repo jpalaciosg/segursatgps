@@ -540,7 +540,6 @@ def trip_report_view(request):
                 "distance": 0.0,
                 "duration": 0,
             }
-            print('las nalgas de lale')
             for tr in trip_report:
                 summarization['number_of_trips'] += 1
                 summarization['distance'] += tr['distance']
@@ -574,8 +573,6 @@ def trip_report_view(request):
             summarization['time'] = str(timedelta(seconds=summarization['duration']))
             driving_duration = summarization['duration'] - total_stop_duration
             summarization['driving_time'] = str(timedelta(seconds=driving_duration))
-            print('##')
-            print(total_stop_duration)
             return render(request,'reports/trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
