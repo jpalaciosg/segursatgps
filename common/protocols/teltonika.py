@@ -112,6 +112,7 @@ class Teltonika:
     def get_odometer(self,location):
         try:
             odometer = location['attributes']['odometer']
+            odometer = float(odometer)/1000
             return odometer
         except:
             return ""
