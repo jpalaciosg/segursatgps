@@ -573,6 +573,7 @@ def trip_report_view(request):
             summarization['time'] = str(timedelta(seconds=summarization['duration']))
             driving_duration = summarization['duration'] - total_stop_duration
             summarization['driving_time'] = str(timedelta(seconds=driving_duration))
+            summarization['stopped_time'] = str(timedelta(seconds=total_stop_duration))
             return render(request,'reports/trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
