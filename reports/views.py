@@ -460,7 +460,7 @@ def driving_style_report_view(request):
         'units':units,
     })
 
-# TRAVEL REPORT
+# TRIP REPORT
 @login_required
 def trip_report_view(request):
     if request.method == 'POST':
@@ -568,8 +568,9 @@ def trip_report_view(request):
                 stop_duration = 0
                 for sr in stop_report:
                     stop_duration += sr['duration']
-                print(stop_duration)
+                tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                 total_stop_duration += stop_duration
+                tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
             summarization['time'] = str(timedelta(seconds=summarization['duration']))
             driving_duration = summarization['duration'] - total_stop_duration
             summarization['driving_time'] = str(timedelta(seconds=driving_duration))
