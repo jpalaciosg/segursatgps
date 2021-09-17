@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 from datetime import datetime,timedelta
+import time
 import json
 from pytz import timezone
 from geopy.distance import great_circle
@@ -801,6 +802,7 @@ def stop_report_view(request):
                     point = Point(sr['longitude'],sr['latitude'])
                     if s.contains(point):
                         matching_geofences.append(geofence.name)
+                time.sleep(0.01) #QUE RESPIRE EL SERVER
                 c_str = ""
                 for i in range(len(matching_geofences)):
                     if i==0:
