@@ -5,6 +5,7 @@ from datetime import datetime,timedelta
 import json
 from pytz import timezone
 from geopy.distance import great_circle
+from shapely.geometry import Point, geo,shape
 
 from locations.models import Location
 from geofences.models import Geofence
@@ -790,8 +791,26 @@ def stop_report_view(request):
                     item['unit_name'] = unit.name
                     item['unit_description'] = unit.description
                     stop_report.append(item)
+            # CALCULAR GEOCERCAS
+            geofences = Geofence.objects.filter(account=request.user.profile.account)
+            for sr in stop_report:
+                matching_geofences = []
+                for geofence in geofences:
+                    feature = json.loads(geofence.geojson)['features'][0]
+                    s = shape(feature['geometry'])
+                    point = Point(sr['longitude'],sr['latitude'])
+                    if s.contains(point):
+                        matching_geofences.append(geofence.name)
+                c_str = ""
+                for i in range(len(matching_geofences)):
+                    if i==0:
+                        c_str += matching_geofences[i]
+                    else:
+                        c_str += f', {matching_geofences[i]}'
+                sr['geofences'] = c_str
+            # FIN - CALCULAR GEOCERCAS
             if len(stop_report) == 0:
-                return render(request,'reports/speed-report.html',{
+                return render(request,'reports/stop-report.html',{
                     'initial_datetime':data['initial_datetime'],
                     'final_datetime':data['final_datetime'],
                     'selected_unit':unit,
