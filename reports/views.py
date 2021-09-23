@@ -743,6 +743,7 @@ def stop_report_view(request):
 
             # Aqui va la logica del resultado
             stop_report = []
+            summarization = []
             if data['unit_name'].upper() == 'ALL':
                 for unit in units:
                     locations_qs = Location.objects.using('history_db_replica').filter(
@@ -768,6 +769,17 @@ def stop_report_view(request):
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
                         stop_report.append(item)
+                    # CALCULAR EL RESUMEN
+                    for unit in units:
+                        matches = [item for item in unit_stop_report if unit.name == item['unit_name']]
+                        count = len(matches)
+                        if count > 0:
+                            summarization.append({
+                                'unit_name':unit.name,
+                                'unit_description':unit.description,
+                                'count':count,
+                            })
+                    # FIN - CALCULAR EL RESUMEN
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
@@ -792,6 +804,15 @@ def stop_report_view(request):
                     item['unit_name'] = unit.name
                     item['unit_description'] = unit.description
                     stop_report.append(item)
+                # CALCULAR EL RESUMEN
+                count = len(unit_stop_report)
+                if count > 0:
+                    summarization.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'count':count,
+                    })
+                # FIN - CALCULAR EL RESUMEN
             # CALCULAR GEOCERCAS
             geofences = Geofence.objects.filter(account=request.user.profile.account)
             for sr in stop_report:
@@ -825,6 +846,7 @@ def stop_report_view(request):
                 'final_datetime':data['final_datetime'],
                 'selected_unit':unit,
                 'stop_report':stop_report,
+                'summarization':summarization,
                 'units':units,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
