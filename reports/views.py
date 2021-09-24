@@ -64,6 +64,8 @@ def fleet_status_view(request):
         dt = datetime.fromtimestamp(unit.last_timestamp)
         dt = gmt_conversor.convert_utctolocaltime(dt)
         unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
+        unit.last_report_date = dt.strftime("%Y/%m/%d %H:%M:%S").split(" ")[0]
+        unit.last_report_time = dt.strftime("%Y/%m/%d %H:%M:%S").split(" ")[1]
         ## sumarizar totales
         timeout = current_timestamp - unit.last_timestamp
         if timeout > 86400:
