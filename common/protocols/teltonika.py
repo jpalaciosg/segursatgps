@@ -160,9 +160,9 @@ class Teltonika:
                 sr['duration'] = duration
                 sr['time'] = str(timedelta(seconds=duration))
                 sr['initial_datetime'] = datetime.fromtimestamp(sr['initial_timestamp'])
-                sr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(sr['initial_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+                sr['initial_datetime'] = gmt_conversor.convert_utctolocaltime(sr['initial_datetime']).strftime("%d/%m/%Y %H:%M:%S")
                 sr['final_datetime'] = datetime.fromtimestamp(sr['final_timestamp'])
-                sr['final_datetime'] = gmt_conversor.convert_utctolocaltime(sr['final_datetime']).strftime("%d/%m/%Y, %H:%M:%S")
+                sr['final_datetime'] = gmt_conversor.convert_utctolocaltime(sr['final_datetime']).strftime("%d/%m/%Y %H:%M:%S")
                 final_stop_report.append(sr)
         
         return final_stop_report
