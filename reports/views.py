@@ -6,6 +6,7 @@ import time
 import json
 from pytz import timezone
 from geopy.distance import great_circle
+from rest_framework.fields import DurationField
 from shapely.geometry import Point, geo,shape
 
 from locations.models import Location
@@ -513,6 +514,7 @@ def trip_report_view(request):
 
             # Aqui va la logica del resultado
             trip_report = []
+            summarization = []
             if data['unit_name'].upper() == 'ALL':
                 for unit in units:
                     locations_qs = Location.objects.using('history_db_replica').filter(
@@ -538,7 +540,6 @@ def trip_report_view(request):
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
                         trip_report.append(item)
-                summarization = {}
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
@@ -574,15 +575,14 @@ def trip_report_view(request):
                     trip_report.append(item)
 
                 total_stop_duration = 0
-                summarization = {
-                    "number_of_trips": 0,
-                    "distance": 0.0,
-                    "duration": 0,
-                }
+                number_of_trips = 0
+                distance = 0.0
+                duration = 0
+
                 for tr in trip_report:
-                    summarization['number_of_trips'] += 1
-                    summarization['distance'] += tr['distance']
-                    summarization['duration'] += tr['duration']
+                    number_of_trips += 1
+                    distance += tr['distance']
+                    duration += tr['duration']
                     qs = locations_qs.filter(
                         timestamp__gte=tr['initial_timestamp'],
                         timestamp__lte=tr['final_timestamp']
@@ -610,10 +610,17 @@ def trip_report_view(request):
                     tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                     total_stop_duration += stop_duration
                     tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
-                summarization['time'] = str(timedelta(seconds=summarization['duration']))
-                driving_duration = summarization['duration'] - total_stop_duration
-                summarization['driving_time'] = str(timedelta(seconds=driving_duration))
-                summarization['stopped_time'] = str(timedelta(seconds=total_stop_duration))
+                
+                summarization.append({
+                    "unit_name" : unit.name,
+                    "unit_description" : unit.description,
+                    "number_of_trips": number_of_trips,
+                    "distance": distance,
+                    "duration": duration,
+                    "time": str(timedelta(seconds=duration)),
+                    "driving_time": duration - total_stop_duration,
+                    "stopped_time": str(timedelta(seconds=total_stop_duration))
+                })
 
             return render(request,'reports/trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
