@@ -539,7 +539,44 @@ def trip_report_view(request):
                     for item in unit_trip_report:
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
-                        trip_report.append(item)            
+                        trip_report.append(item)
+
+                    total_stop_duration = 0
+                    number_of_trips = 0
+                    distance = 0.0
+                    duration = 0 
+
+                    for tr in trip_report:
+                        number_of_trips += 1
+                        distance += tr['distance']
+                        duration += tr['duration']
+                        qs = locations_qs.filter(
+                            timestamp__gte=tr['initial_timestamp'],
+                            timestamp__lte=tr['final_timestamp']
+                        )
+                        locations = []
+                        for item in qs:
+                            locations.append({
+                                'latitude':item.latitude,
+                                'longitude':item.longitude,
+                                'timestamp':item.timestamp,
+                                'angle':item.angle,
+                                'speed':item.speed,
+                                'address':item.address,
+                                'attributes':json.loads(item.attributes),
+                            })
+                        stop_report = device_reader.generate_stop_report(
+                            locations,
+                            tr['initial_timestamp'],
+                            tr['final_timestamp'],
+                            0
+                        )
+                        stop_duration = 0
+                        for sr in stop_report:
+                            stop_duration += sr['duration']
+                        tr['stopped_time'] = str(timedelta(seconds=stop_duration))
+                        total_stop_duration += stop_duration
+                        tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))          
                     
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
