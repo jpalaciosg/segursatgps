@@ -811,21 +811,20 @@ def stop_report_view(request):
                         })
                     device_reader = DeviceReader(unit.uniqueid)
                     unit_stop_report = device_reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
+                    # CALCULAR EL RESUMEN Y AÑADIR LA DESCRIPCION DE LA UNIDAD
+                    count = 0
                     for item in unit_stop_report:
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
                         stop_report.append(item)
-                    # CALCULAR EL RESUMEN
-                    for unit in units:
-                        matches = [item for item in unit_stop_report if unit.name == item['unit_name']]
-                        count = len(matches)
-                        if count > 0:
-                            summarization.append({
-                                'unit_name':unit.name,
-                                'unit_description':unit.description,
-                                'count':count,
-                            })
-                    # FIN - CALCULAR EL RESUMEN
+                        count += 1
+                    if count > 0:
+                        summarization.append({
+                            'unit_name':unit.name,
+                            'unit_description':unit.description,
+                            'count':count,
+                        })
+                    # FIN - CALCULAR EL RESUMEN Y AÑADIR LA DESCRIPCION DE LA UNIDAD
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
