@@ -578,6 +578,7 @@ def trip_report_view(request):
                         total_stop_duration += stop_duration
                         tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))          
                     
+                    driving_duration = duration - total_stop_duration
                     summarization.append({
                         "unit_name" : unit.name,
                         "unit_description": unit.description,
@@ -585,7 +586,7 @@ def trip_report_view(request):
                         "distance": distance,
                         "duration": duration,
                         "time": str(timedelta(seconds=duration)),
-                        "driving_time": str(timedelta(duration - total_stop_duration)),
+                        "driving_time": str(timedelta(driving_duration)),
                         "stopped_time": str(timedelta(seconds=total_stop_duration))
                     })
 
@@ -660,6 +661,7 @@ def trip_report_view(request):
                     total_stop_duration += stop_duration
                     tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
                 
+                driving_duration = duration - total_stop_duration
                 summarization.append({
                     "unit_name" : unit.name,
                     "unit_description": unit.description,
@@ -667,7 +669,7 @@ def trip_report_view(request):
                     "distance": distance,
                     "duration": duration,
                     "time": str(timedelta(seconds=duration)),
-                    "driving_time": str(timedelta(duration - total_stop_duration)),
+                    "driving_time": str(timedelta(driving_duration)),
                     "stopped_time": str(timedelta(seconds=total_stop_duration))
                 })
 
