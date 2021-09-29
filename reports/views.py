@@ -673,7 +673,35 @@ def trip_report_view(request):
                     "driving_time": str(timedelta(seconds=driving_duration)),
                     "stopped_time": str(timedelta(seconds=total_stop_duration))
                 })
-
+            # CALCULAR GEOCERCAS
+            geofences = Geofence.objects.filter(account=request.user.profile.account)
+            for tr in trip_report:
+                matching_initial_geofences = []
+                matching_final_geofences = []
+                for geofence in geofences:
+                    feature = json.loads(geofence.geojson)['features'][0]
+                    s = shape(feature['geometry'])
+                    point = Point(tr['initial_longitude'],tr['initial_latitude'])
+                    if s.contains(point):
+                        matching_initial_geofences.append(geofence.name)
+                    point = Point(tr['final_longitude'],tr['final_latitude'])
+                    if s.contains(point):
+                        matching_final_geofences.append(geofence.name)
+                s_str = ""
+                for i in range(len(matching_initial_geofences)):
+                    if i==0:
+                        s_str += matching_initial_geofences[i]
+                    else:
+                        s_str += f', {matching_initial_geofences[i]}'
+                tr['initial_geofences'] = s_str
+                d_str = ""
+                for i in range(len(matching_final_geofences)):
+                    if i==0:
+                        d_str += matching_final_geofences[i]
+                    else:
+                        d_str += f', {matching_final_geofences[i]}'
+                tr['final_geofences'] = d_str
+            # FIN - CALCULAR GEOCERCAS
             return render(request,'reports/trip-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
