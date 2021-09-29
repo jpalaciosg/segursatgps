@@ -578,17 +578,18 @@ def trip_report_view(request):
                         total_stop_duration += stop_duration
                         tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
                     
-                    driving_duration = duration - total_stop_duration
-                    summarization.append({
-                        "unit_name" : unit.name,
-                        "unit_description": unit.description,
-                        "number_of_trips": number_of_trips,
-                        "distance": distance,
-                        "duration": duration,
-                        "time": str(timedelta(seconds=duration)),
-                        "driving_time": str(timedelta(seconds=driving_duration)),
-                        "stopped_time": str(timedelta(seconds=total_stop_duration))
-                    })
+                    if len(trip_report) != 0:
+                        driving_duration = duration - total_stop_duration
+                        summarization.append({
+                            "unit_name" : unit.name,
+                            "unit_description": unit.description,
+                            "number_of_trips": number_of_trips,
+                            "distance": distance,
+                            "duration": duration,
+                            "time": str(timedelta(seconds=duration)),
+                            "driving_time": str(timedelta(seconds=driving_duration)),
+                            "stopped_time": str(timedelta(seconds=total_stop_duration))
+                        })
 
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
