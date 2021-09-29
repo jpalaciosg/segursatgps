@@ -586,7 +586,7 @@ def trip_report_view(request):
                         "distance": distance,
                         "duration": duration,
                         "time": str(timedelta(seconds=duration)),
-                        "driving_time": str(timedelta(driving_duration)),
+                        "driving_time": str(timedelta(seconds=driving_duration)),
                         "stopped_time": str(timedelta(seconds=total_stop_duration))
                     })
 
@@ -669,7 +669,7 @@ def trip_report_view(request):
                     "distance": distance,
                     "duration": duration,
                     "time": str(timedelta(seconds=duration)),
-                    "driving_time": str(timedelta(driving_duration)),
+                    "driving_time": str(timedelta(seconds=driving_duration)),
                     "stopped_time": str(timedelta(seconds=total_stop_duration))
                 })
 
