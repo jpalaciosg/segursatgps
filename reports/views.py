@@ -576,7 +576,7 @@ def trip_report_view(request):
                             stop_duration += sr['duration']
                         tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                         total_stop_duration += stop_duration
-                        tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))          
+                        tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
                     
                     driving_duration = duration - total_stop_duration
                     summarization.append({
