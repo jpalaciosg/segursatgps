@@ -578,7 +578,7 @@ def trip_report_view(request):
                         total_stop_duration += stop_duration
                         tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
                     
-                    if len(trip_report) != 0:
+                    if len(unit_trip_report) != 0:
                         driving_duration = duration - total_stop_duration
                         summarization.append({
                             "unit_name" : unit.name,
