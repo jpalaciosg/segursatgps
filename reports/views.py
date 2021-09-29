@@ -546,7 +546,7 @@ def trip_report_view(request):
                     distance = 0.0
                     duration = 0 
 
-                    for tr in trip_report:
+                    for tr in unit_trip_report:
                         number_of_trips += 1
                         distance += tr['distance']
                         duration += tr['duration']
