@@ -1,13 +1,15 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+
 from datetime import datetime,timedelta
 import time
 import json
-from pytz import timezone
 from geopy.distance import great_circle
-from rest_framework.fields import DurationField
-from shapely.geometry import Point, geo,shape
+from shapely.geometry import Point,shape
 
 from locations.models import Location
 from geofences.models import Geofence
@@ -17,6 +19,7 @@ from common.privilege import Privilege
 
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,DetailedMileageReportForm
 from units.models import Device,Group
+from locations.serializers import LocationSerializer
 
 # Create your views here.
 
@@ -85,6 +88,79 @@ def fleet_status_view(request):
         'units_in_motion': units_in_motion,
         'units_stopped': units_stopped,
     })
+
+@api_view(['GET'])
+def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
+    initial_timestamp = None
+    final_timestamp = None
+    try:
+        unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%dT%H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%dT%H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    locations = Location.objects.filter(
+        unitid=unit.id,
+        timestamp__gte=initial_timestamp,
+        timestamp__lte=final_timestamp
+    ).order_by('timestamp').exclude(
+        latitude=0.0,
+        longitude=0.0
+    )
+    serializer = LocationSerializer(locations,many=True)
+    device_reader = DeviceReader(unit.uniqueid)
+    data = serializer.data
+    accumulated_distance = 0.0
+    for i in range(len(data)):
+        data[i]['unit_name'] = unit_name
+        data[i]['attributes'] = json.loads(data[i]['attributes'])
+        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
+        data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+        data[i]['ignition'] = device_reader.detect_ignition_event({
+            'attributes':json.loads(locations[i].attributes)
+        })
+        data[i]['odometer'] = device_reader.get_odometer({
+            'attributes':json.loads(locations[i].attributes)
+        })
+        if i == 0:
+            data[i]['distance'] = 0.0
+            data[i]['accumulated_distance'] = 0.0
+        else:
+            distance = great_circle(
+                (
+                    data[i-1]['latitude'],
+                    data[i-1]['longitude']
+                ),
+                (
+                    data[i]['latitude'],
+                    data[i]['longitude']
+                ),
+            ).km
+            data[i]['distance'] = round(distance,3)
+            accumulated_distance += distance
+            data[i]['accumulated_distance'] = round(accumulated_distance,3)
+
+    return Response(data,status=status.HTTP_200_OK)
 
 @login_required
 def detailed_report_view(request):

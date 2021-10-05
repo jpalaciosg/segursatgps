@@ -76,4 +76,5 @@ urlpatterns = [
     path('web/api/locations/insert-history-location-batch/', locations_views.insert_history_location_batch),
     path('web/api/locations/get-location-history/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_location_history),
     path('web/api/locations/get-pandero-location-history/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_pandero_location_history),
+    path('web/api/reports/get-detailed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_detailed_report),
 ]
