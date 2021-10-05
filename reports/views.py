@@ -171,9 +171,9 @@ def detailed_report_view(request):
                             locations[i].longitude
                         ),
                     ).km
-                    locations[i].distance = round(distance,2)
+                    locations[i].distance = round(distance,3)
                     accumulated_distance += distance
-                    locations[i].accumulated_distance = round(accumulated_distance,2)
+                    locations[i].accumulated_distance = round(accumulated_distance,3)
             return render(request,'reports/detailed-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
