@@ -132,7 +132,8 @@ def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
     data = serializer.data
     accumulated_distance = 0.0
     for i in range(len(data)):
-        data[i]['unit_name'] = unit_name
+        data[i]['unit_name'] = unit.name
+        data[i]['unit_description'] = unit.description
         data[i]['attributes'] = json.loads(data[i]['attributes'])
         last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
         data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
