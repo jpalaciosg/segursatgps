@@ -136,7 +136,7 @@ def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
         data[i]['unit_description'] = unit.description
         data[i]['attributes'] = json.loads(data[i]['attributes'])
         last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
-        data[i]['datetime'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+        data[i]['datetime'] = last_report.strftime("%d/%m/%Y %H:%M:%S")
         data[i]['ignition'] = device_reader.detect_ignition_event({
             'attributes':json.loads(locations[i].attributes)
         })
