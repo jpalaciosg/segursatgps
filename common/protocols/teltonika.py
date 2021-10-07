@@ -115,7 +115,7 @@ class Teltonika:
             odometer = float(odometer)/1000
             return odometer
         except:
-            return ""
+            return 0
 
     def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
         stop_report = []
