@@ -1779,6 +1779,7 @@ def geofence_report_view(request):
             })
         return render(request,'reports/geofence-report.html',{
             'units':units,
+            'geofences':geofences,
             'form':form,
         })
 
