@@ -77,4 +77,5 @@ urlpatterns = [
     path('web/api/locations/get-location-history/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_location_history),
     path('web/api/locations/get-pandero-location-history/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_pandero_location_history),
     path('web/api/reports/get-detailed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_detailed_report),
+    path('web/api/reports/get-trip-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_trip_report),
 ]

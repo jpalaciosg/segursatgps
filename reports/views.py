@@ -542,6 +542,239 @@ def driving_style_report_view(request):
         'units':units,
     })
 
+@api_view(['GET'])
+def get_trip_report(request,unit_name,initial_datetime,final_datetime):
+    initial_timestamp = None
+    final_timestamp = None
+    unit = None
+    if unit_name.upper() != 'ALL':
+        try:
+            unit = Device.objects.get(
+                name=unit_name,
+                account=request.user.profile.account
+            )
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    #
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    
+    trip_report = []
+    summarization = []
+    
+    if unit_name.upper() == 'ALL':
+        units = privilege.get_units(request.user.profile)
+        for unit in units:
+            locations_qs = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=initial_timestamp,
+                timestamp__lte=final_timestamp
+            ).order_by('timestamp').exclude(
+                latitude=0.0,
+                longitude=0.0
+            )
+            locations = []
+            for location_qs in locations_qs:
+                locations.append({
+                    'latitude':location_qs.latitude,
+                    'longitude':location_qs.longitude,
+                    'timestamp':location_qs.timestamp,
+                    'angle':location_qs.angle,
+                    'speed':location_qs.speed,
+                    'address':location_qs.address,
+                    'attributes':json.loads(location_qs.attributes),
+                })
+            device_reader = DeviceReader(unit.uniqueid)
+            unit_trip_report = device_reader.generate_trip_report(locations)
+            for item in unit_trip_report:
+                item['unit_name'] = unit.name
+                item['unit_description'] = unit.description
+                trip_report.append(item)
+
+            total_stop_duration = 0
+            number_of_trips = 0
+            distance = 0.0
+            duration = 0
+
+            for tr in unit_trip_report:
+                number_of_trips += 1
+                distance += tr['distance']
+                duration += tr['duration']
+                qs = locations_qs.filter(
+                    timestamp__gte=tr['initial_timestamp'],
+                    timestamp__lte=tr['final_timestamp']
+                )
+                locations = []
+                for item in qs:
+                    locations.append({
+                        'latitude':item.latitude,
+                        'longitude':item.longitude,
+                        'timestamp':item.timestamp,
+                        'angle':item.angle,
+                        'speed':item.speed,
+                        'address':item.address,
+                        'attributes':json.loads(item.attributes),
+                    })
+                stop_report = device_reader.generate_stop_report(
+                    locations,
+                    tr['initial_timestamp'],
+                    tr['final_timestamp'],
+                    0
+                )
+                stop_duration = 0
+                for sr in stop_report:
+                    stop_duration += sr['duration']
+                tr['stopped_time'] = str(timedelta(seconds=stop_duration))
+                total_stop_duration += stop_duration
+                tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
+            
+            if len(unit_trip_report) != 0:
+                driving_duration = duration - total_stop_duration
+                summarization.append({
+                    "unit_name" : unit.name,
+                    "unit_description": unit.description,
+                    "number_of_trips": number_of_trips,
+                    "distance": distance,
+                    "duration": duration,
+                    "time": str(timedelta(seconds=duration)),
+                    "driving_time": str(timedelta(seconds=driving_duration)),
+                    "stopped_time": str(timedelta(seconds=total_stop_duration))
+                })            
+
+    else:
+        locations_qs = Location.objects.filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lte=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        locations = []
+        for location in locations_qs:
+            locations.append({
+                'latitude':location.latitude,
+                'longitude':location.longitude,
+                'timestamp':location.timestamp,
+                'angle':location.angle,
+                'speed':location.speed,
+                'address':location.address,
+                'attributes':json.loads(location.attributes),
+            })
+
+        device_reader = DeviceReader(unit.uniqueid)
+        unit_trip_report = device_reader.generate_trip_report(locations)
+        for item in unit_trip_report:
+            item['unit_name'] = unit.name
+            item['unit_description'] = unit.description
+            trip_report.append(item)
+
+        total_stop_duration = 0
+        number_of_trips = 0
+        distance = 0.0
+        duration = 0
+        
+        for tr in trip_report:
+            number_of_trips += 1
+            distance += tr['distance']
+            duration += tr['duration']
+            qs = locations_qs.filter(
+                timestamp__gte=tr['initial_timestamp'],
+                timestamp__lte=tr['final_timestamp']
+            )
+            locations = []
+            for item in qs:
+                locations.append({
+                    'latitude':item.latitude,
+                    'longitude':item.longitude,
+                    'timestamp':item.timestamp,
+                    'angle':item.angle,
+                    'speed':item.speed,
+                    'address':item.address,
+                    'attributes':json.loads(item.attributes),
+                })
+            stop_report = device_reader.generate_stop_report(
+                locations,
+                tr['initial_timestamp'],
+                tr['final_timestamp'],
+                0
+            )
+            stop_duration = 0
+            for sr in stop_report:
+                stop_duration += sr['duration']
+            tr['stopped_time'] = str(timedelta(seconds=stop_duration))
+            total_stop_duration += stop_duration
+            tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
+
+        driving_duration = duration - total_stop_duration
+        summarization.append({
+            "unit_name" : unit.name,
+            "unit_description": unit.description,
+            "number_of_trips": number_of_trips,
+            "distance": distance,
+            "duration": duration,
+            "time": str(timedelta(seconds=duration)),
+            "driving_time": str(timedelta(seconds=driving_duration)),
+            "stopped_time": str(timedelta(seconds=total_stop_duration))
+        })
+    
+    # CALCULAR GEOCERCAS
+    geofences = Geofence.objects.filter(account=request.user.profile.account)
+    for tr in trip_report:
+        matching_initial_geofences = []
+        matching_final_geofences = []
+        for geofence in geofences:
+            feature = json.loads(geofence.geojson)['features'][0]
+            s = shape(feature['geometry'])
+            point = Point(tr['initial_longitude'],tr['initial_latitude'])
+            if s.contains(point):
+                matching_initial_geofences.append(geofence.name)
+            point = Point(tr['final_longitude'],tr['final_latitude'])
+            if s.contains(point):
+                matching_final_geofences.append(geofence.name)
+        s_str = ""
+        for i in range(len(matching_initial_geofences)):
+            if i==0:
+                s_str += matching_initial_geofences[i]
+            else:
+                s_str += f', {matching_initial_geofences[i]}'
+        tr['initial_geofences'] = s_str
+        d_str = ""
+        for i in range(len(matching_final_geofences)):
+            if i==0:
+                d_str += matching_final_geofences[i]
+            else:
+                d_str += f', {matching_final_geofences[i]}'
+        tr['final_geofences'] = d_str
+    # FIN - CALCULAR GEOCERCAS
+
+    data = {
+        'trip_report': trip_report,
+        'summarization': summarization
+    }
+
+    return Response(data,status=status.HTTP_200_OK)
+
 # TRIP REPORT
 @login_required
 def trip_report_view(request):
@@ -894,6 +1127,50 @@ def group_trip_report_view(request):
     return render(request,'reports/group-trip-report.html',{
         'groups':groups,
     })
+
+@api_view(['GET'])
+def get_stop_report(request,unit_name,initial_datetime,final_datetime,discard_time):
+    initial_timestamp = None
+    final_timestamp = None
+    unit = None
+    if unit_name.upper() != 'ALL':
+        try:
+            unit = Device.objects.get(
+                name=unit_name,
+                account=request.user.profile.account
+            )
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    #
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    
+    # tiempo para descartar
+    seconds = int(discard_time) * 60
+    # fin - tiempo para descartar
+
+    stop_report = []
+    summarization = []
 
 # STOP REPORT
 @login_required
