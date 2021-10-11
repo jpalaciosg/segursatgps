@@ -1095,14 +1095,7 @@ def group_trip_report_view(request):
                         'address':location.address,
                         'attributes':json.loads(location.attributes),
                     })
-                if len(locations) == 0:
-                    return render(request,'reports/group-trip-report.html',{
-                        'initial_datetime':data['initial_datetime'],
-                        'final_datetime':data['final_datetime'],
-                        'groups':groups,
-                        'form':form,
-                        'error':'No existe un recorrido para analizar.'
-                    })
+                
                 device_reader = DeviceReader(unit.uniqueid)
                 trip_report = device_reader.generate_trip_report(locations)
                 for item in trip_report:
@@ -1403,14 +1396,7 @@ def group_stop_report_view(request):
                         'address':location.address,
                         'attributes':json.loads(location.attributes),
                     })
-                if len(locations) == 0:
-                    return render(request,'reports/group-stop-report.html',{
-                        'initial_datetime':data['initial_datetime'],
-                        'final_datetime':data['final_datetime'],
-                        'groups':groups,
-                        'form':form,
-                        'error':'No existe un recorrido para analizar.'
-                    })
+                
                 device_reader = DeviceReader(unit.uniqueid)
                 stop_report = device_reader.generate_stop_report(
                     locations,
@@ -1863,14 +1849,7 @@ def group_mileage_report_view(request):
                         'address':location_qs.address,
                         'attributes':json.loads(location_qs.attributes),
                     })
-                if len(locations) == 0:
-                    return render(request,'reports/group-mileage-report.html',{
-                        'initial_datetime':data['initial_datetime'],
-                        'final_datetime':data['final_datetime'],
-                        'groups':groups,
-                        'form':form,
-                        'error':'No existe un recorrido para analizar.'
-                    })
+                
                 device_reader = DeviceReader(unit.uniqueid)
                 distance_sum = device_reader.generate_mileage_report(locations)
                 group_mileage_report.append(
@@ -2127,14 +2106,7 @@ def group_geofence_report_view(request):
                         'address':location_qs.address,
                         'attributes':json.loads(location_qs.attributes),
                     })
-                if len(locations) == 0:
-                    return render(request,'reports/group-geofence-report.html',{
-                        'initial_datetime':data['initial_datetime'],
-                        'final_datetime':data['final_datetime'],
-                        'groups':groups,
-                        'form':form,
-                        'error':'No existe un recorrido para analizar.'
-                    })
+                
                 device_reader = DeviceReader(unit.uniqueid)
                 geofences_qs = Geofence.objects.filter(
                     account = request.user.profile.account
