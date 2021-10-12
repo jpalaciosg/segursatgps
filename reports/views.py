@@ -1522,7 +1522,7 @@ def group_stop_report_view(request):
                         c_str += f', {matching_geofences[i]}'
                 sr['geofences'] = c_str
             # FIN - CALCULAR GEOCERCAS
-            
+
             return render(request,'reports/group-stop-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
@@ -2037,6 +2037,11 @@ def geofence_report_view(request):
             except Exception as e:
                 form.add_error('final_datetime', e)
 
+            try:
+                geofence_list = data.getlist('geofence_name')
+            except Exception as e:
+                form.add_error('geofence_name', e)
+
             if len(form.errors) != 0:
                 return render(request,'reports/geofence-report.html',{
                     'units':units,
@@ -2066,7 +2071,6 @@ def geofence_report_view(request):
                             'attributes':json.loads(location_qs.attributes),
                         })
                     device_reader = DeviceReader(unit.uniqueid)
-                    geofence_list = data.getlist('geofence_name')
                     geofences_qs = []
                     for i in range(len(geofence_list)):
                         try:
@@ -2107,7 +2111,6 @@ def geofence_report_view(request):
                         'error':'No existe un recorrido para analizar.'
                     })
                 device_reader = DeviceReader(unit.uniqueid)
-                geofence_list = data.getlist('geofence_name')
                 geofences_qs = []
                 for i in range(len(geofence_list)):
                     try:
@@ -2164,6 +2167,7 @@ def geofence_report_view(request):
 def group_geofence_report_view(request):
     if request.method == 'POST':
         data = request.POST
+        geofences = Geofence.objects.filter(account=request.user.profile.account)
         groups = Group.objects.filter(account=request.user.profile.account)
         initial_timestamp = None
         final_timestamp = None
@@ -2182,7 +2186,6 @@ def group_geofence_report_view(request):
                 initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
                 # --
                 initial_timestamp = datetime.timestamp(initial_datetime_obj)
-
             except Exception as e:
                 print(e)
                 form.add_error('initial_datetime', e)
@@ -2198,6 +2201,11 @@ def group_geofence_report_view(request):
                 print(e)
                 form.add_error('final_datetime', e)
 
+            try:
+                geofence_list = data.getlist('geofence_name')
+            except Exception as e:
+                form.add_error('geofence_name', e)
+
             if len(form.errors) != 0:
                 return render(request,'reports/group-geofence-report.html',{
                     'groups':groups,
@@ -2206,13 +2214,14 @@ def group_geofence_report_view(request):
 
             # Aqui va la logica del resultado
             group_geofence_report = []
+
             for unit in group.units.all():
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
                     timestamp__lte=final_timestamp
-                ).order_by('id')
-                locations_qs = locations_qs.order_by('timestamp')
+                ).order_by('timestamp')
+                locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                 locations = []
                 for location_qs in locations_qs:
                     locations.append({
@@ -2224,19 +2233,18 @@ def group_geofence_report_view(request):
                         'address':location_qs.address,
                         'attributes':json.loads(location_qs.attributes),
                     })
-                
                 device_reader = DeviceReader(unit.uniqueid)
-                geofences_qs = Geofence.objects.filter(
-                    account = request.user.profile.account
-                )
-                geofence_report = device_reader.generate_geofence_report(
-                    locations,
-                    geofences_qs,
-                    initial_timestamp,
-                    final_timestamp
-                )
-                for item in geofence_report:
-                    item['unit_name'] = unit.name 
+                geofences_qs = []
+                for i in range(len(geofence_list)):
+                    try:
+                        geofence = geofences.get(name=geofence_list[i])
+                        geofences_qs.append(geofence)
+                    except Exception as e:
+                        print(e)
+                unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
+                for item in unit_geofence_report:
+                    item['unit_name'] = unit.name
+                    item['unit_description'] = unit.description
                     group_geofence_report.append(item)
 
             return render(request,'reports/group-geofence-report.html',{
@@ -2251,11 +2259,14 @@ def group_geofence_report_view(request):
 
         return render(request,'reports/group-geofence-report.html',{
             'groups':groups,
+            'geofences':geofences,
             'form':form,
         })
 
     # GET
+    geofences = Geofence.objects.filter(account=request.user.profile.account)
     groups = Group.objects.filter(account=request.user.profile.account)
     return render(request,'reports/group-geofence-report.html',{
         'groups':groups,
+        'geofences':geofences,
     })
