@@ -17,7 +17,7 @@ from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
 
-from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,DetailedMileageReportForm
+from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
 from units.models import Device,Group
 from locations.serializers import LocationSerializer
 
@@ -2171,7 +2171,7 @@ def group_geofence_report_view(request):
         groups = Group.objects.filter(account=request.user.profile.account)
         initial_timestamp = None
         final_timestamp = None
-        form = GroupReportForm(data)
+        form = GroupGeofenceReportForm(data)
         if form.is_valid():
             try:
                 group = Group.objects.get(name=data['group_name'])
@@ -2235,12 +2235,15 @@ def group_geofence_report_view(request):
                     })
                 device_reader = DeviceReader(unit.uniqueid)
                 geofences_qs = []
-                for i in range(len(geofence_list)):
-                    try:
-                        geofence = geofences.get(name=geofence_list[i])
-                        geofences_qs.append(geofence)
-                    except Exception as e:
-                        print(e)
+                if geofence_list[0].upper() == 'ALL':
+                    geofences_qs = geofences
+                else:
+                    for i in range(len(geofence_list)):
+                        try:
+                            geofence = geofences.get(name=geofence_list[i])
+                            geofences_qs.append(geofence)
+                        except Exception as e:
+                            print(e)
                 unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
                 for item in unit_geofence_report:
                     item['unit_name'] = unit.name
