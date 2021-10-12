@@ -2252,6 +2252,8 @@ def group_geofence_report_view(request):
                 'final_datetime':data['final_datetime'],
                 'group_name':group.name,
                 'group_geofence_report':group_geofence_report,
+                'selected_geofences':geofence_list,
+                'geofences':geofences,
                 'groups':groups,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
