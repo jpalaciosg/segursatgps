@@ -58,6 +58,7 @@ urlpatterns = [
     path('maps/', maps_views.map_view, name='map'),
     path('triggers/fleet-trigger/', triggers_views.fleet_trigger_view, name='fleet-trigger'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
+    path('alerts/civa-alerts/', alerts_views.civa_alert_view, name='civa-alerts'),
     path('triggers/delete-fleet-trigger/<int:id>/', triggers_views.delete_fleet_trigger, name='delete-fleet-trigger'),
     path('alerts/history/', alerts_views.alert_history_view, name='alert-history'),
     path('maintenances/', maintenances_views.maintenances_view, name='maintenances'),

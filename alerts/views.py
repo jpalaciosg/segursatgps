@@ -22,6 +22,10 @@ gmt_conversor = GMTConversor() #conversor zona horaria
 def alerts_view(request):
     return render(request,'alerts/alerts.html')
 
+@login_required
+def civa_alert_view(request):
+    return render(request,'alerts/civa-alert.html')
+
 def alert_history_view(request):
     if request.method == 'POST':
         data = request.POST
