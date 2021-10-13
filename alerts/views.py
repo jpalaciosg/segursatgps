@@ -20,11 +20,9 @@ gmt_conversor = GMTConversor() #conversor zona horaria
 # Create your views here.
 @login_required
 def alerts_view(request):
+    if request.user.profile.account.name == 'civa':
+        return render(request,'alerts/civa-alert.html')
     return render(request,'alerts/alerts.html')
-
-@login_required
-def civa_alert_view(request):
-    return render(request,'alerts/civa-alert.html')
 
 def alert_history_view(request):
     if request.method == 'POST':
