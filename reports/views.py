@@ -10,6 +10,7 @@ import time
 import json
 from geopy.distance import great_circle
 from shapely.geometry import Point,shape
+from common.protocols.time_conversor import TimeConversor
 
 from locations.models import Location
 from geofences.models import Geofence
@@ -24,6 +25,7 @@ from locations.serializers import LocationSerializer
 # Create your views here.
 
 gmt_conversor = GMTConversor() #conversor zona horaria
+time_conversor = TimeConversor()
 privilege = Privilege()
 
 @login_required
@@ -979,9 +981,12 @@ def trip_report_view(request):
                     "number_of_trips": number_of_trips,
                     "distance": distance,
                     "duration": duration,
-                    "time": str(timedelta(seconds=duration)),
-                    "driving_time": str(timedelta(seconds=driving_duration)),
-                    "stopped_time": str(timedelta(seconds=total_stop_duration))
+                    #"time": str(timedelta(seconds=duration)),
+                    "time": time_conversor.convert_seconds_in_hour_format(duration),
+                    #"driving_time": str(timedelta(seconds=driving_duration)),
+                    "driving_time": time_conversor.convert_seconds_in_hour_format(driving_duration),
+                    #"stopped_time": str(timedelta(seconds=total_stop_duration))
+                    "stopped_time": time_conversor.convert_seconds_in_hour_format(total_stop_duration),
                 })
             # CALCULAR GEOCERCAS
             geofences = Geofence.objects.filter(account=request.user.profile.account)
