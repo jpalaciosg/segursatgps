@@ -239,3 +239,10 @@ def get_unit_status(request,name):
     response = device_reader.get_unit_status(unit)
     return Response(response,status=status.HTTP_200_OK)
         
+@api_view(['POST'])
+def create_group(request):
+    response = {
+        'status': 'OK',
+    }
+    return Response(response,status=status.HTTP_200_OK)
+        

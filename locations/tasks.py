@@ -74,6 +74,28 @@ def insert_location_in_history(data):
     return True
 
 @celery_app.task
+def insert_location_in_history2(data):
+    # INTRODUCIR UBICACION EN EL HISTORICO
+    try:
+        location = Location.objects.create(
+            unitid = data['unit_id'],
+            protocol= data['protocol'],
+            timestamp = data['timestamp'],
+            latitude = data['latitude'],
+            longitude = data['longitude'],
+            altitude = data['altitude'],
+            angle = data['angle'],
+            speed = data['speed'],
+            attributes = json.dumps(data['attributes']),
+            address = data['address'],
+            reference = data['unit_name']
+        )
+    except Exception as e:
+        print(e)
+    # FIN - INTRODUCIR UBICACION EN EL HISTORICO
+    return True
+
+@celery_app.task
 def process_alert(data):
     alert_reader = AlertReader(data['deviceid'])
     alert_reader.run()
