@@ -55,6 +55,7 @@ urlpatterns = [
     path('reports/group-mileage-report/', reports_views.group_mileage_report_view, name='group-mileage-report'),
     path('reports/geofence-report/', reports_views.geofence_report_view, name='geofence-report'),
     path('reports/group-geofence-report/', reports_views.group_geofence_report_view, name='group-geofence-report'),
+    path('reports/telemetry-report/', reports_views.telemetry_report_view, name='telemetry-report'),
     path('maps/', maps_views.map_view, name='map'),
     path('triggers/fleet-trigger/', triggers_views.fleet_trigger_view, name='fleet-trigger'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),

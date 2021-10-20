@@ -2280,3 +2280,101 @@ def group_geofence_report_view(request):
         'groups':groups,
         'geofences':geofences,
     })
+
+@login_required
+def telemetry_report_view(request):
+    if request.method == 'POST':
+        data = request.POST
+        units = privilege.get_units(request.user.profile)
+        initial_timestamp = None
+        final_timestamp = None
+        form = ReportForm(data)
+        if form.is_valid():
+            try:
+                unit = Device.objects.get(name=data['unit_name'])
+            except Exception as e:
+                form.add_error('unit_name', e)
+            #
+            try:
+                #initial_datetime_str = f"{data['initial_date']} 00:00:00"
+                initial_datetime_str = f"{data['initial_datetime']}:00"
+                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+                # --
+                initial_timestamp = datetime.timestamp(initial_datetime_obj)
+            except Exception as e:
+                print(e)
+                form.add_error('initial_date', e)
+            #
+            try:
+                #final_datetime_str = f"{data['final_date']} 00:00:00"
+                final_datetime_str = f"{data['final_datetime']}:00"
+                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+                # convertir a zona horaria
+                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+                # --
+                final_timestamp = datetime.timestamp(final_datetime_obj)
+            except Exception as e:
+                form.add_error('final_date', e)
+
+            if len(form.errors) != 0:
+                return render(request,'reports/detailed-report-with-attributes.html',{
+                    'units':units,
+                    'form':form,
+                })
+            #locations = Location.objects.filter(
+            locations = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=initial_timestamp,
+                timestamp__lte=final_timestamp
+            ).order_by('timestamp').exclude(
+                latitude=0.0,
+                longitude=0.0
+            )
+            for i in range(len(locations)):
+                dt = datetime.utcfromtimestamp(locations[i].timestamp)
+                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+                attributes = json.loads(locations[i].attributes)
+                # ignicion
+                device_reader = DeviceReader(unit.uniqueid)
+                locations[i].ignition = device_reader.detect_ignition_event({
+                    'attributes':attributes
+                })
+                try:
+                    locations[i].rpm_engine = attributes['io86']
+                except:
+                    locations[i].rpm_engine = 'N/D'
+                try:
+                    locations[i].fuel_rate = attributes['io135']
+                except:
+                    locations[i].fuel_rate = 'N/D'
+                try:
+                    locations[i].fuel_economy = attributes['io136']
+                except:
+                    locations[i].fuel_economy = 'N/D'
+                try:
+                    locations[i].ambient_temperature = attributes['io128']
+                except:
+                    locations[i].ambient_temperature = 'N/D'
+                try:
+                    locations[i].engine_coolant_temperature	= attributes['io135']
+                except:
+                    locations[i].engine_coolant_temperature = 'N/D'
+            return render(request,'reports/telemetry-report.html',{
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'selected_unit':unit,
+                'units':units,
+                'locations':locations,
+            })
+        return render(request,'reports/telemetry-report.html',{
+            'units':units,
+            'form':form,
+        })
+    #GET
+    units = privilege.get_units(request.user.profile)
+    return render(request,'reports/telemetry-report.html',{
+        'units':units,
+    })
