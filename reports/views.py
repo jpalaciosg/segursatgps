@@ -2343,7 +2343,7 @@ def telemetry_report_view(request):
                     'attributes':attributes
                 })
                 try:
-                    locations[i].rpm_engine = attributes['io86']
+                    locations[i].rpm_engine = attributes['io88']
                 except:
                     locations[i].rpm_engine = 'N/D'
                 try:
