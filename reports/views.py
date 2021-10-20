@@ -2359,7 +2359,7 @@ def telemetry_report_view(request):
                 except:
                     locations[i].ambient_temperature = 'N/D'
                 try:
-                    locations[i].engine_coolant_temperature	= attributes['io135']
+                    locations[i].engine_coolant_temperature	= attributes['io127']
                 except:
                     locations[i].engine_coolant_temperature = 'N/D'
             return render(request,'reports/telemetry-report.html',{
