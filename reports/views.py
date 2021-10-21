@@ -2332,6 +2332,7 @@ def telemetry_report_view(request):
                 latitude=0.0,
                 longitude=0.0
             )
+            fuel_used_offset = 0
             for i in range(len(locations)):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
@@ -2366,6 +2367,14 @@ def telemetry_report_view(request):
                     locations[i].total_fuel_used = attributes['io86']
                 except:
                     locations[i].total_fuel_used = 'N/D'
+                try:
+                    if i == 0:
+                        fuel_used_offset = int(attributes['io86'])
+                        locations[i].accumulated_fuel = 0
+                    else:
+                        locations[i].accumulated_fuel = int(attributes['io86']) - fuel_used_offset
+                except:
+                    locations[i].accumulated_fuel = 'N/D'
                 try:
                     locations[i].odometer = round(float(attributes['io192'])/1000,2)
                 except:
