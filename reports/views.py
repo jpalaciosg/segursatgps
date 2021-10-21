@@ -2367,7 +2367,7 @@ def telemetry_report_view(request):
                 except:
                     locations[i].total_fuel_used = 'N/D'
                 try:
-                    locations[i].odometer = attributes['io192']
+                    locations[i].odometer = round(float(attributes['io192'])/1000,2)
                 except:
                     locations[i].odometer = 'N/D'
             return render(request,'reports/telemetry-report.html',{
