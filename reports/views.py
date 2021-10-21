@@ -2362,6 +2362,14 @@ def telemetry_report_view(request):
                     locations[i].engine_coolant_temperature	= attributes['io127']
                 except:
                     locations[i].engine_coolant_temperature = 'N/D'
+                try:
+                    locations[i].total_fuel_used = attributes['io86']
+                except:
+                    locations[i].total_fuel_used = 'N/D'
+                try:
+                    locations[i].odometer= attributes['io192']
+                except:
+                    locations[i].odometer = 'N/D'
             return render(request,'reports/telemetry-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
