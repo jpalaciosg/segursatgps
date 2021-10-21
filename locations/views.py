@@ -148,22 +148,6 @@ def insert_location_batch(request):
     return Response([])   
 
 @api_view(['GET'])
-def get_address(request,latitude,longitude):
-    try:
-        latitude = float(latitude)
-        longitude = float(longitude)
-        api_url = f'http://{GEOCODING_SERVER}:{GEOCODING_PORT}/nominatim/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
-        headers = {'Content-Type': 'application/json'}
-        response = requests.get(api_url, headers=headers)
-        if response.status_code == 200:
-            return Response(json.loads(response.content.decode('utf-8'))['display_name'])
-        else:
-            return Response(status=400)
-    except Exception as e:
-        print(e)
-        return Response(status=500)
-
-@api_view(['GET'])
 def get_location_history(request,unit_name,initial_datetime,final_datetime):
     initial_timestamp = None
     final_timestamp = None
