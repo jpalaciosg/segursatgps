@@ -22,7 +22,7 @@ from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocat
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
-from .tasks import insert_location_in_history,process_alert
+from .tasks import insert_location_in_history,insert_location_in_history2,process_alert
 
 # Create your views here.
 
@@ -279,7 +279,7 @@ def insert_history_location_batch(request):
                 data['unit_id'] = unit.id
                 data['unit_name'] = unit.name
                 data['account'] = unit.account.name
-                insert_location_in_history.delay(data)
+                insert_location_in_history2.delay(data)
 
                 # ALERTAS
                 #process_alert.delay(data)
