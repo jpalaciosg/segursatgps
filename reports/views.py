@@ -2388,6 +2388,8 @@ def telemetry_report_view(request):
                     locations[i].odometer = 'N/D'
             try:
                 summarization = {
+                    'unit_name': unit.name,
+                    'unit_description': unit.description,
                     'maximum_rpm': max(rpm_list),
                     'maximum_fuel_rate': max(fuel_rate_list),
                     'average_fuel_economy': sum(fuel_economy_list)/len(fuel_economy_list),
