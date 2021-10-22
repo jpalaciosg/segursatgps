@@ -2333,6 +2333,9 @@ def telemetry_report_view(request):
                 longitude=0.0
             )
             fuel_used_offset = 0
+            rpm_list = []
+            fuel_rate_list = []
+            fuel_economy_list = []
             for i in range(len(locations)):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
@@ -2345,14 +2348,18 @@ def telemetry_report_view(request):
                 })
                 try:
                     locations[i].rpm_engine = attributes['io88']
+                    rpm_list.append(int(attributes['io88']))
                 except:
                     locations[i].rpm_engine = 'N/D'
                 try:
                     locations[i].fuel_rate = attributes['io135']
+                    fuel_rate_list.append(int(attributes['io135']))
                 except:
                     locations[i].fuel_rate = 'N/D'
                 try:
                     locations[i].fuel_economy = attributes['io136']
+                    if int(attributes['io136']) != 0:
+                        fuel_economy_list.append(int(attributes['io136']))
                 except:
                     locations[i].fuel_economy = 'N/D'
                 try:
@@ -2379,12 +2386,22 @@ def telemetry_report_view(request):
                     locations[i].odometer = round(float(attributes['io192'])/1000,2)
                 except:
                     locations[i].odometer = 'N/D'
+            try:
+                summarization = {
+                    'maximum_rpm': max(rpm_list),
+                    'maximum_fuel_rate': max(fuel_rate_list),
+                    'average_fuel_economy': sum(fuel_economy_list)/len(fuel_economy_list),
+                    'mileage': locations[-1].odometer - locations[0].odometer
+                }
+            except:
+                summarization = {}
             return render(request,'reports/telemetry-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
                 'selected_unit':unit,
                 'units':units,
                 'locations':locations,
+                'summarization':summarization,
             })
         return render(request,'reports/telemetry-report.html',{
             'units':units,
