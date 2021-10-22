@@ -2394,7 +2394,7 @@ def telemetry_report_view(request):
                         'maximum_rpm': max(rpm_list),
                         'maximum_fuel_rate': max(fuel_rate_list),
                         'average_fuel_economy': sum(fuel_economy_list)/len(fuel_economy_list),
-                        'mileage': locations[-1].odometer - locations[0].odometer,
+                        'mileage': locations[len(locations)-1].odometer - locations[0].odometer,
                     }
                 ]
             except Exception as e:
