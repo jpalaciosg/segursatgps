@@ -2397,7 +2397,8 @@ def telemetry_report_view(request):
                         'mileage': locations[-1].odometer - locations[0].odometer,
                     }
                 ]
-            except:
+            except Exception as e:
+                print(e)
                 summarization = []
             return render(request,'reports/telemetry-report.html',{
                 'initial_datetime':data['initial_datetime'],
