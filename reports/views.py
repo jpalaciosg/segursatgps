@@ -2387,16 +2387,18 @@ def telemetry_report_view(request):
                 except:
                     locations[i].odometer = 'N/D'
             try:
-                summarization = {
-                    'unit_name': unit.name,
-                    'unit_description': unit.description,
-                    'maximum_rpm': max(rpm_list),
-                    'maximum_fuel_rate': max(fuel_rate_list),
-                    'average_fuel_economy': sum(fuel_economy_list)/len(fuel_economy_list),
-                    'mileage': locations[-1].odometer - locations[0].odometer
-                }
+                summarization = [
+                    {
+                        'unit_name': unit.name,
+                        'unit_description': unit.description,
+                        'maximum_rpm': max(rpm_list),
+                        'maximum_fuel_rate': max(fuel_rate_list),
+                        'average_fuel_economy': sum(fuel_economy_list)/len(fuel_economy_list),
+                        'mileage': locations[-1].odometer - locations[0].odometer,
+                    }
+                ]
             except:
-                summarization = {}
+                summarization = []
             return render(request,'reports/telemetry-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
