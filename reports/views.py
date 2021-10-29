@@ -847,7 +847,11 @@ def trip_report_view(request):
                             'attributes':json.loads(location_qs.attributes),
                         })
                     device_reader = DeviceReader(unit.uniqueid)
-                    unit_trip_report = device_reader.generate_trip_report(locations)
+                    try:
+                        unit_trip_report = device_reader.generate_trip_report(locations)
+                    except Exception as e:
+                        print(e)
+
                     for item in unit_trip_report:
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
@@ -931,7 +935,11 @@ def trip_report_view(request):
                     })
 
                 device_reader = DeviceReader(unit.uniqueid)
-                unit_trip_report = device_reader.generate_trip_report(locations)
+                try:
+                    unit_trip_report = device_reader.generate_trip_report(locations)
+                except Exception as e:
+                    print(e)
+
                 for item in unit_trip_report:
                     item['unit_name'] = unit.name
                     item['unit_description'] = unit.description
