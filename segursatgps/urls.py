@@ -25,6 +25,7 @@ import alerts.views as alerts_views
 import triggers.views as triggers_views
 import locations.views as locations_views
 import maintenances.views as maintenances_views
+import generic.views as generic_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -64,6 +65,7 @@ urlpatterns = [
     path('maintenances/', maintenances_views.maintenances_view, name='maintenances'),
     path('maintenances/triggers/', maintenances_views.triggers_view, name='maintenance-triggers'),
     path('maintenances/history/', maintenances_views.maintenance_history_view, name='maintenance-history'),
+    path('main/', generic_views.main_view, name='main'),
     # REST FRAMEWORK
     path('web/api/units/get-units/', units_views.get_units),
     path('web/api/units/get-unit/<str:name>/', units_views.get_unit),
