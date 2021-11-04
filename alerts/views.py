@@ -205,6 +205,8 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
                 summarization.append({
                     'unit_name':unit.name,
                     'unit_description':unit.description,
+                    'initial_datetime':initial_datetime,
+                    'final_datetime':final_datetime,
                     'count':count,
                 })
         response = {
@@ -246,6 +248,8 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
                 summarization.append({
                     'unit_name':unit.name,
                     'unit_description':unit.description,
+                    'initial_datetime':initial_datetime,
+                    'final_datetime':final_datetime,
                     'count':count,
                 })
         response = {
