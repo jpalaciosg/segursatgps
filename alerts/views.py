@@ -30,6 +30,7 @@ def alert_history_view(request):
         'units':units,
     })
 
+@api_view(['GET'])
 def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_type):
     units = Device.objects.filter(account=request.user.profile.account)
     initial_timestamp = None
