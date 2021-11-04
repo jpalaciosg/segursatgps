@@ -35,16 +35,6 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
     units = Device.objects.filter(account=request.user.profile.account)
     initial_timestamp = None
     final_timestamp = None
-    unit = None
-    if unit_name.upper() != 'ALL':
-        try:
-            unit = Device.objects.get(name=unit_name)
-        except Exception as e:
-            error = {
-            'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    #
     try:
         initial_datetime_str = f"{initial_datetime}:00"
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -72,22 +62,30 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
     if unit_name.upper() == 'ALL':
-        alerts = Alert.objects.using('history_db_replica').filter(
+        alerts_qs = Alert.objects.using('history_db_replica').filter(
             accountid=request.user.profile.account.id,
             timestamp__gte=initial_timestamp,
             timestamp__lte=final_timestamp,
             alert_type=alert_type
         ).order_by('id')
+        alert_serializer = AlertSerializer(alerts_qs,many=True)
+        alerts = alert_serializer.data
         for alert in alerts:
-            unit = units.get(id=alert.unitid)
-            alert.unit_name = unit.name
-            alert.unit_description = unit.description
-            dt = datetime.utcfromtimestamp(alert.timestamp)
+            try:
+                unit = units.get(id=alert['unitid'])
+                alert['unit_name'] = unit.name
+                alert['unit_description'] = unit.description
+            except Exception as e:
+                print(e)
+                alert['unit_name'] = alert['reference']
+                alert['unit_description'] = ''
+            dt = datetime.utcfromtimestamp(alert['timestamp'])
             dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-            alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+            alert['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+        
         summarization = []
         for unit in units:
-            count = alerts.filter(unitid=unit.id).count()
+            count = alerts_qs.filter(unitid=unit.id).count()
             if count > 0:
                 summarization.append({
                     'unit_name':unit.name,
@@ -100,21 +98,35 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
         }
         return Response(response,status=status.HTTP_200_OK)
     else:
-        alerts = Alert.objects.using('history_db_replica').filter(
+        try:
+            unit = Device.objects.get(
+                name=unit_name,
+                account=request.user.profile.account,
+            )
+        except Exception as e:
+            error = {
+            'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        #
+        alerts_qs = Alert.objects.using('history_db_replica').filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
             timestamp__lte=final_timestamp,
             alert_type=alert_type
         ).order_by('id')
+        alert_serializer = AlertSerializer(alerts_qs,many=True)
+        alerts = alert_serializer.data
         for alert in alerts:
-            alert.unit_name = unit.name
-            alert.unit_description = unit.description
-            dt = datetime.utcfromtimestamp(alert.timestamp)
+            alert['unit_name'] = unit.name
+            alert['unit_description'] = unit.description
+            dt = datetime.utcfromtimestamp(alert['timestamp'])
             dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-            alert.datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+            alert['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+        
         summarization = []
         for unit in units:
-            count = alerts.filter(unitid=unit.id).count()
+            count = alerts_qs.filter(unitid=unit.id).count()
             if count > 0:
                 summarization.append({
                     'unit_name':unit.name,
