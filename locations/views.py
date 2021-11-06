@@ -22,7 +22,7 @@ from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocat
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
-from .tasks import insert_location_in_history,insert_location_in_history2,process_alert
+from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alerts_for_the_alert_center
 
 # Create your views here.
 
@@ -106,6 +106,15 @@ def insert_location_batch(request):
                 # ALERTAS
                 process_alert.delay(data)
                 # FIN - ALERTAS
+
+                # ALERTAS CENTRAL
+                #data['attributes'] = json.loads(data['attributes'])
+                process_alerts_for_the_alert_center.delay({
+                    'uniqueid': unit.uniqueid,
+                    'current_location': data,                      
+                    'previous_location': previous_location,
+                })
+                # FIN - ALERTAS CENTRAL
 
                 # ACTUALIZAR UNIDADES EN EL MAPA
                 account = unit.account.name

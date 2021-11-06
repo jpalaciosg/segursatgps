@@ -4,7 +4,9 @@ from segursatgps.celery import celery_app
 
 from datetime import datetime
 import json
+import redis
 
+from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
 from common.gmt_conversor import GMTConversor
 
@@ -108,3 +110,27 @@ def process_history_alert(data):
     alert_reader.run()
     del alert_reader
     return True
+
+@celery_app.task
+def process_alerts_for_the_alert_center(data):
+    device_reader = DeviceReader(data['uniqueid'])
+    battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
+    if battery_event:
+        print('ALERTA BATERIA')
+        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+        payload = {
+            'group': data['current_location']['account'].upper(),
+            'license_plate': data['current_location']['unit_name'],
+            'device_datetime': device_datetime_str,
+            'latitude': data['current_location']['latitude'],
+            'longitude': data['current_location']['longitude'],
+            'speed': data['current_location']['speed'],
+            'angle': data['current_location']['angle'],
+            'alert_type': "ALERTA DE BATERIA - NP"
+        }
+        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+    else:
+        print('NO ALERTA BATERIA')
