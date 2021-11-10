@@ -106,7 +106,7 @@ def get_complete_fleet_status(request):
         dt = datetime.fromtimestamp(item['last_timestamp'])
         dt = gmt_conversor.convert_utctolocaltime(dt)
         item['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
-        timeout = current_timestamp - item['last_timestamp']
+        item['timeout'] = current_timestamp - item['last_timestamp']
     return Response(data,status=status.HTTP_200_OK)
 
 
