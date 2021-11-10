@@ -2,12 +2,14 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.decorators import api_view
 
 from datetime import datetime,timedelta
 import time
 import json
+import openpyxl
+import pandas as pd
 from geopy.distance import great_circle
 from shapely.geometry import Point,shape
 from common.protocols.time_conversor import TimeConversor
@@ -20,6 +22,7 @@ from common.privilege import Privilege
 
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
 from units.models import Device,Group
+from units.serializers import DeviceSerializer
 from locations.serializers import LocationSerializer
 
 # Create your views here.
@@ -90,6 +93,22 @@ def fleet_status_view(request):
         'units_in_motion': units_in_motion,
         'units_stopped': units_stopped,
     })
+
+@api_view(['GET'])
+def get_complete_fleet_status(request):
+    units = Device.objects.all()
+    now = datetime.now()
+    current_timestamp = int(datetime.timestamp(now))
+    serializer = DeviceSerializer(units,many=True)
+    data = serializer.data
+    for item in data:
+        item['odometer'] = round(item['odometer'],1)
+        dt = datetime.fromtimestamp(item['last_timestamp'])
+        dt = gmt_conversor.convert_utctolocaltime(dt)
+        item['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+        timeout = current_timestamp - item['last_timestamp']
+    return Response(data,status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
@@ -164,6 +183,98 @@ def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
             data[i]['accumulated_distance'] = round(accumulated_distance,3)
 
     return Response(data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
+    initial_timestamp = None
+    final_timestamp = None
+    try:
+        unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    locations = Location.objects.filter(
+        unitid=unit.id,
+        timestamp__gte=initial_timestamp,
+        timestamp__lte=final_timestamp
+    ).order_by('timestamp').exclude(
+        latitude=0.0,
+        longitude=0.0
+    )
+    serializer = LocationSerializer(locations,many=True)
+    device_reader = DeviceReader(unit.uniqueid)
+    data = serializer.data
+    accumulated_distance = 0.0
+    for i in range(len(data)):
+        data[i]['unit_name'] = unit.name
+        data[i]['unit_description'] = unit.description
+        data[i]['attributes'] = json.loads(data[i]['attributes'])
+        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
+        data[i]['datetime'] = last_report.strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['ignition'] = device_reader.detect_ignition_event({
+            'attributes':json.loads(locations[i].attributes)
+        })
+        data[i]['odometer'] = device_reader.get_odometer({
+            'attributes':json.loads(locations[i].attributes)
+        })
+        if i == 0:
+            data[i]['distance'] = 0.0
+            data[i]['accumulated_distance'] = 0.0
+        else:
+            distance = great_circle(
+                (
+                    data[i-1]['latitude'],
+                    data[i-1]['longitude']
+                ),
+                (
+                    data[i]['latitude'],
+                    data[i]['longitude']
+                ),
+            ).km
+            data[i]['distance'] = round(distance,3)
+            accumulated_distance += distance
+            data[i]['accumulated_distance'] = round(accumulated_distance,3)
+    
+    path = 'static/tmp/report.xlsx'
+    report = {
+        'unit_name': [],
+        'unit_description': [],
+        'datetime': [],
+    }
+    for item in data:
+        report['unit_name'].append(unit.name) 
+        report['unit_description'].append(unit.description)
+        report['datetime'].append(item['datetime'])
+    df = pd.DataFrame(report, columns = ['unit_name','unit_description','datetime'])
+    df.to_excel (f'templates/{path}', index = False, header=True)
+
+    response = {
+        'status': 'OK',
+        'path': path,
+    }
+
+    return Response(response,status=status.HTTP_200_OK)
 
 @login_required
 def detailed_report_view(request):
