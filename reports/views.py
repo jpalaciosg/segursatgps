@@ -109,7 +109,6 @@ def get_complete_fleet_status(request):
         item['timeout'] = current_timestamp - item['last_timestamp']
     return Response(data,status=status.HTTP_200_OK)
 
-
 @api_view(['GET'])
 def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
     initial_timestamp = None
@@ -256,7 +255,7 @@ def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
             accumulated_distance += distance
             data[i]['accumulated_distance'] = round(accumulated_distance,3)
     
-    path = 'static/tmp/report.xlsx'
+    path = f'static/tmp/{unit.name}from{initial_datetime.replace(" ","T")}to{final_datetime.replace(" ","T")}.xlsx'
     report = {
         'unit_name': [],
         'unit_description': [],
