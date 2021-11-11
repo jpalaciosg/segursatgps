@@ -261,12 +261,57 @@ def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
         'unit_name': [],
         'unit_description': [],
         'datetime': [],
+        'latitude': [],
+        'longitude': [],
+        'altitude': [],
+        'speed': [],
+        'distance': [],
+        'accumulated_distance': [],
+        'odometer': [],
+        'ignition': [],
+        'address': [],
     }
     for item in data:
         report['unit_name'].append(unit.name) 
         report['unit_description'].append(unit.description)
         report['datetime'].append(item['datetime'])
-    df = pd.DataFrame(report, columns = ['unit_name','unit_description','datetime'])
+        report['latitude'].append(item['latitude'])
+        report['longitude'].append(item['longitude'])
+        report['altitude'].append(item['altitude'])
+        report['speed'].append(item['speed'])
+        report['distance'].append(item['distance'])
+        report['accumulated_distance'].append(item['distance'])
+        report['odometer'].append(item['odometer'])
+        report['ignition'].append(item['ignition'])
+        report['address'].append(item['address'])
+    df = pd.DataFrame(report, columns = [
+        'unit_name',
+        'unit_description',
+        'datetime',
+        'latitude',
+        'longitude',
+        'altitude',
+        'speed',
+        'distance',
+        'accumulated_distance',
+        'odometer',
+        'ignition',
+        'address',
+    ])
+    df.rename(columns={
+        'unit_name': 'UNIDAD',
+        'unit_description': 'DESCRIPCION',
+        'datetime': 'FECHA/HORA',
+        'latitude': 'LATITUD',
+        'longitude': 'LONGITUD',
+        'altitude': 'ALTITUD',
+        'speed': 'VELOCIDAD',
+        'distance': 'DISTANCIA RECORRIDA',
+        'accumulated_distance': 'DISTANCIA ACUMULADA',
+        'odometer': 'ODOMETRO',
+        'ignition': 'IGNICION',
+        'address': 'DIRECCION',
+    }, inplace = True)
     df.to_excel (f'templates/{path}', index = False, header=True)
 
     response = {
