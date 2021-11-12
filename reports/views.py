@@ -95,21 +95,6 @@ def fleet_status_view(request):
     })
 
 @api_view(['GET'])
-def get_complete_fleet_status(request):
-    units = Device.objects.all()
-    now = datetime.now()
-    current_timestamp = int(datetime.timestamp(now))
-    serializer = DeviceSerializer(units,many=True)
-    data = serializer.data
-    for item in data:
-        item['odometer'] = round(item['odometer'],1)
-        dt = datetime.fromtimestamp(item['last_timestamp'])
-        dt = gmt_conversor.convert_utctolocaltime(dt)
-        item['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
-        item['timeout'] = current_timestamp - item['last_timestamp']
-    return Response(data,status=status.HTTP_200_OK)
-
-@api_view(['GET'])
 def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
     initial_timestamp = None
     final_timestamp = None
