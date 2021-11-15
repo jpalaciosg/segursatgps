@@ -26,6 +26,7 @@ import triggers.views as triggers_views
 import locations.views as locations_views
 import maintenances.views as maintenances_views
 import generic.views as generic_views
+import management.views as management_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -83,5 +84,6 @@ urlpatterns = [
     path('web/api/reports/get-detailed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_detailed_report),
     path('web/api/reports/export-detailed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.export_detailed_report),
     path('web/api/reports/get-trip-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_trip_report),
-    path('web/api/reports/get-complete-fleet-status/', reports_views.get_complete_fleet_status),
+    path('web/api/reports/get-speed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/<int:speed_limit>/', reports_views.get_speed_report),
+    path('web/api/management/get-complete-fleet-status/', management_views.get_complete_fleet_status),
 ]

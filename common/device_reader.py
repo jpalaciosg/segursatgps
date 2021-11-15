@@ -70,8 +70,8 @@ class DeviceReader:
 	                'address':location['address'],
             })
         for sr in speed_report:
-            sr['dt'] = datetime.fromtimestamp(sr['timestamp'])
-            sr['dt'] = gmt_conversor.convert_utctolocaltime(sr['dt']).strftime("%d/%m/%Y, %H:%M:%S")
+            sr['datetime'] = datetime.fromtimestamp(sr['timestamp'])
+            sr['datetime'] = gmt_conversor.convert_utctolocaltime(sr['dt']).strftime("%d/%m/%Y %H:%M:%S")
         return speed_report
 
     def generate_mileage_report(self,locations):
