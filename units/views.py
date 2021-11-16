@@ -234,7 +234,7 @@ def delete_unit(request,id):
 
 @api_view(['GET'])
 def get_unit_status(request,name):
-    unit = Device.objects.get(name=name,account=request.user.profile.account)
+    unit = Device.objects.get(name=name)
     device_reader = DeviceReader(unit.uniqueid)
     response = device_reader.get_unit_status(unit)
     return Response(response,status=status.HTTP_200_OK)
