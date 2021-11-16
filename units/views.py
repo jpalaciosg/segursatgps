@@ -199,7 +199,7 @@ def get_units(request):
 @api_view(['GET'])
 def get_unit(request,name):
     try:
-        unit = Device.objects.get(name=name,account=request.user.profile.account)
+        unit = Device.objects.get(name=name)
         serializer = DeviceSerializer(unit,many=False)
         data = serializer.data
         try:
