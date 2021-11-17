@@ -990,6 +990,7 @@ def trip_report_view(request):
                     try:
                         unit_trip_report = device_reader.generate_trip_report(locations)
                     except Exception as e:
+                        unit_trip_report = []
                         print(e)
 
                     for item in unit_trip_report:
