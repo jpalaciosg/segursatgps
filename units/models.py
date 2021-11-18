@@ -25,6 +25,8 @@ class Device(models.Model):
     sutran_retransmission = models.BooleanField(default=False)
     show_unit_name_in_map = models.BooleanField(default=True)
     show_unit_description_in_map = models.BooleanField(default=False)
+    ignition_source = models.CharField(max_length=50,default="ignition")
+    panic_source = models.CharField(max_length=50,default="panic")
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:

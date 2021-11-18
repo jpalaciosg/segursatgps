@@ -17,63 +17,47 @@ class Teltonika:
     def __init__(self, deviceid):
         self.deviceid = deviceid
 
-    def __check_ignition(self,attributes,input):
-        try:
-            if input == None:
-                if 'ignition' in attributes:
-                    if attributes['ignition']:
-                        return True
-                    else:
-                        return False
-                else:
-                    print("Ignition does not exist.")
-                    return False
+    def __check_ignition(self,attributes,ignition_source):
+        if ignition_source in attributes:
+            #print(attributes[ignition_source])
+            if attributes[ignition_source] == 1:
+                return True
             else:
-                if input in attributes:
-                    print(attributes[input])
-                    if attributes[input] == 1:
-                        return True
-                    else:
-                        return False
-                else:
-                    raise Exception(f"{input} does not exist.")
-        except Exception as e:
-            print(e)
+                return False
+        else:
             return False
+
+    def __check_panic(self,attributes,panic_source):
+        if panic_source in attributes:
+            #print(attributes[panic_source])
+            if attributes[panic_source] == 1:
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
     def detect_ignition_event(self,location):
         try:
-            try:
-                device_digital_input = DeviceDigitalInput.objects.get(
-                    device__uniqueid=self.deviceid,
-                    input_event="IGNITION"
-                )
-                input = device_digital_input.input
-                input = f'di{input}'
-            except:
-                input = None
+            unit = Device.objects.get(
+                uniqueid=self.deviceid
+            )
+            ignition_source = unit.ignition_source
             attributes = location['attributes']
-            return self.__check_ignition(attributes,input)
+            return self.__check_ignition(attributes,ignition_source)
         except Exception as e:
             print(e)
             return False
 
     def detect_panic_event(self,location):
         try:
-            device_digital_input = DeviceDigitalInput.objects.get(
-                device__uniqueid=self.deviceid,
-                input_event="PANIC"
+            unit = Device.objects.get(
+                uniqueid=self.deviceid
             )
-            input = device_digital_input.input
-            input = f'di{input}'
+            panic_source = unit.panic_source
             attributes = location['attributes']
-            if input in attributes:
-                if attributes[input] == 1:
-                    return True
-                elif attributes[input] == 0:
-                    return False
-            else:
-                raise Exception(f"{input} does not exist.")
+            return self.__check_panic(attributes,panic_source)
         except Exception as e:
             print(e)
             return False
