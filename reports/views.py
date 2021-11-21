@@ -1742,6 +1742,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
             'latitude':location_qs.latitude,
             'longitude':location_qs.longitude,
             'timestamp':location_qs.timestamp,
+            'altitude':location_qs.altitude,
             'angle':location_qs.angle,
             'speed':location_qs.speed,
             'address':location_qs.address,
