@@ -26,6 +26,9 @@ def login_view(request):
                 return render(request,'users/login.html',{
                     'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
                 })
+            next = request.GET.get('next')
+            if next:
+                return redirect(next)
             return redirect('map')
         else:
             return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
