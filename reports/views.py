@@ -1702,13 +1702,15 @@ def group_stop_report_view(request):
 def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_limit):
     initial_timestamp = None
     final_timestamp = None
-    try:
-        unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    unit = None
+    if unit_name.upper() != 'ALL':
+        try:
+            unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
     try:
         initial_datetime_str = f"{initial_datetime}:00"
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -1728,33 +1730,70 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations_qs = Location.objects.filter(
-        unitid=unit.id,
-        timestamp__gte=initial_timestamp,
-        timestamp__lte=final_timestamp
-    ).order_by('timestamp').exclude(
-        latitude=0.0,
-        longitude=0.0
-    )
-    locations = []
-    for location_qs in locations_qs:
-        locations.append({
-            'latitude':location_qs.latitude,
-            'longitude':location_qs.longitude,
-            'timestamp':location_qs.timestamp,
-            'altitude':location_qs.altitude,
-            'angle':location_qs.angle,
-            'speed':location_qs.speed,
-            'address':location_qs.address,
-            'attributes':json.loads(location_qs.attributes),
-        })
-    device_reader = DeviceReader(unit.uniqueid)
-    speed_limit = int(speed_limit)
-    unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
-    for item in unit_speed_report:
-        item['unit_name'] = unit.name
-        item['unit_description'] = unit.description
-    return Response(unit_speed_report,status=status.HTTP_200_OK)
+    
+    # Aqui va la logica del resultado
+    speed_report = []
+
+    if unit_name.upper() == 'ALL':
+        units = privilege.get_units(request.user.profile)
+        for unit in units:
+            locations_qs = Location.objects.filter(
+                unitid=unit.id,
+                timestamp__gte=initial_timestamp,
+                timestamp__lte=final_timestamp
+            ).order_by('timestamp').exclude(
+                latitude=0.0,
+                longitude=0.0
+            )
+            locations = []
+            for location_qs in locations_qs:
+                locations.append({
+                    'latitude':location_qs.latitude,
+                    'longitude':location_qs.longitude,
+                    'timestamp':location_qs.timestamp,
+                    'altitude':location_qs.altitude,
+                    'angle':location_qs.angle,
+                    'speed':location_qs.speed,
+                    'address':location_qs.address,
+                    'attributes':json.loads(location_qs.attributes),
+                })
+            device_reader = DeviceReader(unit.uniqueid)
+            speed_limit = int(speed_limit)
+            unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
+            for item in unit_speed_report:
+                item['unit_name'] = unit.name
+                item['unit_description'] = unit.description
+                speed_report.append(item)
+    else:
+        locations_qs = Location.objects.filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lte=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        locations = []
+        for location_qs in locations_qs:
+            locations.append({
+                'latitude':location_qs.latitude,
+                'longitude':location_qs.longitude,
+                'timestamp':location_qs.timestamp,
+                'altitude':location_qs.altitude,
+                'angle':location_qs.angle,
+                'speed':location_qs.speed,
+                'address':location_qs.address,
+                'attributes':json.loads(location_qs.attributes),
+            })
+        device_reader = DeviceReader(unit.uniqueid)
+        speed_limit = int(speed_limit)
+        unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
+        for item in unit_speed_report:
+            item['unit_name'] = unit.name
+            item['unit_description'] = unit.description
+            speed_report.append(item)
+    
+    return Response(speed_report,status=status.HTTP_200_OK)
 
 # REPORTE DE VELOCIDAD
 @login_required

@@ -65,6 +65,7 @@ class DeviceReader:
                     'latitude':location['latitude'],
 	                'longitude':location['longitude'],
 	                'timestamp':location['timestamp'],
+                    'altitude':location['altitude'],
                     'angle':location['angle'],
 	                'speed':location['speed'],
 	                'address':location['address'],
