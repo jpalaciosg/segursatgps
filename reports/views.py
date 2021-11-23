@@ -1767,13 +1767,14 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
                 item['unit_description'] = unit.description
                 number_of_speeds += 1
                 speed_report.append(item)
-            summarization.append({
-                'unit_name': unit_name,
-                'unit_description': unit.description,
-                'initial_datetime':initial_datetime,
-                'final_datetime':final_datetime,
-                'number_of_speeds': number_of_speeds
-            })
+            if number_of_speeds > 0:
+                summarization.append({
+                    'unit_name': unit.name,
+                    'unit_description': unit.description,
+                    'initial_datetime':initial_datetime,
+                    'final_datetime':final_datetime,
+                    'number_of_speeds': number_of_speeds
+                })
     else:
         number_of_speeds = 0
         locations_qs = Location.objects.filter(
@@ -1805,7 +1806,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
             number_of_speeds += 1
             speed_report.append(item)
         summarization.append({
-            'unit_name': unit_name,
+            'unit_name': unit.name,
             'unit_description': unit.description,
             'initial_datetime':initial_datetime,
             'final_datetime':final_datetime,
