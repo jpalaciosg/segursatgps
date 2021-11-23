@@ -1809,8 +1809,8 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
         })
 
     data = {
-        speed_report: speed_report,
-        summarization: summarization
+        'speed_report': speed_report,
+        'summarization': summarization
     }
     
     return Response(data,status=status.HTTP_200_OK)
