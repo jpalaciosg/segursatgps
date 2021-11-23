@@ -1733,10 +1733,12 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
     
     # Aqui va la logica del resultado
     speed_report = []
+    summarization = []
 
     if unit_name.upper() == 'ALL':
         units = privilege.get_units(request.user.profile)
         for unit in units:
+            number_of_speeds = 0
             locations_qs = Location.objects.filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
@@ -1763,8 +1765,15 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
             for item in unit_speed_report:
                 item['unit_name'] = unit.name
                 item['unit_description'] = unit.description
+                number_of_speeds += 1
                 speed_report.append(item)
+            summarization.append({
+                'unit_name': unit_name,
+                'unit_description': unit.description,
+                'number_of_speeds': number_of_speeds
+            })
     else:
+        number_of_speeds = 0
         locations_qs = Location.objects.filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
@@ -1791,9 +1800,20 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
         for item in unit_speed_report:
             item['unit_name'] = unit.name
             item['unit_description'] = unit.description
+            number_of_speeds += 1
             speed_report.append(item)
+        summarization.append({
+            'unit_name': unit_name,
+            'unit_description': unit.description,
+            'number_of_speeds': number_of_speeds
+        })
+
+    data = {
+        speed_report: speed_report,
+        summarization: summarization
+    }
     
-    return Response(speed_report,status=status.HTTP_200_OK)
+    return Response(data,status=status.HTTP_200_OK)
 
 # REPORTE DE VELOCIDAD
 @login_required
