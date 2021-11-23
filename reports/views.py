@@ -1770,6 +1770,8 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
             summarization.append({
                 'unit_name': unit_name,
                 'unit_description': unit.description,
+                'initial_datetime':initial_datetime,
+                'final_datetime':final_datetime,
                 'number_of_speeds': number_of_speeds
             })
     else:
@@ -1805,6 +1807,8 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
         summarization.append({
             'unit_name': unit_name,
             'unit_description': unit.description,
+            'initial_datetime':initial_datetime,
+            'final_datetime':final_datetime,
             'number_of_speeds': number_of_speeds
         })
 
