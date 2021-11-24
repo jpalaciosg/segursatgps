@@ -48,6 +48,10 @@ def dashboard_view(request):
         else:
             units_stopped_count += 1
     units_transmitting_count = len(units) - units_not_transmitted_count
+    for unit in units:
+        dt = datetime.fromtimestamp(unit.last_timestamp)
+        dt = gmt_conversor.convert_utctolocaltime(dt)
+        unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
     return render(request,'reports/dashboard.html',{
         'units_transmitting_count': str(units_transmitting_count),
         'units_not_transmitted_count': units_not_transmitted_count,
