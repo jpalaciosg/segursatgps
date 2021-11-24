@@ -35,28 +35,25 @@ privilege = Privilege()
 def dashboard_view(request):
     units = privilege.get_units(request.user.profile)
     now = datetime.now()
-    units_not_transmitted = 0
+    units_not_transmitted_count = 0
     current_timestamp = int(datetime.timestamp(now))
-    units_in_motion = 0
-    units_stopped = 0
+    units_in_motion_count = 0
+    units_stopped_count = 0
     for unit in units:
         timeout = current_timestamp - unit.last_timestamp
         if timeout > 86400:
-            units_not_transmitted += 1
+            units_not_transmitted_count += 1
         if unit.last_speed > 0:
-            units_in_motion += 1
+            units_in_motion_count += 1
         else:
-            units_stopped += 1
-    units_transmitting = len(units) - units_not_transmitted
+            units_stopped_count += 1
+    units_transmitting_count = len(units) - units_not_transmitted_count
     return render(request,'reports/dashboard.html',{
-        'units_transmitting': str(units_transmitting),
-        'units_not_transmitted': units_not_transmitted,
-        'units_in_motion': units_in_motion,
-        'units_stopped': units_stopped,
-        'panic_alert': 0,
-        'battery_alert': 0,
-        'speed_alert': 0,
-        'other_alert': 0, 
+        'units_transmitting_count': str(units_transmitting_count),
+        'units_not_transmitted_count': units_not_transmitted_count,
+        'units_in_motion_count': units_in_motion_count,
+        'units_stopped_count': units_stopped_count,
+        'units': units,
         'now': gmt_conversor.convert_utctolocaltime(now),
     })
 
