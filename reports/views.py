@@ -34,29 +34,32 @@ privilege = Privilege()
 @login_required
 def dashboard_view(request):
     units = privilege.get_units(request.user.profile)
+    units_transmitting = []
+    units_not_transmitted = []
+    units_in_motion = []
+    units_stopped = []
     now = datetime.now()
-    units_not_transmitted_count = 0
     current_timestamp = int(datetime.timestamp(now))
-    units_in_motion_count = 0
-    units_stopped_count = 0
-    for unit in units:
-        timeout = current_timestamp - unit.last_timestamp
-        if timeout > 86400:
-            units_not_transmitted_count += 1
-        if unit.last_speed > 0:
-            units_in_motion_count += 1
-        else:
-            units_stopped_count += 1
-    units_transmitting_count = len(units) - units_not_transmitted_count
+
     for unit in units:
         dt = datetime.fromtimestamp(unit.last_timestamp)
         dt = gmt_conversor.convert_utctolocaltime(dt)
         unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
+        timeout = current_timestamp - unit.last_timestamp
+        if timeout > 86400:
+            units_not_transmitted.append(unit)
+        else:
+            units_transmitting.append(unit)
+        if unit.last_speed > 0:
+            units_in_motion.append(unit)
+        else:
+            units_stopped.append(unit)
+    
     return render(request,'reports/dashboard.html',{
-        'units_transmitting_count': str(units_transmitting_count),
-        'units_not_transmitted_count': units_not_transmitted_count,
-        'units_in_motion_count': units_in_motion_count,
-        'units_stopped_count': units_stopped_count,
+        'units_transmitting': units_transmitting,
+        'units_not_transmitted': units_not_transmitted,
+        'units_in_motion': units_in_motion,
+        'units_stopped': units_stopped,
         'units': units,
         'now': gmt_conversor.convert_utctolocaltime(now),
     })
