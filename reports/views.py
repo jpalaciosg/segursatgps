@@ -46,7 +46,7 @@ def dashboard_view(request):
         dt = gmt_conversor.convert_utctolocaltime(dt)
         unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
         timeout = current_timestamp - unit.last_timestamp
-        if timeout > 86400:
+        if timeout > request.user.profile.account.device_timeout:
             units_not_transmitted.append(unit)
         else:
             units_transmitting.append(unit)
@@ -81,7 +81,7 @@ def fleet_status_view(request):
         unit.last_report_time = dt.strftime("%Y/%m/%d %H:%M:%S").split(" ")[1]
         ## sumarizar totales
         timeout = current_timestamp - unit.last_timestamp
-        if timeout > 86400:
+        if timeout > request.user.profile.account.device_timeout:
             units_not_transmitted += 1
         if unit.last_speed > 0:
             units_in_motion += 1
