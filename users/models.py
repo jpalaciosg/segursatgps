@@ -11,6 +11,7 @@ class User(AbstractUser):
 class Account(models.Model):
     name = models.CharField(max_length=25)
     description = models.CharField(max_length=50)
+    device_timeout = models.PositiveIntegerField(default=86400)
     def __str__(self):
         return self.name
 
