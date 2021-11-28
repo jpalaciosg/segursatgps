@@ -197,7 +197,15 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
             dt = datetime.utcfromtimestamp(alert['timestamp'])
             dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
             alert['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
-        
+            if alert['priority'] == 'L':
+                alert['priority'] = 'BAJA'
+            elif alert['priority'] == 'M':
+                alert['priority'] = 'MEDIA'
+            elif alert['priority'] == 'H':
+                alert['priority'] = 'ALTA'
+            elif alert['priority'] == 'M':
+                alert['priority'] = 'MUY ALTA'
+
         summarization = []
         for unit in units:
             count = alerts_qs.filter(unitid=unit.id).count()
