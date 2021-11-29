@@ -1,15 +1,19 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-#from django.contrib.auth.models import User
-from users.models import User
 from django.urls import reverse_lazy
 
-from bootstrap_modal_forms.generic import BSModalFormView
-from pytz import timezone
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
 
+#from django.contrib.auth.models import User
+from users.models import User
 from .models import Profile
 from .forms import UserCreateForm,UserUpdateForm
+from .serializers import AccountSerializer
+
+from pytz import timezone
 
 # Create your views here.
 def login_view(request):
@@ -154,3 +158,9 @@ def delete_user(request,username):
         return redirect('users')
     except:
         return redirect('users')
+
+@api_view(['GET'])
+def get_account(request):
+    account = request.user.profile.account
+    serializer = AccountSerializer(account,many=False)
+    return Response(serializer.data,status=status.HTTP_200_OK)
