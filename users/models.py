@@ -25,6 +25,16 @@ class Profile(models.Model):
     report_module = models.BooleanField(default=False)
     alert_module = models.BooleanField(default=False)
     geofence_module = models.BooleanField(default=False)
+    # privileges
+    view_detailed_report = models.BooleanField(default=False)
+    view_speed_report = models.BooleanField(default=False)
+    view_stop_report = models.BooleanField(default=False)
+    view_trip_report = models.BooleanField(default=False)
+    view_mileage_report = models.BooleanField(default=False)
+    view_geofence_report = models.BooleanField(default=False)
+    view_driver_style_report = models.BooleanField(default=False)
+    view_telemetry_report = models.BooleanField(default=False)
+    # fin - privileges
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):
