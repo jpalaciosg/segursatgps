@@ -2012,6 +2012,7 @@ def group_speed_report_view(request):
                         'longitude':location_qs.longitude,
                         'timestamp':location_qs.timestamp,
                         'angle':location_qs.angle,
+                        'altitude':location_qs.altitude,
                         'speed':location_qs.speed,
                         'address':location_qs.address,
                         'attributes':json.loads(location_qs.attributes),
