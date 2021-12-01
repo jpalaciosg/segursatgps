@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 
 from rest_framework.response import Response
 from rest_framework import serializers, status
@@ -311,6 +312,10 @@ def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
 
 @login_required
 def detailed_report_view(request):
+    # verificar privilegios
+    if privilege.view_detailed_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
@@ -611,6 +616,10 @@ def detailed_report_with_attributes_view(request):
 
 @login_required
 def driving_style_report_view(request):
+    # verificar privilegios
+    if privilege.view_driving_style_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
@@ -924,6 +933,10 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
 # TRIP REPORT
 @login_required
 def trip_report_view(request):
+    # verificar privilegios
+    if privilege.view_trip_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
@@ -1410,6 +1423,10 @@ def get_stop_report(request,unit_name,initial_datetime,final_datetime,discard_ti
 # STOP REPORT
 @login_required
 def stop_report_view(request):
+    # verificar privilegios
+    if privilege.view_stop_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
@@ -1827,6 +1844,10 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
 # REPORTE DE VELOCIDAD
 @login_required
 def speed_report_view(request):
+    # verificar privilegios
+    if privilege.view_speed_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
@@ -2048,7 +2069,10 @@ def group_speed_report_view(request):
 
 @login_required
 def mileage_report_view(request):
-    #POST
+    # verificar privilegios
+    if privilege.view_mileage_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
@@ -2283,7 +2307,10 @@ def group_mileage_report_view(request):
 # GEOFENCE REPORT
 @login_required
 def geofence_report_view(request):
-    #POST
+    # verificar privilegios
+    if privilege.view_geofence_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         geofences = Geofence.objects.filter(account=request.user.profile.account)
@@ -2561,6 +2588,10 @@ def group_geofence_report_view(request):
 
 @login_required
 def telemetry_report_view(request):
+    # verificar privilegios
+    if privilege.view_telemetry_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
