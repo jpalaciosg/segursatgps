@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def main_view(request):
     profile = request.user.profile
-    print(profile)
     return render(request,'generic/main.html',{
         'profile': profile,
     })
