@@ -1,30 +1,40 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum,Count
+from django.http import HttpResponse
 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
+
+from datetime import datetime
 
 from .models import Alert
 from .serializers import AlertSerializer
 from units.models import Device
 from .forms import AlertHistoryForm
 
-from datetime import datetime
-
 from common.gmt_conversor import GMTConversor
+from common.privilege import Privilege
 
 gmt_conversor = GMTConversor() #conversor zona horaria
+privilege = Privilege()
 
 # Create your views here.
 @login_required
 def alerts_view(request):
+    # verificar privilegios
+    if privilege.view_latest_alerts(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.user.profile.account.name == 'civa':
         return render(request,'alerts/civa-alert.html')
     return render(request,'alerts/alerts.html')
 
 def alert_history_view(request):
+    # verificar privilegios
+    if privilege.view_alert_history(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = Device.objects.filter(account=request.user.profile.account)
@@ -147,6 +157,10 @@ def alert_history_view(request):
 
 @api_view(['GET'])
 def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_type):
+    # verificar privilegios
+    if privilege.view_latest_alerts(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     units = Device.objects.filter(account=request.user.profile.account)
     initial_timestamp = None
     final_timestamp = None
@@ -268,6 +282,10 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
 
 @api_view(['GET'])
 def get_alert(request,id):
+    # verificar privilegios
+    if privilege.view_latest_alerts(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     try:
         try:
             alert = Alert.objects.get(id=id)

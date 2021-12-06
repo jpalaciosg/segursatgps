@@ -521,6 +521,10 @@ def detailed_mileage_report_view(request):
 
 @login_required
 def detailed_report_with_attributes_view(request):
+    # verificar privilegios
+    if privilege.view_detailed_report_with_attributes(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         units = privilege.get_units(request.user.profile)
