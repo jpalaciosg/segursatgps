@@ -75,6 +75,18 @@ class Privilege:
         if profile.is_admin == False:
             if profile.view_group_stop_reportt == False:
                 return False
+        return True
+
+    def view_group_mileage_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_group_mileage_reportt == False:
+                return False
+        return True
+
+    def view_group_speed_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_group_speed_reportt == False:
+                return False
         return True 
 
     def view_latest_alerts(self,profile):

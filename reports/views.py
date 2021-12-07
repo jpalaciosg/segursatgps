@@ -1989,6 +1989,10 @@ def speed_report_view(request):
 # GROUP SPEED REPORT
 @login_required
 def group_speed_report_view(request):
+    # verificar privilegios
+    if privilege.view_group_speed_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         groups = Group.objects.filter(account=request.user.profile.account)
@@ -2223,6 +2227,9 @@ def mileage_report_view(request):
 # GROUP MILEAGE REPORT
 @login_required
 def group_mileage_report_view(request):
+    if privilege.view_group_mileage_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         groups = Group.objects.filter(account=request.user.profile.account)
