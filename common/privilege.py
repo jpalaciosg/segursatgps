@@ -58,3 +58,21 @@ class Privilege:
             if profile.view_telemetry_report == False:
                 return False
         return True
+
+    def detailed_report_with_attributes_view(self,profile):
+        if profile.is_admin == False:
+            if profile.view_telemetry_report == False:
+                return False
+        return True
+
+    def view_latest_alerts(self,profile):
+        if profile.is_admin == False:
+            if profile.view_telemetry_report == False:
+                return False
+        return True
+
+    def view_alert_history(self,profile):
+        if profile.is_admin == False:
+            if profile.view_telemetry_report == False:
+                return False
+        return True
