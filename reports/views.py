@@ -1210,6 +1210,10 @@ def trip_report_view(request):
 # GROUP TRIP REPORT
 @login_required
 def group_trip_report_view(request):
+    # verificar privilegios
+    if privilege.view_group_trip_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         groups = Group.objects.filter(account=request.user.profile.account)
@@ -1598,6 +1602,10 @@ def stop_report_view(request):
 # GROUP STOP REPORT
 @login_required
 def group_stop_report_view(request):
+    # verificar privilegios
+    if privilege.view_group_stop_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         groups = Group.objects.filter(account=request.user.profile.account)

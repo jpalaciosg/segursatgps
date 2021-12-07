@@ -35,6 +35,8 @@ class Profile(models.Model):
     view_driving_style_report = models.BooleanField(default=False)
     view_telemetry_report = models.BooleanField(default=False)
     view_detailed_report_with_attributes = models.BooleanField(default=False)
+    view_group_trip_report = models.BooleanField(default=False)
+    view_group_stop_report = models.BooleanField(default=False)
     view_latest_alerts = models.BooleanField(default=False)
     view_alert_history = models.BooleanField(default=False)
     # fin - privileges

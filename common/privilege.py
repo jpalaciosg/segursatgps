@@ -59,20 +59,32 @@ class Privilege:
                 return False
         return True
 
-    def detailed_report_with_attributes_view(self,profile):
+    def view_detailed_report_with_attributes(self,profile):
         if profile.is_admin == False:
-            if profile.view_telemetry_report == False:
+            if profile.view_detailed_report_with_attributes == False:
                 return False
         return True
 
+    def view_group_trip_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_group_trip_report == False:
+                return False
+        return True
+
+    def view_group_stop_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_group_stop_reportt == False:
+                return False
+        return True 
+
     def view_latest_alerts(self,profile):
         if profile.is_admin == False:
-            if profile.view_telemetry_report == False:
+            if profile.view_latest_alerts == False:
                 return False
         return True
 
     def view_alert_history(self,profile):
         if profile.is_admin == False:
-            if profile.view_telemetry_report == False:
+            if profile.view_alert_history == False:
                 return False
         return True
