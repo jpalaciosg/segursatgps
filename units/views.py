@@ -24,6 +24,10 @@ privilege = Privilege()
 # Create your views here.  
 @login_required
 def units_view(request):
+    # verificar privilegios
+    if privilege.view_latest_alerts(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         data._mutable = True

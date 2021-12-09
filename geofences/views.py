@@ -1,5 +1,6 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,9 +12,19 @@ from .models import Geofence
 from .serializers import GeofenceSerializer
 from .forms import GeofenceCreateForm
 
+from common.gmt_conversor import GMTConversor
+from common.privilege import Privilege
+
+gmt_conversor = GMTConversor() #conversor zona horaria
+privilege = Privilege()
+
 # Create your views here.
 @login_required
 def geofences_view(request):
+    # verificar privilegios
+    if privilege.view_latest_alerts(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         geofences = Geofence.objects.filter(account=request.user.profile.account)
         form = GeofenceCreateForm(request.POST)
@@ -53,6 +64,12 @@ def geofences_view(request):
         })
     # GET
     geofences = Geofence.objects.filter(account=request.user.profile.account)
+    for geofence in geofences:
+        try:
+            geofence.created = gmt_conversor.convert_localtimetoutc(geofence.created)
+            geofence.modified = gmt_conversor.convert_localtimetoutc(geofence.modified)
+        except Exception as e:
+            print(e)
     form = GeofenceCreateForm
     return render(request,'geofences/geofences.html',{
         'geofences':geofences,

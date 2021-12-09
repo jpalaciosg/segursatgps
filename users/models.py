@@ -39,6 +39,11 @@ class Profile(models.Model):
     view_group_speed_report = models.BooleanField(default=False)
     view_group_mileage_report = models.BooleanField(default=False)
     view_group_stop_report = models.BooleanField(default=False)
+    view_group_geofence_report = models.BooleanField(default=False)
+    view_units = models.BooleanField(default=False)
+    view_triggers = models.BooleanField(default=False)
+    view_geofences = models.BooleanField(default=False)
+    view_users = models.BooleanField(default=False)
     view_latest_alerts = models.BooleanField(default=False)
     view_alert_history = models.BooleanField(default=False)
     # fin - privileges

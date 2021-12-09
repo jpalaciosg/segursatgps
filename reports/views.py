@@ -2494,6 +2494,10 @@ def geofence_report_view(request):
 # GROUP GEOFENCE REPORT
 @login_required
 def group_geofence_report_view(request):
+    # verificar privilegios
+    if privilege.view_geofence_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         geofences = Geofence.objects.filter(account=request.user.profile.account)

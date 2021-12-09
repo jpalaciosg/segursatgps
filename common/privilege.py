@@ -87,7 +87,37 @@ class Privilege:
         if profile.is_admin == False:
             if profile.view_group_speed_report == False:
                 return False
-        return True 
+        return True
+
+    def view_group_geofence_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_group_geofence_report == False:
+                return False
+        return True
+
+    def view_units(self,profile):
+        if profile.is_admin == False:
+            if profile.view_units == False:
+                return False
+        return True
+
+    def view_triggers(self,profile):
+        if profile.is_admin == False:
+            if profile.view_triggers == False:
+                return False
+        return True
+
+    def view_geofences(self,profile):
+        if profile.is_admin == False:
+            if profile.view_geofences == False:
+                return False
+        return True
+
+    def view_users(self,profile):
+        if profile.is_admin == False:
+            if profile.view_users == False:
+                return False
+        return True
 
     def view_latest_alerts(self,profile):
         if profile.is_admin == False:

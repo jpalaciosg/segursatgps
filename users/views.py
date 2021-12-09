@@ -1,7 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse_lazy
+from django.http import HttpResponse
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,7 +13,11 @@ from .models import Profile
 from .forms import UserCreateForm,UserUpdateForm
 from .serializers import AccountSerializer
 
-from pytz import timezone
+from common.gmt_conversor import GMTConversor
+from common.privilege import Privilege
+
+gmt_conversor = GMTConversor() #conversor zona horaria
+privilege = Privilege()
 
 # Create your views here.
 def login_view(request):
@@ -56,6 +60,10 @@ def logout_view(request):
 
 @login_required
 def users_view(request):
+    # verificar privilegios
+    if privilege.view_latest_alerts(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     if request.method == 'POST':
         data = request.POST
         # create form
@@ -142,7 +150,8 @@ def users_view(request):
     create_form = UserCreateForm()
     for profile in profiles:
         try:
-            profile.user.last_login = profile.user.last_login.replace(tzinfo=timezone('America/Lima'))
+            #profile.user.last_login = profile.user.last_login.replace(tzinfo=timezone('America/Lima'))
+            profile.user.last_login = gmt_conversor.convert_localtimetoutc(profile.user.last_login)
         except Exception as e:
             print(e)
     return render(request,'users/users.html',{
