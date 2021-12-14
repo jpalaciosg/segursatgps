@@ -24,7 +24,6 @@ from common.privilege import Privilege
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
 from units.models import Device,Group
 from locations.serializers import LocationSerializer
-from .serializers import DrivingStyleSerializer
 
 # Create your views here.
 
@@ -663,25 +662,28 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
         latitude=0.0,
         longitude=0.0
     )
+    serializer = LocationSerializer(locations,many=True)
+    data = serializer.data
+
     harsh_driving_report = []
     device_reader = DeviceReader(unit.uniqueid)
-    for i in range(len(locations)):
-        dt = datetime.utcfromtimestamp(locations[i].timestamp)
+    for i in range(len(data)):
+        data[i]['unit_name'] = unit.name
+        data[i]['unit_description'] = unit.description
+        dt = datetime.utcfromtimestamp(data[i]['timestamp'])
         dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-        locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
-        locations[i].ignition = device_reader.detect_ignition_event({
-            'attributes':json.loads(locations[i].attributes)
+        data[i]['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['ignition'] = device_reader.detect_ignition_event({
+            'attributes':json.loads(data[i]['attributes'])
         })
         try:
-            locations[i].driving = json.loads(locations[i].attributes)['alarm']
-            locations[i].intensity = json.loads(locations[i].attributes)['io254']
-            harsh_driving_report.append(locations[i])
+            data[i]['driving'] = json.loads(data[i]['attributes'])['alarm']
+            data[i]['intensity'] = json.loads(data[i]['attributes'])['io254']
+            harsh_driving_report.append(data[i])
         except Exception as e:
             pass
         
-    serializer = DrivingStyleSerializer(harsh_driving_report,many=True)
-    data = serializer.data
-    return Response(data,status=status.HTTP_200_OK)
+    return Response(harsh_driving_report,status=status.HTTP_200_OK)
 
 def driving_style_report_view(request):
     # verificar privilegios
