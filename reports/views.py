@@ -672,24 +672,12 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
         locations[i].ignition = device_reader.detect_ignition_event({
             'attributes':json.loads(locations[i].attributes)
         })
-        """
         try:
             locations[i].driving = json.loads(locations[i].attributes)['alarm']
             locations[i].intensity = json.loads(locations[i].attributes)['io254']
             harsh_driving_report.append(locations[i])
         except Exception as e:
-            print(e)
-        """
-        try:
-            locations[i].driving = json.loads(locations[i].attributes)['alarm']
-        except Exception as e:
-            locations[i].driving = ""
-        try:
-            locations[i].intensity = json.loads(locations[i].attributes)['io254']
-        except Exception as e:
-            locations[i].intensity = ""
-        harsh_driving_report.append(locations[i])
-            
+            pass
         
     serializer = DrivingStyleSerializer(harsh_driving_report,many=True)
     data = serializer.data
