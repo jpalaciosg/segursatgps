@@ -23,8 +23,8 @@ from common.privilege import Privilege
 
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
 from units.models import Device,Group
-from units.serializers import DeviceSerializer
 from locations.serializers import LocationSerializer
+from .serializers import DrivingStyleSerializer
 
 # Create your views here.
 
@@ -374,11 +374,11 @@ def detailed_report_view(request):
                     'error':'No existe un recorrido para analizar.'
                 })
             accumulated_distance = 0.0
+            device_reader = DeviceReader(unit.uniqueid)
             for i in range(len(locations)):
                 dt = datetime.utcfromtimestamp(locations[i].timestamp)
                 dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
                 locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
-                device_reader = DeviceReader(unit.uniqueid)
                 locations[i].ignition = device_reader.detect_ignition_event({
                     'attributes':json.loads(locations[i].attributes)
                 })
@@ -618,7 +618,83 @@ def detailed_report_with_attributes_view(request):
         'units':units,
     })
 
-@login_required
+@api_view(['GET'])
+def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
+    initial_timestamp = None
+    final_timestamp = None
+    unit = None
+    if unit_name.upper() != 'ALL':
+        try:
+            unit = Device.objects.get(
+                name=unit_name,
+                #account=request.user.profile.account
+            )
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    #
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    
+    locations = Location.objects.using('history_db_replica').filter(
+        unitid=unit.id,
+        timestamp__gte=initial_timestamp,
+        timestamp__lte=final_timestamp
+    ).order_by('timestamp').exclude(
+        latitude=0.0,
+        longitude=0.0
+    )
+    harsh_driving_report = []
+    device_reader = DeviceReader(unit.uniqueid)
+    for i in range(len(locations)):
+        dt = datetime.utcfromtimestamp(locations[i].timestamp)
+        dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+        locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
+        locations[i].ignition = device_reader.detect_ignition_event({
+            'attributes':json.loads(locations[i].attributes)
+        })
+        """
+        try:
+            locations[i].driving = json.loads(locations[i].attributes)['alarm']
+            locations[i].intensity = json.loads(locations[i].attributes)['io254']
+            harsh_driving_report.append(locations[i])
+        except Exception as e:
+            print(e)
+        """
+        try:
+            locations[i].driving = json.loads(locations[i].attributes)['alarm']
+        except Exception as e:
+            locations[i].driving = ""
+        try:
+            locations[i].intensity = json.loads(locations[i].attributes)['io254']
+        except Exception as e:
+            locations[i].intensity = ""
+        harsh_driving_report.append(locations[i])
+            
+        
+    serializer = DrivingStyleSerializer(harsh_driving_report,many=True)
+    data = serializer.data
+    return Response(data,status=status.HTTP_200_OK)
+
 def driving_style_report_view(request):
     # verificar privilegios
     if privilege.view_driving_style_report(request.user.profile) == False:
