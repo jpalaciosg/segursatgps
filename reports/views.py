@@ -666,6 +666,7 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
     data = serializer.data
 
     harsh_driving_report = []
+    summarization = []
     device_reader = DeviceReader(unit.uniqueid)
     for i in range(len(data)):
         data[i]['unit_name'] = unit.name
@@ -682,8 +683,11 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
             harsh_driving_report.append(data[i])
         except Exception as e:
             pass
-        
-    return Response(harsh_driving_report,status=status.HTTP_200_OK)
+    final_report = {
+        'harsh_driving_report':harsh_driving_report,
+        'summarization':summarization,
+    }    
+    return Response(final_report,status=status.HTTP_200_OK)
 
 def driving_style_report_view(request):
     # verificar privilegios
