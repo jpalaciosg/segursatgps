@@ -50,6 +50,10 @@ class AlertReader:
         device_reader = DeviceReader(self.deviceid)
         return device_reader.detect_battery_disconnection_event(current_location,previous_location)
 
+    def __detect_panic_event(self,current_location):
+        device_reader = DeviceReader(self.deviceid)
+        return device_reader.detect_panic_event(current_location)
+
     def __detect_speed_event(self,current_speed,speed_limit):
         if current_speed > speed_limit:
             return True
@@ -79,6 +83,104 @@ class AlertReader:
         }
         triggers = FleetTrigger.objects.filter(account=unit.account)
         for trigger in triggers:
+            # ALERTA DE PANICO
+            if trigger.alert_type == 1001:
+                try:
+                    if self.__detect_panic_event(current_location):
+                        # ACTUALIZAR ULTIMA ALERTA
+                        try:
+                            last_alert = LastAlert.objects.get(unit__id=unit.id)
+                        except:
+                            last_alert = None
+                        if last_alert:
+                            last_alert.timestamp = unit.last_timestamp
+                            last_alert.latitude = unit.last_latitude
+                            last_alert.longitude = unit.last_longitude
+                            last_alert.speed = unit.last_speed
+                            last_alert.angle = unit.last_angle
+                            last_alert.address = unit.last_address
+                            last_alert.alert_type = 1001
+                            last_alert.alert_description = "ALERTA DE PANICO"
+                            last_alert.alert_priority = trigger.alert_priority
+                            last_alert.account = unit.account
+                            last_alert.save()
+                        else:
+                            last_alert = LastAlert.objects.create(
+                                unit = unit,
+                                timestamp = unit.last_timestamp,
+                                latitude = unit.last_latitude,
+                                longitude = unit.last_longitude,
+                                speed = unit.last_speed,
+                                angle = unit.last_angle,
+                                address = unit.last_address,
+                                alert_type = 1001,
+                                alert_description = "ALERTA DE PANICO",
+                                alert_priority = trigger.alert_priority,
+                                account = unit.account
+                            )  
+                        # FIN - ACTUALIZAR ULTIMA ALERTA
+                        alert = Alert.objects.create(
+                            unitid = unit.id,
+                            timestamp = unit.last_timestamp,
+                            latitude = unit.last_latitude,
+                            longitude = unit.last_longitude,
+                            speed = unit.last_speed,
+                            angle = unit.last_angle,
+                            address = unit.last_address,
+                            alert_type = 1001,
+                            alert_description = "ALERTA DE PANICO",
+                            alert_priority = trigger.alert_priority,
+                            reference = unit.name,
+                            accountid = unit.account.id
+                        )
+                        dt = datetime.fromtimestamp(alert.timestamp)
+                        dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+                        dt = dt.strftime("%d/%m/%Y %H:%M:%S")
+                        channel_layer = channels.layers.get_channel_layer()
+                        async_to_sync(channel_layer.group_send)(
+                            f'chat_{unit.account.name}',
+                            {
+                                'type': 'send_message',
+                                'message': {
+                                    'type':'update_alert',
+                                    'payload': {
+                                        'unit_id': unit.id,
+                                        'unit_name': unit.name,
+                                        'unit_description': unit.description,
+                                        'timestamp': alert.timestamp,
+                                        'datetime': dt,
+                                        'latitude': alert.latitude,
+                                        'longitude': alert.longitude,
+                                        'speed': alert.speed,
+                                        'angle': alert.angle,
+                                        'address': alert.address,
+                                        'alert_type': alert.alert_type,
+                                        'alert_description': alert.alert_description,
+                                        'alert_priority': alert.alert_priority,
+                                        'alert_id': alert.id
+                                    }
+                                }
+                            }
+                        )
+                        if trigger.send_notification:
+                            async_to_sync(channel_layer.group_send)(
+                                f'chat_{unit.account.name}',
+                                {
+                                    'type': 'send_message',
+                                    'message': {
+                                        'type':'notification',
+                                        'payload': {
+                                            'title': f'{unit.name} - {unit.description}',
+                                            'message': alert.alert_description,
+                                        }
+                                    }
+                                }
+                            )
+                except Exception as e:
+                    file = open("/tmp/alert_log.log",'a')
+                    file.write(f"{str(e)}")
+                    file.close()
+            # FIN ALERTA DE PANICO
             # ALERTA DE DESCONEXION DE BATERIA
             if trigger.alert_type == 1002:
                 try:
@@ -113,7 +215,7 @@ class AlertReader:
                                 alert_description = "ALERTA DE DESCONEXION DE BATERIA",
                                 alert_priority = trigger.alert_priority,
                                 account = unit.account
-                            )  
+                            ) 
                         # FIN - ACTUALIZAR ULTIMA ALERTA
                         alert = Alert.objects.create(
                             unitid = unit.id,
