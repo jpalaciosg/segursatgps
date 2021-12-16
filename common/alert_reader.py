@@ -177,8 +177,8 @@ class AlertReader:
                                 }
                             )
                 except Exception as e:
-                    file = open("/tmp/alert_log.log",'a')
-                    file.write(f"{str(e)}")
+                    file = open("/tmp/panic_log.log",'a')
+                    file.write(f"{str(e)}\n")
                     file.close()
             # FIN ALERTA DE PANICO
             # ALERTA DE DESCONEXION DE BATERIA

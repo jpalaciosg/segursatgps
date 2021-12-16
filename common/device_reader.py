@@ -16,20 +16,20 @@ class DeviceReader:
         self.deviceid = deviceid
 
     def detect_ignition_event(self,location):
-	    reader = Teltonika(self.deviceid)
-	    return reader.detect_ignition_event(location)
+        reader = Teltonika(self.deviceid)
+        return reader.detect_ignition_event(location)
 
     def detect_panic_event(self,location):
-	    reader = Teltonika(self.deviceid)
-	    return reader.detect_panic_event(location)
+        reader = Teltonika(self.deviceid)
+        return reader.detect_panic_event(location)
 
     def detect_battery_disconnection_event(self,current_location,previous_location):
         reader = Teltonika(self.deviceid)
         return reader.detect_battery_disconnection_event(current_location,previous_location)
 
     def get_odometer(self,location):
-	    reader = Teltonika(self.deviceid)
-	    return reader.get_odometer(location)
+        reader = Teltonika(self.deviceid)
+        return reader.get_odometer(location)
 
     def get_unit_status(self,unit):
         serializer = DeviceSerializer(unit,many=False)
@@ -44,12 +44,12 @@ class DeviceReader:
         return data
 	
     def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
-	    reader = Teltonika(self.deviceid)
-	    return reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
+        reader = Teltonika(self.deviceid)
+        return reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
 
     def generate_trip_report(self,locations):
-	    reader = Teltonika(self.deviceid)
-	    return reader.generate_trip_report(locations)
+        reader = Teltonika(self.deviceid)
+        return reader.generate_trip_report(locations)
 
     """
     def generate_driving_style_report(self,locations):
