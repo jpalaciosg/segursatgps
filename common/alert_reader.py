@@ -276,7 +276,7 @@ class AlertReader:
                             )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
-                    file.write(f"{str(e)}")
+                    file.write(f"{str(e)}\n")
                     file.close()
             # FIN ALERTA DE DESCONEXION DE BATERIA
             
@@ -377,7 +377,7 @@ class AlertReader:
                             )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
-                    file.write(f"{str(e)}")
+                    file.write(f"{str(e)}\n")
                     file.close()
             # FIN ALERTA DE VELOCIDAD GENERAL
             
@@ -483,7 +483,7 @@ class AlertReader:
                                     )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
-                    file.write(f"{str(e)}")
+                    file.write(f"{str(e)}\n")
                     file.close()
             # FIN ALERTA DE VELOCIDAD POR GEOCERCAS
 
@@ -597,6 +597,6 @@ class AlertReader:
                                 # FIN INSERTAR ALERTA EN EL HISTORIAL
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
-                    file.write(f"{str(e)}")
+                    file.write(f"{str(e)}\n")
                     file.close()
             # FIN ALERTA DE PARADA POR GEOCERCAS
