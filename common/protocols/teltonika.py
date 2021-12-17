@@ -93,6 +93,39 @@ class Teltonika:
             print(e)
             return False
 
+    def detect_harsh_acceleration_event(self,location):
+        try:
+            attributes = location['attributes']
+            if 'alarm' in attributes:
+                if attributes['alarm'] == 'harshAcceleration':
+                    return True
+            return False
+        except Exception as e:
+            print(e)
+            return False
+
+    def detect_harsh_braking_event(self,location):
+        try:
+            attributes = location['attributes']
+            if 'alarm' in attributes:
+                if attributes['alarm'] == 'harshBraking':
+                    return True
+            return False
+        except Exception as e:
+            print(e)
+            return False
+
+    def detect_harsh_cornering_event(self,location):
+        try:
+            attributes = location['attributes']
+            if 'alarm' in attributes:
+                if attributes['alarm'] == 'harshCornering':
+                    return True
+            return False
+        except Exception as e:
+            print(e)
+            return False
+
     def get_odometer(self,location):
         try:
             odometer = location['attributes']['odometer']

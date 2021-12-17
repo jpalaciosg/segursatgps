@@ -27,6 +27,18 @@ class DeviceReader:
         reader = Teltonika(self.deviceid)
         return reader.detect_battery_disconnection_event(current_location,previous_location)
 
+    def detect_harsh_acceleration_event(self,location):
+        reader = Teltonika(self.deviceid)
+        return reader.detect_harsh_acceleration_event(location)
+
+    def detect_harsh_braking_event(self,location):
+        reader = Teltonika(self.deviceid)
+        return reader.detect_harsh_braking_event(location)
+
+    def detect_harsh_cornering_event(self,location):
+        reader = Teltonika(self.deviceid)
+        return reader.detect_harsh_cornering_event(location)
+
     def get_odometer(self,location):
         reader = Teltonika(self.deviceid)
         return reader.get_odometer(location)
