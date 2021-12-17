@@ -97,7 +97,7 @@ class Teltonika:
         try:
             attributes = location['attributes']
             if 'alarm' in attributes:
-                if attributes['alarm'] == 'harshAcceleration':
+                if attributes['alarm'] == 'hardAcceleration':
                     return True
             return False
         except Exception as e:
@@ -108,7 +108,7 @@ class Teltonika:
         try:
             attributes = location['attributes']
             if 'alarm' in attributes:
-                if attributes['alarm'] == 'harshBraking':
+                if attributes['alarm'] == 'hardBraking':
                     return True
             return False
         except Exception as e:
@@ -119,7 +119,7 @@ class Teltonika:
         try:
             attributes = location['attributes']
             if 'alarm' in attributes:
-                if attributes['alarm'] == 'harshCornering':
+                if attributes['alarm'] == 'hardCornering':
                     return True
             return False
         except Exception as e:
