@@ -4,7 +4,7 @@ import requests
 from datetime import datetime
 import threading
 
-URL = 'http://sos.segursat.com/alertcenter/insert-data/'
+URL = 'http://sos.segursat.com:8080/alertcenter/insert-data/'
 items = []
 
 def thread_function(json_payload):
