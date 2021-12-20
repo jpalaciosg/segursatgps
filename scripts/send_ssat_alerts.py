@@ -10,6 +10,7 @@ items = []
 def thread_function(json_payload):
     global requests
     global datetime
+    global json
     global URL
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
