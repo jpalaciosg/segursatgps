@@ -27,17 +27,27 @@ def login_view(request):
         user = authenticate(request,username=username,password=password)
         if user:
             login(request,user)
+            admin_profile = None
+            profile = None
             try:
-                account = request.user.profile.account
+                admin_profile = request.user.adminprofile
             except:
-                logout(request)
-                return render(request,'users/login.html',{
-                    'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
-                })
-            next = request.GET.get('next')
-            if next:
-                return redirect(next)
-            return redirect('map')
+                admin_profile = None
+            try:
+                profile = request.user.profile
+            except:
+                profile = None
+            if admin_profile:
+                return redirect('management')
+            if profile:
+                next = request.GET.get('next')
+                if next:
+                    return redirect(next)
+                return redirect('map')
+            logout(request)
+            return render(request,'users/login.html',{
+                'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
+            })
         else:
             return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
     try:
