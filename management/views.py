@@ -36,3 +36,7 @@ def get_all_units(request):
 @login_required
 def general_map_view(request):
     return render(request,'management/map.html')
+
+@login_required
+def management_view(request):
+    return render(request,'management/main.html')
