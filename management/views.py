@@ -1,4 +1,6 @@
+import json
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 from rest_framework.response import Response
 from rest_framework import serializers, status
@@ -15,7 +17,7 @@ gmt_conversor = GMTConversor()
 
 # Create your views here.
 @api_view(['GET'])
-def get_complete_fleet_status(request):
+def get_all_units(request):
     units = Device.objects.all()
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
@@ -27,5 +29,10 @@ def get_complete_fleet_status(request):
         dt = gmt_conversor.convert_utctolocaltime(dt)
         item['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
         item['timeout'] = current_timestamp - item['last_timestamp']
+        item['last_attributes'] = json.loads(item['last_attributes'])
+        item['previous_location'] = json.loads(item['previous_location'])
     return Response(data,status=status.HTTP_200_OK)
 
+@login_required
+def general_map_view(request):
+    return render(request,'management/map.html')

@@ -66,6 +66,7 @@ urlpatterns = [
     path('maintenances/', maintenances_views.maintenances_view, name='maintenances'),
     path('maintenances/triggers/', maintenances_views.triggers_view, name='maintenance-triggers'),
     path('maintenances/history/', maintenances_views.maintenance_history_view, name='maintenance-history'),
+    path('management/general-map/', management_views.general_map_view, name='general-map'),
     path('main/', generic_views.main_view, name='main'),
     # REST FRAMEWORK
     path('web/api/units/get-units/', units_views.get_units),
@@ -86,6 +87,6 @@ urlpatterns = [
     path('web/api/reports/get-trip-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_trip_report),
     path('web/api/reports/get-speed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/<int:speed_limit>/', reports_views.get_speed_report),
     path('web/api/reports/get-driving-style-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_driving_style_report),
-    path('web/api/management/get-complete-fleet-status/', management_views.get_complete_fleet_status),
     path('web/api/users/get-account/', users_views.get_account),
+    path('web/api/management/get-all-units/', management_views.get_all_units),
 ]
