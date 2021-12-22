@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view
 
-from datetime import datetime
+from datetime import datetime,timedelta
 
 from common.gmt_conversor import GMTConversor
 
@@ -40,8 +40,33 @@ def management_map_view(request):
 @login_required
 def management_dashboard_view(request):
     units = Device.objects.all()
+    units_transmitting = []
+    units_not_transmitted = []
+    units_in_motion = []
+    units_stopped = []
+    now = datetime.now()
+    current_timestamp = int(datetime.timestamp(now))
+
+    for unit in units:
+        dt = datetime.fromtimestamp(unit.last_timestamp)
+        dt = gmt_conversor.convert_utctolocaltime(dt)
+        unit.last_report = dt.strftime("%d/%m/%Y %H:%M:%S")
+        timeout = current_timestamp - unit.last_timestamp
+        if timeout > request.user.profile.account.device_timeout:
+            units_not_transmitted.append(unit)
+        else:
+            units_transmitting.append(unit)
+        if unit.last_speed > 0:
+            units_in_motion.append(unit)
+        else:
+            units_stopped.append(unit)
     return render(request,'management/dashboard.html',{
-        'units':units,
+        'units_transmitting': units_transmitting,
+        'units_not_transmitted': units_not_transmitted,
+        'units_in_motion': units_in_motion,
+        'units_stopped': units_stopped,
+        'units': units,
+        'now': gmt_conversor.convert_utctolocaltime(now),
     })
 
 @login_required
