@@ -12,7 +12,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.serializers import DeviceSerializer
 from units.models import Device,Group
-from users.models import Profile
+from users.models import Profile,Account
 
 gmt_conversor = GMTConversor()
 
@@ -48,6 +48,7 @@ def management_dashboard_view(request):
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
     profiles = Profile.objects.all()
+    accounts = Account.objects.all()
 
     for profile in profiles:
         try:
@@ -75,8 +76,9 @@ def management_dashboard_view(request):
         'units_in_motion': units_in_motion,
         'units_stopped': units_stopped,
         'units': units,
-        'profiles':profiles,
         'now': gmt_conversor.convert_utctolocaltime(now),
+        'profiles': profiles,
+        'accounts': accounts,
     })
 
 @login_required
