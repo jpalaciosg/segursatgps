@@ -34,8 +34,12 @@ def get_all_units(request):
     return Response(data,status=status.HTTP_200_OK)
 
 @login_required
-def general_map_view(request):
+def management_map_view(request):
     return render(request,'management/map.html')
+
+@login_required
+def management_dashboard_view(request):
+    return render(request,'management/dashboard.html')
 
 @login_required
 def management_view(request):

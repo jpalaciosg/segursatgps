@@ -67,7 +67,8 @@ urlpatterns = [
     path('maintenances/triggers/', maintenances_views.triggers_view, name='maintenance-triggers'),
     path('maintenances/history/', maintenances_views.maintenance_history_view, name='maintenance-history'),
     path('management/', management_views.management_view, name='management'),
-    path('management/general-map/', management_views.general_map_view, name='general-map'),
+    path('management/management-map/', management_views.management_map_view, name='management-map'),
+    path('management/management-dashboard/', management_views.management_dashboard_view, name='management-dashboard'),
     path('main/', generic_views.main_view, name='main'),
     # REST FRAMEWORK
     path('web/api/units/get-units/', units_views.get_units),
