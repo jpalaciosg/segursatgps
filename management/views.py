@@ -10,9 +10,10 @@ from datetime import datetime,timedelta
 
 from common.gmt_conversor import GMTConversor
 
-from units.serializers import DeviceSerializer
 from units.models import Device
+from units.serializers import DeviceSerializer
 from users.models import Account
+from users.serializers import AccountSerializer
 
 gmt_conversor = GMTConversor()
 

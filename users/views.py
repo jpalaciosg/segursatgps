@@ -183,3 +183,16 @@ def get_account(request):
     account = request.user.profile.account
     serializer = AccountSerializer(account,many=False)
     return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def create_account(request):
+    data = request.data
+    serializer = AccountSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        response = {
+            'status':'OK'
+        }
+        Response(response,status=status.HTTP_400_BAD_REQUEST)
+    else:
+        Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
