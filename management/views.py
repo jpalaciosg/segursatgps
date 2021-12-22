@@ -12,6 +12,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.serializers import DeviceSerializer
 from units.models import Device
+from users.models import Account
 
 gmt_conversor = GMTConversor()
 
@@ -71,7 +72,10 @@ def management_dashboard_view(request):
 
 @login_required
 def accounts_view(request):
-    return render(request,'management/accounts.html')
+    accounts = Account.objects.all()
+    return render(request,'management/accounts.html',{
+        'accounts': accounts,
+    })
 
 @login_required
 def management_view(request):
