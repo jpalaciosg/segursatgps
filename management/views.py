@@ -11,11 +11,7 @@ from datetime import datetime,timedelta
 from common.gmt_conversor import GMTConversor
 
 from units.serializers import DeviceSerializer
-from units.models import Device,Group
-<<<<<<< HEAD
-from users.models import Profile,Account
-=======
->>>>>>> parent of 3f2b599... Agregando usuarios, intento
+from units.models import Device
 
 gmt_conversor = GMTConversor()
 
@@ -50,18 +46,6 @@ def management_dashboard_view(request):
     units_stopped = []
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
-<<<<<<< HEAD
-    profiles = Profile.objects.all()
-    accounts = Account.objects.all()
-
-    for profile in profiles:
-        try:
-            #profile.user.last_login = profile.user.last_login.replace(tzinfo=timezone('America/Lima'))
-            profile.user.last_login = gmt_conversor.convert_localtimetoutc(profile.user.last_login)
-        except Exception as e:
-            print(e)
-=======
->>>>>>> parent of 3f2b599... Agregando usuarios, intento
 
     for unit in units:
         dt = datetime.fromtimestamp(unit.last_timestamp)
@@ -83,8 +67,6 @@ def management_dashboard_view(request):
         'units_stopped': units_stopped,
         'units': units,
         'now': gmt_conversor.convert_utctolocaltime(now),
-        'profiles': profiles,
-        'accounts': accounts,
     })
 
 @login_required
