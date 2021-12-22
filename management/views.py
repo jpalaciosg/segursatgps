@@ -12,6 +12,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.serializers import DeviceSerializer
 from units.models import Device,Group
+from users.models import User
 
 gmt_conversor = GMTConversor()
 
@@ -46,6 +47,7 @@ def management_dashboard_view(request):
     units_stopped = []
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
+    users = User.objects.all()
 
     for unit in units:
         dt = datetime.fromtimestamp(unit.last_timestamp)
@@ -66,6 +68,7 @@ def management_dashboard_view(request):
         'units_in_motion': units_in_motion,
         'units_stopped': units_stopped,
         'units': units,
+        'users': users,
         'now': gmt_conversor.convert_utctolocaltime(now),
     })
 
