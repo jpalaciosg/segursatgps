@@ -39,7 +39,10 @@ def management_map_view(request):
 
 @login_required
 def management_dashboard_view(request):
-    return render(request,'management/dashboard.html')
+    units = Device.objects.all()
+    return render(request,'management/dashboard.html',{
+        'units':units,
+    })
 
 @login_required
 def management_view(request):
