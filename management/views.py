@@ -70,5 +70,9 @@ def management_dashboard_view(request):
     })
 
 @login_required
+def accounts_view(request):
+    return render(request,'management/accounts.html')
+
+@login_required
 def management_view(request):
     return render(request,'management/main.html')
