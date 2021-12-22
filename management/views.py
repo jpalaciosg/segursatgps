@@ -12,7 +12,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.serializers import DeviceSerializer
 from units.models import Device,Group
-from .models import Profile
+from users.models import Profile
 
 gmt_conversor = GMTConversor()
 
