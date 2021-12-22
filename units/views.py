@@ -55,6 +55,7 @@ def units_view(request):
                             imei = data['imei'],
                             sim_phonenumber = data['sim_phonenumber'],
                             sim_iccid = data['sim_iccid'],
+                            odometer = data['odometer'],
                             note = data['note'],
                             account = request.user.profile.account
                         )

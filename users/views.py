@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 
 #from django.contrib.auth.models import User
 from users.models import User
-from .models import Profile
+from .models import Account, Profile
 from .forms import UserCreateForm,UserUpdateForm
 from .serializers import AccountSerializer
 
@@ -179,9 +179,15 @@ def delete_user(request,username):
         return redirect('users')
 
 @api_view(['GET'])
-def get_account(request):
-    account = request.user.profile.account
+def get_account(request,name):
+    account = Account.objects.get(name=name)
     serializer = AccountSerializer(account,many=False)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_accounts(request):
+    accounts = Account.objects.all()
+    serializer = AccountSerializer(accounts,many=True)
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -193,6 +199,6 @@ def create_account(request):
         response = {
             'status':'OK'
         }
-        Response(response,status=status.HTTP_400_BAD_REQUEST)
+        Response(response,status=status.HTTP_200_OK)
     else:
         Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
