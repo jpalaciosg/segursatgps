@@ -12,7 +12,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.serializers import DeviceSerializer
 from units.models import Device,Group
-from users.models import User
+from .models import Profile
 
 gmt_conversor = GMTConversor()
 
@@ -47,7 +47,14 @@ def management_dashboard_view(request):
     units_stopped = []
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
-    users = User.objects.all()
+    profiles = Profile.objects.all()
+
+    for profile in profiles:
+        try:
+            #profile.user.last_login = profile.user.last_login.replace(tzinfo=timezone('America/Lima'))
+            profile.user.last_login = gmt_conversor.convert_localtimetoutc(profile.user.last_login)
+        except Exception as e:
+            print(e)
 
     for unit in units:
         dt = datetime.fromtimestamp(unit.last_timestamp)
@@ -68,7 +75,7 @@ def management_dashboard_view(request):
         'units_in_motion': units_in_motion,
         'units_stopped': units_stopped,
         'units': units,
-        'users': users,
+        'profiles':profiles,
         'now': gmt_conversor.convert_utctolocaltime(now),
     })
 
