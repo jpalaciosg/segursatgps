@@ -78,18 +78,26 @@ def accounts_view(request):
         'accounts': accounts,
     })
 
-
 @api_view(['GET'])
 def get_account(request,name):
     account = Account.objects.get(name=name)
     serializer = AccountSerializer(account,many=False)
-    return Response(serializer.data,status=status.HTTP_200_OK)
+    data = serializer.data
+    data['created'] = gmt_conversor.convert_utctolocaltime(data['created'])
+    data['modified'] = gmt_conversor.convert_utctolocaltime(data['modified'])
+    data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
+    return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_accounts(request):
     accounts = Account.objects.all()
     serializer = AccountSerializer(accounts,many=True)
-    return Response(serializer.data,status=status.HTTP_200_OK)
+    data = serializer.data
+    for item in data:
+        item['created'] = gmt_conversor.convert_utctolocaltime(item['created'])
+        item['modified'] = gmt_conversor.convert_utctolocaltime(item['modified'])
+        item['device_timeout'] = str(timedelta(seconds=item['device_timeout']))
+    return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def create_account(request):
