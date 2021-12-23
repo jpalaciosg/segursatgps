@@ -78,6 +78,46 @@ def accounts_view(request):
         'accounts': accounts,
     })
 
+
+@api_view(['GET'])
+def get_account(request,name):
+    account = Account.objects.get(name=name)
+    serializer = AccountSerializer(account,many=False)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_accounts(request):
+    accounts = Account.objects.all()
+    serializer = AccountSerializer(accounts,many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def create_account(request):
+    data = request.data
+    serializer = AccountSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        response = {
+            'status':'OK'
+        }
+        Response(response,status=status.HTTP_200_OK)
+    else:
+        Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def delete_account(request,name):
+    try:
+        account = Account.objects.get(name=name)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    response = {
+        'status': 'OK',
+        'description': 'The account was deleted successfully.'
+    }
+    return Response(response,status=status.HTTP_200_OK)
+
 @login_required
 def management_view(request):
     return render(request,'management/main.html')
+

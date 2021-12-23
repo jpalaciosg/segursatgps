@@ -90,8 +90,8 @@ urlpatterns = [
     path('web/api/reports/get-trip-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_trip_report),
     path('web/api/reports/get-speed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/<int:speed_limit>/', reports_views.get_speed_report),
     path('web/api/reports/get-driving-style-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_driving_style_report),
-    path('web/api/users/get-accounts/', users_views.get_accounts),
-    path('web/api/users/get-account/<str:name>/', users_views.get_account),
-    path('web/api/users/create-account/', users_views.create_account),
+    path('web/api/management/get-accounts/', management_views.get_accounts),
+    path('web/api/management/get-account/<str:name>/', management_views.get_account),
+    path('web/api/management/create-account/', management_views.create_account),
     path('web/api/management/get-all-units/', management_views.get_all_units),
 ]
