@@ -80,11 +80,15 @@ def accounts_view(request):
 
 @api_view(['GET'])
 def get_account(request,name):
-    account = Account.objects.get(name=name)
+    try:
+        account = Account.objects.get(name=name)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = AccountSerializer(account,many=False)
     data = serializer.data
-    data['created'] = gmt_conversor.convert_utctolocaltime(data['created'])
-    data['modified'] = gmt_conversor.convert_utctolocaltime(data['modified'])
+    data['created'] = gmt_conversor.convert_utctolocaltime(account.created)
+    data['modified'] = gmt_conversor.convert_utctolocaltime(account.modified)
     data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
@@ -93,10 +97,10 @@ def get_accounts(request):
     accounts = Account.objects.all()
     serializer = AccountSerializer(accounts,many=True)
     data = serializer.data
-    for item in data:
-        item['created'] = gmt_conversor.convert_utctolocaltime(item['created'])
-        item['modified'] = gmt_conversor.convert_utctolocaltime(item['modified'])
-        item['device_timeout'] = str(timedelta(seconds=item['device_timeout']))
+    for i in range(len(data)):
+        data[i]['created'] = gmt_conversor.convert_utctolocaltime(accounts[i].created)
+        data[i]['modified'] = gmt_conversor.convert_utctolocaltime(accounts[i].modified)
+        data[i]['device_timeout'] = str(timedelta(seconds=data[i]['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
