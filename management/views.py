@@ -112,9 +112,9 @@ def create_account(request):
         response = {
             'status':'OK'
         }
-        Response(response,status=status.HTTP_200_OK)
+        return Response(response,status=status.HTTP_200_OK)
     else:
-        Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def delete_account(request,name):
