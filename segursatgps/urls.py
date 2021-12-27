@@ -70,6 +70,7 @@ urlpatterns = [
     path('management/map/', management_views.management_map_view, name='management-map'),
     path('management/dashboard/', management_views.management_dashboard_view, name='management-dashboard'),
     path('management/accounts/', management_views.accounts_view, name='management-accounts'),
+    path('management/users/', management_views.users_view, name='management-users'),
     path('main/', generic_views.main_view, name='main'),
     # REST FRAMEWORK
     path('web/api/units/get-units/', units_views.get_units),
