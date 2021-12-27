@@ -12,8 +12,8 @@ from common.gmt_conversor import GMTConversor
 
 from units.models import Device
 from units.serializers import DeviceSerializer
-from users.models import Account
-from users.serializers import AccountSerializer
+from users.models import Account,Profile
+from users.serializers import AccountSerializer,ProfileSerializer
 
 gmt_conversor = GMTConversor()
 
@@ -73,10 +73,7 @@ def management_dashboard_view(request):
 
 @login_required
 def accounts_view(request):
-    accounts = Account.objects.all()
-    return render(request,'management/accounts.html',{
-        'accounts': accounts,
-    })
+    return render(request,'management/accounts.html')
 
 @api_view(['GET'])
 def get_account(request,name):
@@ -129,6 +126,20 @@ def delete_account(request,name):
         'description': 'The account was deleted successfully.'
     }
     return Response(response,status=status.HTTP_200_OK)
+
+@login_required
+def users_view(request):
+    return render(request,'management/users.html')
+
+@api_view(['GET'])
+def get_users(request):
+    profiles = Profile.objects.all()
+    serializer = ProfileSerializer(profiles,many=True)
+    data = serializer.data
+    for i in range(len(data)):
+        data[i]['created'] = gmt_conversor.convert_utctolocaltime(profiles[i].created).strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['modified'] = gmt_conversor.convert_utctolocaltime(profiles[i].modified).strftime("%d/%m/%Y %H:%M:%S")
+    return Response(data,status=status.HTTP_200_OK)
 
 @login_required
 def management_view(request):

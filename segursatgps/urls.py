@@ -93,5 +93,6 @@ urlpatterns = [
     path('web/api/management/get-accounts/', management_views.get_accounts),
     path('web/api/management/get-account/<str:name>/', management_views.get_account),
     path('web/api/management/create-account/', management_views.create_account),
+    path('web/api/management/get-users/', management_views.get_users),
     path('web/api/management/get-all-units/', management_views.get_all_units),
 ]
