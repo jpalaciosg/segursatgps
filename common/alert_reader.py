@@ -18,9 +18,9 @@ class AlertReader:
     def __init__(self, deviceid):
         self.deviceid = deviceid
 
-    def __detect_geofence_entry(self,current_location,previous_location):
+    def __detect_geofence_entry(self,current_location,previous_location,account):
         response = []
-        geofences = Geofence.objects.all()
+        geofences = Geofence.objects.filter(account=account)
         for geofence in geofences:
             geojson = json.loads(geofence.geojson)
             s = shape(geojson['features'][0]['geometry'])
@@ -37,9 +37,9 @@ class AlertReader:
                 })
         return response
 
-    def __detect_geofence_exit(self,current_location,previous_location):
+    def __detect_geofence_exit(self,current_location,previous_location,account):
         response = []
-        geofences = Geofence.objects.all()
+        geofences = Geofence.objects.filter(account=account)
         for geofence in geofences:
             geojson = json.loads(geofence.geojson)
             s = shape(geojson['features'][0]['geometry'])
@@ -406,7 +406,7 @@ class AlertReader:
             # ALERTA DE INGRESO A GEOCERCA
             if trigger.alert_type == 1004:
                 try:
-                    events = self.__detect_geofence_entry(current_location,previous_location)
+                    events = self.__detect_geofence_entry(current_location,previous_location,unit.account)
                     for event in events:
                         # ACTUALIZAR ULTIMA ALERTA
                         try:
@@ -504,7 +504,7 @@ class AlertReader:
             # ALERTA DE SALIDA GEOCERCA
             if trigger.alert_type == 1005:
                 try:
-                    events = self.__detect_geofence_exit(current_location,previous_location)
+                    events = self.__detect_geofence_exit(current_location,previous_location,unit.account)
                     for event in events:
                         # ACTUALIZAR ULTIMA ALERTA
                         try:
