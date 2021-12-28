@@ -89,6 +89,24 @@ def get_account(request,name):
     #data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def update_account(request):
+    data = request.data
+    serializer = AccountSerializer(data=data)
+    if serializer.is_valid():
+        try:
+            account = Account.objects.get(name=data['name'])
+        except Exception as e:
+            error = {'errors':{
+                'name': str(e)
+            }}
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 def get_accounts(request):
     accounts = Account.objects.all()
@@ -119,7 +137,9 @@ def delete_account(request,name):
     try:
         account = Account.objects.get(name=name)
     except Exception as e:
-        error = {'error':str(e)}
+        error = {'errors':{
+            'name': str(e)
+        }}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     response = {
         'status': 'OK',
