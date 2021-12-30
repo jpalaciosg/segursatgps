@@ -13,7 +13,8 @@ from common.gmt_conversor import GMTConversor
 from units.models import Device
 from units.serializers import DeviceSerializer
 from users.models import Account,Profile
-from users.serializers import AccountSerializer,ProfileSerializer
+from users.serializers import ProfileSerializer
+from .serializers import AccountSerializer
 
 gmt_conversor = GMTConversor()
 
@@ -89,19 +90,30 @@ def get_account(request,name):
     #data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-def update_account(request):
+@api_view(['UPDATE'])
+def update_account(request,id):
     data = request.data
+    try:
+        account = Account.objects.get(id=id)
+    except Exception as e:
+        error = {'errors':{
+            'name': str(e)
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = AccountSerializer(data=data)
     if serializer.is_valid():
+        account_name_exist = False
         try:
-            account = Account.objects.get(name=data['name'])
-        except Exception as e:
+            Account.objects.get(name=data['name'])
+            account_name_exist = True
+        except:
+            pass
+        if account_name_exist:
             error = {'errors':{
-                'name': str(e)
+                'name': 'That account name already exists.'
             }}
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        serializer.update(account,data)
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
@@ -123,7 +135,17 @@ def create_account(request):
     data = request.data
     serializer = AccountSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        account = None
+        try:
+            account = Account.objects.get(name=data['name'])
+        except:
+            pass
+        if account:
+            error = {'errors':{
+                'name': 'An account with that name already exists.'
+            }}
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        serializer.create(data)
         response = {
             'status':'OK'
         }
