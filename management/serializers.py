@@ -2,9 +2,10 @@ from rest_framework import serializers
 from users.models import Account
 
 class AccountSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
     name = serializers.CharField(max_length=25)
     description = serializers.CharField(max_length=50)
-    device_timeout = serializers.IntegerField
+    device_timeout = serializers.IntegerField()
 
     def create(self, validated_data):
         return Account.objects.create(**validated_data)
