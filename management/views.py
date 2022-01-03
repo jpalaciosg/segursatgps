@@ -104,8 +104,10 @@ def update_account(request,id):
     if serializer.is_valid():
         account_name_exist = False
         try:
-            Account.objects.get(name=data['name'])
-            account_name_exist = True
+            query = f"SELECT * FROM users_account WHERE name='{account.name}' AND id!={id} LIMIT 1"
+            raw = Account.objects.raw(query)
+            if len(raw) != 0:
+                account_name_exist = True
         except:
             pass
         if account_name_exist:
@@ -118,6 +120,23 @@ def update_account(request,id):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_account(request,id):
+    data = request.data
+    try:
+        account = Account.objects.get(id=id)
+    except Exception as e:
+        error = {'errors':{
+            'name': str(e)
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    account.delete()
+    response = {
+        'status': 'OK',
+        'description': 'Account was deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_accounts(request):
