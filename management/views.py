@@ -90,7 +90,7 @@ def get_account(request,name):
     #data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
-@api_view(['UPDATE'])
+@api_view(['PUT'])
 def update_account(request,id):
     data = request.data
     try:
