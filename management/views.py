@@ -196,15 +196,18 @@ def get_units(request):
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
     serializer = DeviceSerializer(units,many=True)
-    data = serializer.data
-    for item in data:
-        item['odometer'] = round(item['odometer'],1)
-        dt = datetime.fromtimestamp(item['last_timestamp'])
+    data = serializer.data    
+    for i in range(len(data)):
+        data[i]['odometer'] = round(data[i]['odometer'],1)
+        dt = datetime.fromtimestamp(data[i]['last_timestamp'])
         dt = gmt_conversor.convert_utctolocaltime(dt)
-        item['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
-        item['timeout'] = current_timestamp - item['last_timestamp']
-        item['last_attributes'] = json.loads(item['last_attributes'])
-        item['previous_location'] = json.loads(item['previous_location'])
+        data[i]['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['timeout'] = current_timestamp - data[i]['last_timestamp']
+        data[i]['last_attributes'] = json.loads(data[i]['last_attributes'])
+        data[i]['previous_location'] = json.loads(data[i]['previous_location'])
+        data[i]['created'] = gmt_conversor.convert_utctolocaltime(units[i].created).strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['modified'] = gmt_conversor.convert_utctolocaltime(units[i].modified).strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['device_timeout'] = str(timedelta(seconds=data[i]['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
