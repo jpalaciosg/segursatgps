@@ -19,23 +19,6 @@ from .serializers import AccountSerializer
 gmt_conversor = GMTConversor()
 
 # Create your views here.
-@api_view(['GET'])
-def get_all_units(request):
-    units = Device.objects.all()
-    now = datetime.now()
-    current_timestamp = int(datetime.timestamp(now))
-    serializer = DeviceSerializer(units,many=True)
-    data = serializer.data
-    for item in data:
-        item['odometer'] = round(item['odometer'],1)
-        dt = datetime.fromtimestamp(item['last_timestamp'])
-        dt = gmt_conversor.convert_utctolocaltime(dt)
-        item['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
-        item['timeout'] = current_timestamp - item['last_timestamp']
-        item['last_attributes'] = json.loads(item['last_attributes'])
-        item['previous_location'] = json.loads(item['previous_location'])
-    return Response(data,status=status.HTTP_200_OK)
-
 @login_required
 def management_map_view(request):
     return render(request,'management/map.html')
@@ -201,6 +184,27 @@ def get_users(request):
     for i in range(len(data)):
         data[i]['created'] = gmt_conversor.convert_utctolocaltime(profiles[i].created).strftime("%d/%m/%Y %H:%M:%S")
         data[i]['modified'] = gmt_conversor.convert_utctolocaltime(profiles[i].modified).strftime("%d/%m/%Y %H:%M:%S")
+    return Response(data,status=status.HTTP_200_OK)
+
+@login_required
+def units_view(request):
+    return render(request,'management/units.html')
+
+@api_view(['GET'])
+def get_all_units(request):
+    units = Device.objects.all()
+    now = datetime.now()
+    current_timestamp = int(datetime.timestamp(now))
+    serializer = DeviceSerializer(units,many=True)
+    data = serializer.data
+    for item in data:
+        item['odometer'] = round(item['odometer'],1)
+        dt = datetime.fromtimestamp(item['last_timestamp'])
+        dt = gmt_conversor.convert_utctolocaltime(dt)
+        item['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+        item['timeout'] = current_timestamp - item['last_timestamp']
+        item['last_attributes'] = json.loads(item['last_attributes'])
+        item['previous_location'] = json.loads(item['previous_location'])
     return Response(data,status=status.HTTP_200_OK)
 
 @login_required
