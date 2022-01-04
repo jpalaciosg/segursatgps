@@ -191,7 +191,7 @@ def units_view(request):
     return render(request,'management/units.html')
 
 @api_view(['GET'])
-def get_all_units(request):
+def get_units(request):
     units = Device.objects.all()
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
