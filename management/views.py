@@ -207,6 +207,33 @@ def get_units(request):
         item['previous_location'] = json.loads(item['previous_location'])
     return Response(data,status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def get_unit(request,id):
+    try:
+        unit = Device.objects.get(id=id)
+        serializer = DeviceSerializer(unit,many=False)
+        data = serializer.data
+        try:
+            data['last_attributes'] = json.loads(data['last_attributes'])
+        except:
+            data['last_attributes'] = ''
+        try:
+            data['previous_location'] = json.loads(data['previous_location'])
+        except:
+            data['previous_location'] = ''
+        try:
+            data['previous_location']['attributes'] = json.loads(data['previous_location']['attributes'])
+        except:
+            data['previous_location']['attributes'] = ''
+        last_report = datetime.fromtimestamp(unit.last_timestamp)
+        last_report = gmt_conversor.convert_utctolocaltime(last_report)
+        data['last_report'] = last_report.strftime("%d-%m-%Y %H:%M:%S")
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @login_required
 def management_view(request):
     return render(request,'management/main.html')

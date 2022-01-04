@@ -99,4 +99,5 @@ urlpatterns = [
     path('web/api/management/delete-account/<int:id>/', management_views.delete_account),
     path('web/api/management/get-users/', management_views.get_users),
     path('web/api/management/get-units/', management_views.get_units),
+    path('web/api/management/get-unit/<int:id>/', management_views.get_unit),
 ]
