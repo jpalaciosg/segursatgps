@@ -174,14 +174,15 @@ def create_account(request):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-def delete_account(request,name):
+def delete_account(request,id):
     try:
-        account = Account.objects.get(name=name)
+        account = Account.objects.get(id=id)
     except Exception as e:
         error = {'errors':{
             'name': str(e)
         }}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    #account.delete()
     response = {
         'status': 'OK',
         'description': 'The account was deleted successfully.'
