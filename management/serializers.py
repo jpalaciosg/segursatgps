@@ -1,18 +1,18 @@
 from rest_framework import serializers
 from users.models import Account
+from units.models import Device
 
-class AccountSerializer(serializers.Serializer):
-    id = serializers.IntegerField(required=False)
-    name = serializers.CharField(max_length=25)
-    description = serializers.CharField(max_length=50)
-    device_timeout = serializers.IntegerField()
-
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ('__all__')
+ 
+class DeviceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
-        return Account.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.description = validated_data.get('description', instance.description)
-        instance.device_timeout = validated_data.get('device_timeout', instance.device_timeout)
-        instance.save()
-        return instance
+        account = Account.objects.get(id=validated_data['account'])
+        validated_data['account'] = account
+        return Device.objects.create(**validated_data)
+    class Meta:
+        model = Device
+        fields = ('__all__')
+ 

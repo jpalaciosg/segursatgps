@@ -11,10 +11,9 @@ from datetime import datetime,timedelta
 from common.gmt_conversor import GMTConversor
 
 from units.models import Device
-from units.serializers import DeviceSerializer
 from users.models import Account,Profile
 from users.serializers import ProfileSerializer
-from .serializers import AccountSerializer
+from .serializers import AccountSerializer,DeviceSerializer
 
 gmt_conversor = GMTConversor()
 
@@ -60,9 +59,9 @@ def accounts_view(request):
     return render(request,'management/accounts.html')
 
 @api_view(['GET'])
-def get_account(request,name):
+def get_account(request,id):
     try:
-        account = Account.objects.get(name=name)
+        account = Account.objects.get(id=id)
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
@@ -70,7 +69,7 @@ def get_account(request,name):
     data = serializer.data
     data['created'] = gmt_conversor.convert_utctolocaltime(account.created).strftime("%d/%m/%Y %H:%M:%S")
     data['modified'] = gmt_conversor.convert_utctolocaltime(account.modified).strftime("%d/%m/%Y %H:%M:%S")
-    #data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
+    data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
@@ -83,22 +82,9 @@ def update_account(request,id):
             'name': str(e)
         }}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    serializer = AccountSerializer(data=data)
+    serializer = AccountSerializer(account,data=data)
     if serializer.is_valid():
-        account_name_exist = False
-        try:
-            query = f"SELECT * FROM users_account WHERE name='{account.name}' AND id!={id} LIMIT 1"
-            raw = Account.objects.raw(query)
-            if len(raw) != 0:
-                account_name_exist = True
-        except:
-            pass
-        if account_name_exist:
-            error = {'errors':{
-                'name': 'That account name already exists.'
-            }}
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        serializer.update(account,data)
+        serializer.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
@@ -114,7 +100,7 @@ def delete_account(request,id):
             'name': str(e)
         }}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    account.delete()
+    #account.delete()
     response = {
         'status': 'OK',
         'description': 'Account was deleted.',
@@ -137,16 +123,6 @@ def create_account(request):
     data = request.data
     serializer = AccountSerializer(data=data)
     if serializer.is_valid():
-        account = None
-        try:
-            account = Account.objects.get(name=data['name'])
-        except:
-            pass
-        if account:
-            error = {'errors':{
-                'name': 'An account with that name already exists.'
-            }}
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
         serializer.create(data)
         response = {
             'status':'OK'
@@ -236,6 +212,55 @@ def get_unit(request,id):
         print(e)
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_unit(request):
+    data = request.data
+    serializer = DeviceSerializer(data=data)
+    if serializer.is_valid():
+        serializer.create(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_unit(request,id):
+    data = request.data
+    try:
+        unit = Device.objects.get(id=id)
+    except Exception as e:
+        error = {'errors':{
+            'id': str(e)
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = DeviceSerializer(unit,data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_unit(request,id):
+    data = request.data
+    try:
+        unit = Device.objects.get(id=id)
+    except Exception as e:
+        error = {'errors':{
+            'id': str(e)
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    #unit.delete()
+    response = {
+        'status': 'OK',
+        'description': 'Unit was deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
 
 @login_required
 def management_view(request):
