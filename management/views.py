@@ -69,7 +69,7 @@ def get_account(request,id):
     data = serializer.data
     data['created'] = gmt_conversor.convert_utctolocaltime(account.created).strftime("%d/%m/%Y %H:%M:%S")
     data['modified'] = gmt_conversor.convert_utctolocaltime(account.modified).strftime("%d/%m/%Y %H:%M:%S")
-    #data['device_timeout'] = str(timedelta(seconds=data['device_timeout']))
+    data['timedelta_device_timeouT'] = str(timedelta(seconds=data['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
@@ -115,7 +115,7 @@ def get_accounts(request):
     for i in range(len(data)):
         data[i]['created'] = gmt_conversor.convert_utctolocaltime(accounts[i].created).strftime("%d/%m/%Y %H:%M:%S")
         data[i]['modified'] = gmt_conversor.convert_utctolocaltime(accounts[i].modified).strftime("%d/%m/%Y %H:%M:%S")
-        data[i]['device_timeout'] = str(timedelta(seconds=data[i]['device_timeout']))
+        data[i]['timedelta_device_timeout'] = str(timedelta(seconds=data[i]['device_timeout']))
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
