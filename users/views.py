@@ -38,7 +38,7 @@ def login_view(request):
             except:
                 profile = None
             if admin_profile:
-                return redirect('management')
+                return redirect('management-dashboard')
             if profile:
                 next = request.GET.get('next')
                 if next:
