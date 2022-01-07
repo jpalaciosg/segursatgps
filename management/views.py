@@ -13,7 +13,7 @@ from common.gmt_conversor import GMTConversor
 from units.models import Device
 from users.models import Account,Profile
 from users.serializers import ProfileSerializer
-from .serializers import AccountSerializer,DeviceSerializer
+from .serializers import AccountSerializer,DeviceSerializer,UserSerializer
 
 gmt_conversor = GMTConversor()
 
@@ -165,7 +165,7 @@ def get_users(request):
 @api_view(['POST'])
 def create_user(request):
     data = request.data
-    serializer = DeviceSerializer(data=data)
+    serializer = UserSerializer(data=data)
     if serializer.is_valid():
         serializer.create(data)
         response = {
