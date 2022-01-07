@@ -162,6 +162,20 @@ def get_users(request):
         data[i]['modified'] = gmt_conversor.convert_utctolocaltime(profiles[i].modified).strftime("%d/%m/%Y %H:%M:%S")
     return Response(data,status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def create_user(request):
+    data = request.data
+    serializer = DeviceSerializer(data=data)
+    if serializer.is_valid():
+        serializer.create(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @login_required
 def units_view(request):
     return render(request,'management/units.html')

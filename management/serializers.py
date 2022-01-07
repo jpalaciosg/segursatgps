@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import Account
+from users.models import Account,User
 from units.models import Device
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -16,3 +16,7 @@ class DeviceSerializer(serializers.ModelSerializer):
         model = Device
         fields = ('__all__')
  
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('__all__')
