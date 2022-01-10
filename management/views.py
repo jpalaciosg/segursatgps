@@ -1,6 +1,7 @@
 import json
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 
 from rest_framework.response import Response
 from rest_framework import serializers, status
@@ -165,15 +166,30 @@ def get_users(request):
 @api_view(['POST'])
 def create_user(request):
     data = request.data
-    serializer = UserSerializer(data=data)
-    if serializer.is_valid():
-        serializer.create(data)
+    if 'account' in data.keys():
+        try:
+            account = Account.objects.get(id=data['account'])
+        except Exception as e:
+            error = {'errors':{
+                'account': "This account does not exist."
+            }}
+            return Response(error,status=status.HTTP_400_BAD_REQUEST) 
+    else:
+        error = {'errors':{
+            'account': "This field is required."
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    if 'password' in data.keys():
+        data['password'] = make_password(data['password'])
+    user_serializer = UserSerializer(data=data)
+    if user_serializer.is_valid():
+        user_serializer.create(data)
         response = {
             'status':'OK'
         }
         return Response(response,status=status.HTTP_200_OK)
     else:
-        error = {'errors':serializer.errors}
+        error = {'errors':user_serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @login_required
