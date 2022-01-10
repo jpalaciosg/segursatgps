@@ -220,6 +220,24 @@ def update_user(request,id):
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['PUT'])
+def update_profile(request,id):
+    data = request.data
+    try:
+        user = User.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': 'Username does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = ProfileSerializer(user.profile,data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @login_required
 def units_view(request):
     return render(request,'management/units.html')
