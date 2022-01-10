@@ -99,6 +99,7 @@ urlpatterns = [
     path('web/api/management/delete-account/<int:id>/', management_views.delete_account),
     path('web/api/management/get-users/', management_views.get_users),
     path('web/api/management/create-user/', management_views.create_user),
+    path('web/api/management/update-user/', management_views.update_user),
     path('web/api/management/get-units/', management_views.get_units),
     path('web/api/management/get-unit/<int:id>/', management_views.get_unit),
     path('web/api/management/create-unit/', management_views.create_unit),

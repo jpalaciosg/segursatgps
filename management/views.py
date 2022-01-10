@@ -12,7 +12,7 @@ from datetime import datetime,timedelta
 from common.gmt_conversor import GMTConversor
 
 from units.models import Device
-from users.models import Account,Profile
+from users.models import Account,Profile, User
 from users.serializers import ProfileSerializer
 from .serializers import AccountSerializer,DeviceSerializer,UserSerializer
 
@@ -166,6 +166,11 @@ def get_users(request):
 @api_view(['POST'])
 def create_user(request):
     data = request.data
+    if 'is_superuser' in data.keys() or 'is_staff' in data.keys():
+        error = {
+            'detail': "Te crees pendejo!"
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
     if 'account' in data.keys():
         try:
             account = Account.objects.get(id=data['account'])
@@ -190,6 +195,29 @@ def create_user(request):
         return Response(response,status=status.HTTP_200_OK)
     else:
         error = {'errors':user_serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_user(request,id):
+    data = request.data
+    try:
+        user = User.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': 'Username does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    if 'is_superuser' in data.keys() or 'is_staff' in data.keys():
+        error = {
+            'detail': "Te crees pendejo!"
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UserSerializer(user,data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @login_required
