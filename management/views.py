@@ -176,8 +176,6 @@ def get_user(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = UserSerializer(user,many=False)
     data = serializer.data
-    data['created'] = gmt_conversor.convert_utctolocaltime(user.created).strftime("%d/%m/%Y %H:%M:%S")
-    data['modified'] = gmt_conversor.convert_utctolocaltime(user.modified).strftime("%d/%m/%Y %H:%M:%S")
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
