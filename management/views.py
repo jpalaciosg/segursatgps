@@ -8,6 +8,8 @@ from rest_framework import serializers, status
 from rest_framework.decorators import api_view
 
 from datetime import datetime,timedelta
+import requests
+from requests.auth import HTTPBasicAuth 
 
 from common.gmt_conversor import GMTConversor
 
@@ -342,3 +344,19 @@ def delete_unit(request,id):
 def management_view(request):
     return render(request,'management/main.html')
 
+@api_view(['GET'])
+def get_traccar_unit(request,uniqueid):
+    try:
+        URL = f"http://gps.segursat.com:8082/api/devices?uniqueId={uniqueid}"
+        USER = 'admin'
+        PASSWORD = 'Conejo123$$'
+        auth = HTTPBasicAuth(USER, PASSWORD)
+        headers = {
+        'Content-Type': 'application/json; charset=utf-8',
+        }
+        response = requests.get(URL,headers=headers,auth=auth)
+        return Response(response.json(),status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
