@@ -98,6 +98,7 @@ urlpatterns = [
     path('web/api/management/update-account/<int:id>/', management_views.update_account),
     path('web/api/management/delete-account/<int:id>/', management_views.delete_account),
     path('web/api/management/get-users/', management_views.get_users),
+    path('web/api/management/get-user/<int:id>/', management_views.get_user),
     path('web/api/management/create-user/', management_views.create_user),
     path('web/api/management/update-user/<int:id>/', management_views.update_user),
     path('web/api/management/update-profile/<int:id>/', management_views.update_profile),
