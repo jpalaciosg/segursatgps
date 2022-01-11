@@ -157,10 +157,12 @@ def users_view(request):
 
 @api_view(['GET'])
 def get_users(request):
+    accounts = Account.objects.all()
     profiles = Profile.objects.all()
     serializer = ProfileSerializer(profiles,many=True)
     data = serializer.data
     for i in range(len(data)):
+        data[i]['account_name'] = accounts.get(id=data[i]['account']).name
         data[i]['created'] = gmt_conversor.convert_utctolocaltime(profiles[i].created).strftime("%d/%m/%Y %H:%M:%S")
         data[i]['modified'] = gmt_conversor.convert_utctolocaltime(profiles[i].modified).strftime("%d/%m/%Y %H:%M:%S")
     return Response(data,status=status.HTTP_200_OK)
