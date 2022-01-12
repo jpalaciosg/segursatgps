@@ -170,13 +170,12 @@ def get_users(request):
 @api_view(['GET'])
 def get_user(request,id):
     try:
-        user = User.objects.get(id=id)
+        profile = Profile.objects.get(id=id)
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    serializer = UserSerializer(user,many=False)
+    serializer = ProfileSerializer(profile,many=False)
     data = serializer.data
-    data['account_name'] = user.profile.account.name
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
