@@ -33,6 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=True)
+    account = AccountSerializer(required=True)
     class Meta:
         model = Profile
         fields = ('__all__')
