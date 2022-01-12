@@ -15,8 +15,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.models import Device
 from users.models import Account,Profile, User
-from users.serializers import ProfileSerializer
-from .serializers import AccountSerializer,DeviceSerializer,UserSerializer
+from .serializers import AccountSerializer,DeviceSerializer,UserSerializer,ProfileSerializer
 
 gmt_conversor = GMTConversor()
 
