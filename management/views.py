@@ -176,6 +176,7 @@ def get_user(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = UserSerializer(user,many=False)
     data = serializer.data
+    data['account_name'] = user.profile.account.name
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['POST'])
