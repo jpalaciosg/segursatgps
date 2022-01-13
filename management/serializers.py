@@ -31,6 +31,25 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('__all__')
 
+class EditUserSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    description = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    is_admin = serializers.BooleanField()
+    is_active = serializers.BooleanField()
+
+class InsertLocationSerializer2(serializers.Serializer):
+    id = serializers.IntegerField()
+    deviceid = serializers.CharField(max_length=20)
+    timestamp = serializers.IntegerField()
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    altitude = serializers.IntegerField()
+    speed = serializers.IntegerField()
+    angle = serializers.IntegerField()
+    protocol = serializers.CharField()
+    address = serializers.CharField(max_length=400)
+
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=True)
     account = AccountSerializer(required=True)
