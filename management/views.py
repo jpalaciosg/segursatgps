@@ -1,7 +1,7 @@
-import json
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from django.http import HttpResponse
 
 from rest_framework.response import Response
 from rest_framework import serializers, status
@@ -9,7 +9,8 @@ from rest_framework.decorators import api_view
 
 from datetime import datetime,timedelta
 import requests
-from requests.auth import HTTPBasicAuth 
+from requests.auth import HTTPBasicAuth
+import json
 
 from common.gmt_conversor import GMTConversor
 
@@ -22,10 +23,18 @@ gmt_conversor = GMTConversor()
 # Create your views here.
 @login_required
 def management_map_view(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     return render(request,'management/map.html')
 
 @login_required
 def management_dashboard_view(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     units = Device.objects.all()
     units_transmitting = []
     units_not_transmitted = []
@@ -58,10 +67,18 @@ def management_dashboard_view(request):
 
 @login_required
 def accounts_view(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     return render(request,'management/accounts.html')
 
 @api_view(['GET'])
 def get_account(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     try:
         account = Account.objects.get(id=id)
     except Exception as e:
@@ -76,6 +93,10 @@ def get_account(request,id):
 
 @api_view(['PUT'])
 def update_account(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     try:
         account = Account.objects.get(id=id)
@@ -94,6 +115,10 @@ def update_account(request,id):
 
 @api_view(['DELETE'])
 def delete_account(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     try:
         account = Account.objects.get(id=id)
@@ -111,6 +136,10 @@ def delete_account(request,id):
 
 @api_view(['GET'])
 def get_accounts(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     accounts = Account.objects.all()
     serializer = AccountSerializer(accounts,many=True)
     data = serializer.data
@@ -122,6 +151,10 @@ def get_accounts(request):
 
 @api_view(['POST'])
 def create_account(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     serializer = AccountSerializer(data=data)
     if serializer.is_valid():
@@ -136,6 +169,10 @@ def create_account(request):
 
 @api_view(['GET'])
 def delete_account(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     try:
         account = Account.objects.get(id=id)
     except Exception as e:
@@ -152,10 +189,18 @@ def delete_account(request,id):
 
 @login_required
 def users_view(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     return render(request,'management/users.html')
 
 @api_view(['GET'])
 def get_users(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     accounts = Account.objects.all()
     profiles = Profile.objects.all()
     serializer = ProfileSerializer(profiles,many=True)
@@ -167,6 +212,10 @@ def get_users(request):
 
 @api_view(['GET'])
 def get_user(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     try:
         profile = Profile.objects.get(id=id)
     except Exception as e:
@@ -178,6 +227,10 @@ def get_user(request,id):
 
 @api_view(['POST'])
 def create_user(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     if 'is_superuser' in data.keys() or 'is_staff' in data.keys():
         error = {
@@ -212,6 +265,10 @@ def create_user(request):
 
 @api_view(['PUT'])
 def update_user(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     try:
         user = User.objects.get(id=id)
@@ -235,6 +292,10 @@ def update_user(request,id):
 
 @api_view(['PUT'])
 def update_profile(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     try:
         user = User.objects.get(id=id)
@@ -253,10 +314,18 @@ def update_profile(request,id):
 
 @login_required
 def units_view(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     return render(request,'management/units.html')
 
 @api_view(['GET'])
 def get_units(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     units = Device.objects.all()
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
@@ -277,6 +346,10 @@ def get_units(request):
 
 @api_view(['GET'])
 def get_unit(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     try:
         unit = Device.objects.get(id=id)
         serializer = DeviceSerializer(unit,many=False)
@@ -304,6 +377,10 @@ def get_unit(request,id):
 
 @api_view(['POST'])
 def create_unit(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     serializer = DeviceSerializer(data=data)
     if serializer.is_valid():
@@ -318,6 +395,10 @@ def create_unit(request):
 
 @api_view(['PUT'])
 def update_unit(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     try:
         unit = Device.objects.get(id=id)
@@ -336,6 +417,10 @@ def update_unit(request,id):
 
 @api_view(['DELETE'])
 def delete_unit(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     data = request.data
     try:
         unit = Device.objects.get(id=id)
@@ -353,10 +438,18 @@ def delete_unit(request,id):
 
 @login_required
 def management_view(request):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     return render(request,'management/main.html')
 
 @api_view(['GET'])
 def get_traccar_unit(request,uniqueid):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
     try:
         URL = f"http://gps.segursat.com:8082/api/devices?uniqueId={uniqueid}"
         USER = 'admin'

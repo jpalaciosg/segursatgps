@@ -27,18 +27,12 @@ def login_view(request):
         user = authenticate(request,username=username,password=password)
         if user:
             login(request,user)
-            admin_profile = None
-            profile = None
-            try:
-                admin_profile = request.user.adminprofile
-            except:
-                admin_profile = None
+            if request.user.is_staff:
+                return redirect('management-dashboard')
             try:
                 profile = request.user.profile
             except:
                 profile = None
-            if admin_profile:
-                return redirect('management-dashboard')
             if profile:
                 next = request.GET.get('next')
                 if next:
