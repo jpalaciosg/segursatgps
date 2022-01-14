@@ -201,7 +201,6 @@ def get_users(request):
     if request.user.is_staff == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    accounts = Account.objects.all()
     profiles = Profile.objects.all()
     serializer = ProfileSerializer(profiles,many=True)
     data = serializer.data
@@ -277,11 +276,6 @@ def update_user(request,id):
             'detail': 'Username does not exist.'
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    if 'is_superuser' in data.keys() or 'is_staff' in data.keys():
-        error = {
-            'detail': "Te crees pendejo!"
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = EditUserSerializer(data=data)
     if serializer.is_valid():
         return Response(data,status=status.HTTP_200_OK)
@@ -297,15 +291,15 @@ def update_profile(request,id):
     # fin - verificar privilegios
     data = request.data
     try:
-        user = User.objects.get(id=id)
+        profile = Profile.objects.get(id=id)
     except Exception as e:
         error = {
             'detail': 'Username does not exist.'
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    serializer = ProfileSerializer(user.profile,data=data)
+    serializer = ProfileSerializer(profile,data=data)
     if serializer.is_valid():
-        serializer.save()
+        #serializer.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
