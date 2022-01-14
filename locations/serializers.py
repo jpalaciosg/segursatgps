@@ -26,7 +26,7 @@ class InsertLocationSerializer2(serializers.Serializer):
     speed = serializers.IntegerField()
     angle = serializers.IntegerField()
     protocol = serializers.CharField()
-    address = serializers.CharField(max_length=400)
+    address = serializers.CharField(max_length=500,allow_blank=True)
 
 class InsertSutranLocationSerializer(serializers.Serializer):
     unit_name = serializers.CharField(max_length=20)
