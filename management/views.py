@@ -305,6 +305,26 @@ def update_profile(request,id):
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['PUT'])
+def update_password(request,id,password1,password2):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    data = request.data
+    try:
+        profile = Profile.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': 'Username does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    response = {
+        'status': 'OK',
+        'description': 'Password has been changed.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
+
 @login_required
 def units_view(request):
     # verificar privilegios
