@@ -16,7 +16,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.models import Device
 from users.models import Account,Profile, User
-from .serializers import AccountSerializer,DeviceSerializer,UserSerializer,ProfileSerializer,EditUserSerializer
+from .serializers import AccountSerializer,DeviceSerializer,UserSerializer,EditUserSerializer,ProfileSerializer,UpdateProfileSerializer
 
 gmt_conversor = GMTConversor()
 
@@ -297,7 +297,7 @@ def update_profile(request,id):
             'detail': 'Username does not exist.'
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    serializer = ProfileSerializer(profile,data=data)
+    serializer = UpdateProfileSerializer(profile,data=data)
     if serializer.is_valid():
         #serializer.save()
         return Response(data,status=status.HTTP_200_OK)
