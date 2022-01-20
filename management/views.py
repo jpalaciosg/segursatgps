@@ -355,6 +355,7 @@ def get_units(request):
         data[i]['created'] = gmt_conversor.convert_utctolocaltime(units[i].created).strftime("%d/%m/%Y %H:%M:%S")
         data[i]['modified'] = gmt_conversor.convert_utctolocaltime(units[i].modified).strftime("%d/%m/%Y %H:%M:%S")
         data[i]['timeout'] = str(timedelta(seconds=data[i]['timeout']))
+        data[i]['account_name'] = units[i].account.name
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
