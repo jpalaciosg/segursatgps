@@ -57,7 +57,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ('__all__')
 
-class UpdateProfileSerializer(serializers.ModelSerializer):
+class UpdateProfileSerializer(serializers.Serializer):
     view_detailed_report = serializers.BooleanField()
     view_speed_report = serializers.BooleanField()
     view_stop_report = serializers.BooleanField()
