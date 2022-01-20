@@ -50,7 +50,7 @@ class InsertLocationSerializer2(serializers.Serializer):
     protocol = serializers.CharField()
     address = serializers.CharField(max_length=400)
 
-class ProfileSerializer(serializers.Serializer):
+class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=True)
     account = AccountSerializer(required=True)
     class Meta:
