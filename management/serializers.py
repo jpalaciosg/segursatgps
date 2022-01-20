@@ -80,5 +80,5 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     view_alert_history = serializers.BooleanField()
 
 class UpdatePasswordSerializer(serializers.Serializer):
-    password1 = serializers.CharField()
-    password2 = serializers.CharField()
+    password = serializers.CharField()
+    password_confirmation = serializers.CharField()
