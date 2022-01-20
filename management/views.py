@@ -4,7 +4,7 @@ from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse
 
 from rest_framework.response import Response
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.decorators import api_view
 
 from datetime import datetime,timedelta
@@ -16,7 +16,7 @@ from common.gmt_conversor import GMTConversor
 
 from units.models import Device
 from users.models import Account,Profile, User
-from .serializers import AccountSerializer,DeviceSerializer,UserSerializer,EditUserSerializer,ProfileSerializer,UpdateProfileSerializer
+from .serializers import AccountSerializer,DeviceSerializer,UserSerializer,EditUserSerializer,ProfileSerializer,UpdateProfileSerializer,UpdatePasswordSerializer
 
 gmt_conversor = GMTConversor()
 
@@ -294,7 +294,7 @@ def update_profile(request,id):
         profile = Profile.objects.get(id=id)
     except Exception as e:
         error = {
-            'detail': 'Username does not exist.'
+            'detail': 'User does not exist.'
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = UpdateProfileSerializer(profile,data=data)
@@ -316,14 +316,22 @@ def update_password(request,id):
         profile = Profile.objects.get(id=id)
     except Exception as e:
         error = {
-            'detail': 'Username does not exist.'
+            'detail': 'User does not exist.'
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    response = {
-        'status': 'OK',
-        'description': 'Password has been changed.',
-    }
-    return Response(response,status=status.HTTP_200_OK)
+    serializer = UpdatePasswordSerializer(data=data)
+    if serializer.is_valid():
+        response = {
+            'status': 'OK',
+            'description': 'Password has been changed.',
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        response = {
+            'status': 'ERROR',
+            'description': 'The password has not been changed.',
+        }
+        return Response(response,status=status.HTTP_400_BAD_REQUEST)
 
 @login_required
 def units_view(request):
