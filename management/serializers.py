@@ -50,7 +50,7 @@ class InsertLocationSerializer2(serializers.Serializer):
     protocol = serializers.CharField()
     address = serializers.CharField(max_length=400)
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.Serializer):
     user = UserSerializer(required=True)
     account = AccountSerializer(required=True)
     class Meta:
@@ -78,3 +78,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
     view_users = serializers.BooleanField()
     view_latest_alerts = serializers.BooleanField()
     view_alert_history = serializers.BooleanField()
+
+class UpdatePasswordSerializer(serializers.Serializer):
+    password1 = serializers.CharField()
+    password2 = serializers.CharField()
