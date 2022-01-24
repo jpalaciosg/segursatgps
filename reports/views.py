@@ -1078,6 +1078,7 @@ def trip_report_view(request):
                             'attributes':json.loads(location_qs.attributes),
                         })
                     device_reader = DeviceReader(unit.uniqueid)
+                    unit_trip_report = None
                     try:
                         unit_trip_report = device_reader.generate_trip_report(locations)
                     except Exception as e:
@@ -1167,6 +1168,7 @@ def trip_report_view(request):
                     })
 
                 device_reader = DeviceReader(unit.uniqueid)
+                unit_trip_report = None
                 try:
                     unit_trip_report = device_reader.generate_trip_report(locations)
                 except Exception as e:
