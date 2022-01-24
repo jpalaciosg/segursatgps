@@ -194,8 +194,10 @@ class Teltonika:
             if i != 0:
                 previous_location = locations[i-1]
                 current_location = locations[i]
-                previous_ignition = previous_location['attributes']['ignition']
-                current_ignition = current_location['attributes']['ignition']
+                #previous_ignition = previous_location['attributes']['ignition']
+                #current_ignition = current_location['attributes']['ignition']
+                previous_ignition = self.detect_ignition_event(previous_location)
+                current_ignition = self.detect_ignition_event(current_location)
                 if previous_ignition == False and current_ignition == True:
                     #print('ON')
                     travel_report.append({
