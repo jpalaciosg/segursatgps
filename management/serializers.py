@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account = Account.objects.get(id=validated_data['account'])
         del validated_data['account']
+        del validated_data['password_confirmation']
         user = User.objects.create(**validated_data)
         profile_data = {
             "account": account,
