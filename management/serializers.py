@@ -36,7 +36,6 @@ class EditUserSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     description = serializers.CharField(max_length=100)
     email = serializers.EmailField()
-    is_admin = serializers.BooleanField()
     is_active = serializers.BooleanField()
 
 class InsertLocationSerializer2(serializers.Serializer):
@@ -59,6 +58,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 class UpdateProfileSerializer(serializers.Serializer):
+    is_admin = serializers.BooleanField()
     view_detailed_report = serializers.BooleanField()
     view_speed_report = serializers.BooleanField()
     view_stop_report = serializers.BooleanField()
