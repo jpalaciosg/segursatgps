@@ -280,7 +280,7 @@ def update_user(request,id):
     if serializer.is_valid():
         profile.user.description = data['description']
         profile.user.email = data['email']
-        profile.user.is_active = data['email']
+        profile.user.is_active = data['is_active']
         profile.user.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
