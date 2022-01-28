@@ -278,6 +278,10 @@ def update_user(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = EditUserSerializer(data=data)
     if serializer.is_valid():
+        profile.user.description = data['description']
+        profile.user.email = data['email']
+        profile.user.is_active = data['email']
+        profile.user.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
@@ -299,7 +303,8 @@ def update_profile(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = UpdateProfileSerializer(profile,data=data)
     if serializer.is_valid():
-        #serializer.save()
+        profile.is_admin = data['is_admin']
+        profile.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
