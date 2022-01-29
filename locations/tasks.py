@@ -1,5 +1,5 @@
 from geofences.models import Geofence
-from locations.models import Location,PanderoLocation,SutranLocation
+from locations.models import Location,PanderoLocation,SutranLocation,OsinergminLocation
 from units.models import Device
 from segursatgps.celery import celery_app
 
@@ -76,6 +76,25 @@ def insert_location_in_history(data):
         except:
             print(e)   
     # FIN - INTRODUCIR UBICACION SUTRAN
+    # INTRODUCIR UBICACION OSINERGMIN
+    if data['account'] == 'transporte_alfa':
+        try:
+            OsinergminLocation.objects.create(
+                unitid = data['unit_id'],
+                protocol= data['protocol'],
+                timestamp = data['timestamp'],
+                latitude = data['latitude'],
+                longitude = data['longitude'],
+                altitude = data['altitude'],
+                angle = data['angle'],
+                speed = data['speed'],
+                attributes = json.dumps(data['attributes']),
+                address = data['address'],
+                reference = data['unit_name']
+            )
+        except:
+            print(e)   
+    # FIN - INTRODUCIR UBICACION OSINERGMIN
     return True
 
 @celery_app.task
