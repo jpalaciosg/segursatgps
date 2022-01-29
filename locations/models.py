@@ -84,6 +84,7 @@ class OsinergminLocation(models.Model):
     attributes = models.TextField(default="")
     address = models.TextField(default="")
     reference = models.CharField(max_length=50,blank=True)
+    it_was_sent = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
