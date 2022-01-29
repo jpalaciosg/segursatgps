@@ -67,6 +67,9 @@ class SutranLocation(models.Model):
     device_datetime = models.DateTimeField()
     server_datetime = models.DateTimeField()
     status = BigIntegerField(default=0)
+    class Meta:
+        # app_label helps django to recognize your db
+        app_label = 'locations'
 
 class OsinergminLocation(models.Model):
     id = models.BigAutoField(primary_key=True)
