@@ -303,6 +303,14 @@ def update_profile(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = UpdateProfileSerializer(profile,data=data)
     if serializer.is_valid():
+        try:
+            account = Account.objects.get(id=data['account'])
+        except:
+            error = {
+                'detail': 'Account does not exist.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        profile.account = account
         profile.is_admin = data['is_admin']
         profile.save()
         return Response(data,status=status.HTTP_200_OK)
