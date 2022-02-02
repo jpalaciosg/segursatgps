@@ -2156,6 +2156,106 @@ def group_speed_report_view(request):
         'groups':groups,
     })
 
+@api_view(['GET'])
+def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
+    initial_timestamp = None
+    final_timestamp = None
+    unit = None
+    if unit_name.upper() != 'ALL':
+        try:
+            unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+    # Aqui va la logica del resultado
+    result = []
+    if unit_name.upper() == 'ALL':
+        units = privilege.get_units(request.user.profile)
+        for unit in units:
+            locations_qs = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=initial_timestamp,
+                timestamp__lte=final_timestamp
+            ).order_by('timestamp')
+            locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+            locations = []
+            for location_qs in locations_qs:
+                locations.append({
+                    'latitude':location_qs.latitude,
+                    'longitude':location_qs.longitude,
+                    'timestamp':location_qs.timestamp,
+                    'angle':location_qs.angle,
+                    'speed':location_qs.speed,
+                    'address':location_qs.address,
+                    'attributes':json.loads(location_qs.attributes),
+                })
+            device_reader = DeviceReader(unit.uniqueid)
+            distance_sum = device_reader.generate_mileage_report(locations)
+            result.append(
+                {
+                    "unit_name":unit.name,
+                    "unit_description":unit.description,
+                    "initial_date":initial_datetime,
+                    "final_date":final_datetime,
+                    "distance":round(distance_sum,2),
+                    "odometer":round(unit.odometer,2),
+                }
+            )
+    else:
+        locations_qs = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lte=final_timestamp
+        ).order_by('timestamp')
+        locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+        locations = []
+        for location_qs in locations_qs:
+            locations.append({
+                'latitude':location_qs.latitude,
+                'longitude':location_qs.longitude,
+                'timestamp':location_qs.timestamp,
+                'angle':location_qs.angle,
+                'speed':location_qs.speed,
+                'address':location_qs.address,
+                'attributes':json.loads(location_qs.attributes),
+            })
+        device_reader = DeviceReader(unit.uniqueid)
+        distance_sum = device_reader.generate_mileage_report(locations)
+        result.append(
+            {
+                "unit_name":unit.name,
+                "unit_description":unit.description,
+                "initial_date":initial_datetime,
+                "final_date":final_datetime,
+                "distance":round(distance_sum,2),
+                "odometer":round(unit.odometer,2),
+            }
+        )
+    return Response(result,status=status.HTTP_200_OK)
+
+# MILEAGE REPORT
 @login_required
 def mileage_report_view(request):
     # verificar privilegios
