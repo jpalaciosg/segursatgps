@@ -77,7 +77,7 @@ def insert_location_in_history(data):
             print(e)   
     # FIN - INTRODUCIR UBICACION SUTRAN
     # INTRODUCIR UBICACION OSINERGMIN
-    if data['account'] == 'transporte_alfa':
+    if data['osinergmin_process']:
         try:
             OsinergminLocation.objects.create(
                 unitid = data['unit_id'],

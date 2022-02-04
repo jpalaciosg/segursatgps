@@ -22,11 +22,12 @@ class Device(models.Model):
     last_attributes = models.TextField(blank=True,default="{}")
     last_address = models.TextField(blank=True,default="")
     previous_location = models.TextField(blank=True,default="{}")
-    sutran_retransmission = models.BooleanField(default=False)
     show_unit_name_in_map = models.BooleanField(default=True)
     show_unit_description_in_map = models.BooleanField(default=False)
     ignition_source = models.CharField(max_length=50,default="ignition")
     panic_source = models.CharField(max_length=50,default="panic")
+    sutran_process = models.BooleanField(default=False)
+    osinergmin_process = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
