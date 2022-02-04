@@ -35,7 +35,8 @@ print(len(locations))
 
 for location in locations:
     try:
-        dt = datetime.utcfromtimestamp(location.timestamp)
+        #dt = datetime.utcfromtimestamp(location.timestamp)
+        dt = datetime.utcnow()
         dt_str = dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         item = {
             "event": "none",
