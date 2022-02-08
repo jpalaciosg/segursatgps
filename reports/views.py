@@ -2172,17 +2172,8 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
     try:
         initial_datetime_str = f"{initial_datetime}:00"
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
         final_datetime_str = f"{final_datetime}:00"
         final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
     except Exception as e:
         error = {
             'error':str(e)
@@ -2190,14 +2181,82 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
     # Aqui va la logica del resultado
-    result = []
+    result1 = []
+    result2 = []
     if unit_name.upper() == 'ALL':
         units = privilege.get_units(request.user.profile)
         for unit in units:
+            initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+            initial_datetime_obj = initial_datetime_obj.replace(hour=0,minute=0,second=0)
+            final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+            datetime_ranges = []
+            while initial_datetime_obj < final_datetime_obj:
+                datetime_ranges.append([
+                    initial_datetime_obj,
+                    initial_datetime_obj+timedelta(days=1)
+                ])
+                initial_datetime_obj = initial_datetime_obj+timedelta(days=1)
+            datetime_ranges[0][0] = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+            datetime_ranges[len(datetime_ranges)-1][1] = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+            for dr in datetime_ranges:
+                timestamp1 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[0])))
+                timestamp2 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[1])))
+                locations_qs = Location.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=timestamp1,
+                    timestamp__lte=timestamp2
+                ).order_by('timestamp')
+                locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+                locations = []
+                for location_qs in locations_qs:
+                    locations.append({
+                        'latitude':location_qs.latitude,
+                        'longitude':location_qs.longitude,
+                        'timestamp':location_qs.timestamp,
+                        'angle':location_qs.angle,
+                        'speed':location_qs.speed,
+                        'address':location_qs.address,
+                        'attributes':json.loads(location_qs.attributes),
+                    })
+                device_reader = DeviceReader(unit.uniqueid)
+                distance_sum = device_reader.generate_mileage_report(locations)
+                result2.append({
+                    'initial_datetime':dr[0].strftime("%Y-%d-%m, %H:%M:%S"),
+                    'final_datetime':dr[1].strftime("%Y-%d-%m, %H:%M:%S"),
+                    'distance':round(distance_sum,2)
+                })
+            """
+            result1.append(
+                {
+                    "unit_name":unit.name,
+                    "unit_description":unit.description,
+                    "initial_date":initial_datetime,
+                    "final_date":final_datetime,
+                    "distance":round(distance_sum,2),
+                    "odometer":round(unit.odometer,2),
+                }
+            )
+            """
+    else:
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        initial_datetime_obj = initial_datetime_obj.replace(hour=0,minute=0,second=0)
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        datetime_ranges = []
+        while initial_datetime_obj < final_datetime_obj:
+            datetime_ranges.append([
+                initial_datetime_obj,
+                initial_datetime_obj+timedelta(days=1)
+            ])
+            initial_datetime_obj = initial_datetime_obj+timedelta(days=1)
+        datetime_ranges[0][0] = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        datetime_ranges[len(datetime_ranges)-1][1] = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        for dr in datetime_ranges:
+            timestamp1 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[0])))
+            timestamp2 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[1])))
             locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__gte=timestamp1,
+                timestamp__lte=timestamp2
             ).order_by('timestamp')
             locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
             locations = []
@@ -2213,48 +2272,13 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
                 })
             device_reader = DeviceReader(unit.uniqueid)
             distance_sum = device_reader.generate_mileage_report(locations)
-            result.append(
-                {
-                    "unit_name":unit.name,
-                    "unit_description":unit.description,
-                    "initial_date":initial_datetime,
-                    "final_date":final_datetime,
-                    "distance":round(distance_sum,2),
-                    "odometer":round(unit.odometer,2),
-                }
-            )
-    else:
-        locations_qs = Location.objects.using('history_db_replica').filter(
-            unitid=unit.id,
-            timestamp__gte=initial_timestamp,
-            timestamp__lte=final_timestamp
-        ).order_by('timestamp')
-        locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
-        locations = []
-        for location_qs in locations_qs:
-            locations.append({
-                'latitude':location_qs.latitude,
-                'longitude':location_qs.longitude,
-                'timestamp':location_qs.timestamp,
-                'angle':location_qs.angle,
-                'speed':location_qs.speed,
-                'address':location_qs.address,
-                'attributes':json.loads(location_qs.attributes),
+            result2.append({
+                'initial_datetime':dr[0].strftime("%Y-%d-%m, %H:%M:%S"),
+                'final_datetime':dr[1].strftime("%Y-%d-%m, %H:%M:%S"),
+                'distance':round(distance_sum,2)
             })
-        device_reader = DeviceReader(unit.uniqueid)
-        distance_sum = device_reader.generate_mileage_report(locations)
-        result.append(
-            {
-                "unit_name":unit.name,
-                "unit_description":unit.description,
-                "initial_date":initial_datetime,
-                "final_date":final_datetime,
-                "distance":round(distance_sum,2),
-                "odometer":round(unit.odometer,2),
-            }
-        )
-    return Response(result,status=status.HTTP_200_OK)
-
+    return Response(result2,status=status.HTTP_200_OK)
+    
 # MILEAGE REPORT
 @login_required
 def mileage_report_view(request):
