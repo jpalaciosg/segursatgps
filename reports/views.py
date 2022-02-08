@@ -2221,6 +2221,8 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
                 device_reader = DeviceReader(unit.uniqueid)
                 distance_sum = device_reader.generate_mileage_report(locations)
                 result2.append({
+                    'unit_name':unit.name,
+                    'unit_description':unit.description,
                     'initial_datetime':dr[0].strftime("%Y-%d-%m, %H:%M:%S"),
                     'final_datetime':dr[1].strftime("%Y-%d-%m, %H:%M:%S"),
                     'distance':round(distance_sum,2)
@@ -2273,6 +2275,8 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
             device_reader = DeviceReader(unit.uniqueid)
             distance_sum = device_reader.generate_mileage_report(locations)
             result2.append({
+                'unit_name':unit.name,
+                'unit_description':unit.description,
                 'initial_datetime':dr[0].strftime("%Y-%d-%m, %H:%M:%S"),
                 'final_datetime':dr[1].strftime("%Y-%d-%m, %H:%M:%S"),
                 'distance':round(distance_sum,2)
