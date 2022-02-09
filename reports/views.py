@@ -2190,6 +2190,7 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
             initial_datetime_obj = initial_datetime_obj.replace(hour=0,minute=0,second=0)
             final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
             datetime_ranges = []
+            total_distance = 0.0
             while initial_datetime_obj < final_datetime_obj:
                 datetime_ranges.append([
                     initial_datetime_obj,
@@ -2227,23 +2228,23 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
                     'final_datetime':dr[1].strftime("%Y-%m-%d, %H:%M:%S"),
                     'distance':round(distance_sum,2)
                 })
-            """
+                total_distance += distance_sum
             result1.append(
                 {
                     "unit_name":unit.name,
                     "unit_description":unit.description,
                     "initial_date":initial_datetime,
                     "final_date":final_datetime,
-                    "distance":round(distance_sum,2),
+                    "distance":round(total_distance,2),
                     "odometer":round(unit.odometer,2),
                 }
             )
-            """
     else:
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
         initial_datetime_obj = initial_datetime_obj.replace(hour=0,minute=0,second=0)
         final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
         datetime_ranges = []
+        total_distance = 0.0
         while initial_datetime_obj < final_datetime_obj:
             datetime_ranges.append([
                 initial_datetime_obj,
@@ -2281,7 +2282,22 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
                 'final_datetime':dr[1].strftime("%Y-%m-%d, %H:%M:%S"),
                 'distance':round(distance_sum,2)
             })
-    return Response(result2,status=status.HTTP_200_OK)
+            total_distance += distance_sum
+        result1.append(
+            {
+                "unit_name":unit.name,
+                "unit_description":unit.description,
+                "initial_date":initial_datetime,
+                "final_date":final_datetime,
+                "distance":round(total_distance,2),
+                "odometer":round(unit.odometer,2),
+            }
+        )
+    response = {
+        'total_mileage':result1,
+        'mileage_by_date':result2
+    }
+    return Response(response,status=status.HTTP_200_OK)
     
 # MILEAGE REPORT
 @login_required
