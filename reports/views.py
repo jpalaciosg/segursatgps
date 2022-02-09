@@ -2223,8 +2223,8 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
                 result2.append({
                     'unit_name':unit.name,
                     'unit_description':unit.description,
-                    'initial_datetime':dr[0].strftime("%Y-%d-%m, %H:%M:%S"),
-                    'final_datetime':dr[1].strftime("%Y-%d-%m, %H:%M:%S"),
+                    'initial_datetime':dr[0].strftime("%Y-%m-%d, %H:%M:%S"),
+                    'final_datetime':dr[1].strftime("%Y-%m-%d, %H:%M:%S"),
                     'distance':round(distance_sum,2)
                 })
             """
@@ -2277,8 +2277,8 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
             result2.append({
                 'unit_name':unit.name,
                 'unit_description':unit.description,
-                'initial_datetime':dr[0].strftime("%Y-%d-%m, %H:%M:%S"),
-                'final_datetime':dr[1].strftime("%Y-%d-%m, %H:%M:%S"),
+                'initial_datetime':dr[0].strftime("%Y-%m-%d, %H:%M:%S"),
+                'final_datetime':dr[1].strftime("%Y-%m-%d, %H:%M:%S"),
                 'distance':round(distance_sum,2)
             })
     return Response(result2,status=status.HTTP_200_OK)
