@@ -2158,8 +2158,6 @@ def group_speed_report_view(request):
 
 @api_view(['GET'])
 def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
-    initial_timestamp = None
-    final_timestamp = None
     unit = None
     if unit_name.upper() != 'ALL':
         try:
