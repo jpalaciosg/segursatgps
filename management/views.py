@@ -406,6 +406,38 @@ def get_units(request):
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+def get_units_from_account(request,id):
+    # verificar privilegios
+    if request.user.is_staff == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    try:
+        account = Account.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': 'Account does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    units = Device.objects.filter(account=account)
+    now = datetime.now()
+    current_timestamp = int(datetime.timestamp(now))
+    serializer = DeviceSerializer(units,many=True)
+    data = serializer.data    
+    for i in range(len(data)):
+        data[i]['odometer'] = round(data[i]['odometer'],1)
+        dt = datetime.fromtimestamp(data[i]['last_timestamp'])
+        dt = gmt_conversor.convert_utctolocaltime(dt)
+        data[i]['last_report'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['timeout'] = current_timestamp - data[i]['last_timestamp']
+        data[i]['last_attributes'] = json.loads(data[i]['last_attributes'])
+        data[i]['previous_location'] = json.loads(data[i]['previous_location'])
+        data[i]['created'] = gmt_conversor.convert_utctolocaltime(units[i].created).strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['modified'] = gmt_conversor.convert_utctolocaltime(units[i].modified).strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['timeout'] = str(timedelta(seconds=data[i]['timeout']))
+        data[i]['account_name'] = units[i].account.name
+    return Response(data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
 def get_unit(request,id):
     # verificar privilegios
     if request.user.is_staff == False:

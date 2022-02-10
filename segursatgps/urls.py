@@ -105,6 +105,7 @@ urlpatterns = [
     path('web/api/management/update-password/<int:id>/', management_views.update_password),
     path('web/api/management/update-profile/<int:id>/', management_views.update_profile),
     path('web/api/management/get-units/', management_views.get_units),
+    path('web/api/management/get-units-from-account/<int:id>/', management_views.get_units_from_account),
     path('web/api/management/get-unit/<int:id>/', management_views.get_unit),
     path('web/api/management/create-unit/', management_views.create_unit),
     path('web/api/management/update-unit/<int:id>/', management_views.update_unit),
