@@ -683,9 +683,9 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
             driving_incident = json.loads(data[i]['attributes'])['alarm']
             data[i]['driving'] = driving_incident
             data[i]['intensity'] = json.loads(data[i]['attributes'])['io254']
-            if driving_incident == 'harshBraking': harsh_braking += 1
-            if driving_incident == 'harshAcceleration': harsh_acceleration += 1
-            if driving_incident == 'harshCornering': harsh_cornering += 1
+            if driving_incident == 'hardBraking': harsh_braking += 1
+            if driving_incident == 'hardAcceleration': harsh_acceleration += 1
+            if driving_incident == 'hardCornering': harsh_cornering += 1
             harsh_driving_report.append(data[i])
         except Exception as e:
             pass
