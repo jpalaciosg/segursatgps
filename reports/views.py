@@ -666,7 +666,9 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
     data = serializer.data
 
     harsh_driving_report = []
-    summarization = []
+    harsh_braking = 0
+    harsh_acceleration = 0
+    harsh_cornering = 0
     device_reader = DeviceReader(unit.uniqueid)
     for i in range(len(data)):
         data[i]['unit_name'] = unit.name
@@ -678,11 +680,38 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
             'attributes':json.loads(data[i]['attributes'])
         })
         try:
-            data[i]['driving'] = json.loads(data[i]['attributes'])['alarm']
+            driving_incident = json.loads(data[i]['attributes'])['alarm']
+            data[i]['driving'] = driving_incident
             data[i]['intensity'] = json.loads(data[i]['attributes'])['io254']
+            if driving_incident == 'harshBraking': harsh_braking += 1
+            if driving_incident == 'harshAcceleration': harsh_acceleration += 1
+            if driving_incident == 'harshCornering': harsh_cornering += 1
             harsh_driving_report.append(data[i])
         except Exception as e:
             pass
+    summarization = [
+        {
+        'unit_name': unit.name,
+        'unit_description': unit.description,
+        'initial_datetime':initial_datetime,
+        'final_datetime':final_datetime,
+        'amount': harsh_acceleration
+        },
+        {
+        'unit_name': unit.name,
+        'unit_description': unit.description,
+        'initial_datetime':initial_datetime,
+        'final_datetime':final_datetime,
+        'amount': harsh_braking
+        },
+        {
+        'unit_name': unit.name,
+        'unit_description': unit.description,
+        'initial_datetime':initial_datetime,
+        'final_datetime':final_datetime,
+        'amount': harsh_cornering
+        },
+    ]
     final_report = {
         'harsh_driving_report':harsh_driving_report,
         'summarization':summarization,
