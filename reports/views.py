@@ -2993,3 +2993,11 @@ def telemetry_report_view(request):
     return render(request,'reports/telemetry-report.html',{
         'units':units,
     })
+
+@login_required
+def temperature_report_view(request):
+    #GET
+    units = privilege.get_units(request.user.profile)
+    return render(request,'reports/temperature-report.html',{
+        'units':units,
+    })
