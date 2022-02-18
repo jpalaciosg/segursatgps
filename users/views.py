@@ -37,7 +37,7 @@ def login_view(request):
                 next = request.GET.get('next')
                 if next:
                     return redirect(next)
-                return redirect('map')
+                return redirect('main')
             logout(request)
             return render(request,'users/login.html',{
                 'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
