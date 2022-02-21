@@ -3063,7 +3063,8 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
             'attributes':json.loads(data[i]['attributes'])
         })
         try:
-            data[i]['driving'] = json.loads(data[i]['attributes'])['temp1']
+            #data[i]['temp'] = json.loads(data[i]['attributes'])['temp1']
+            data[i]['temp'] = 100
         except Exception as e:
             pass
     summarization = []
