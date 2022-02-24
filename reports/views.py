@@ -98,7 +98,7 @@ def fleet_status_view(request):
             current_power = 0
         if current_power > 10:
             unit.main_battery = True
-            unit.secondary_battery = False
+            unit.secondary_battery = True
         else:
             unit.main_battery = False
             unit.secondary_battery = True
