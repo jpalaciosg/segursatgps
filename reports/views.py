@@ -92,7 +92,10 @@ def fleet_status_view(request):
         unit.last_ignition = device_reader.detect_ignition_event({
             'attributes':json.loads(unit.last_attributes)
         })
-        current_power = json.loads(unit.last_attributes)['power']
+        try:
+            current_power = json.loads(unit.last_attributes)['power']
+        except:
+            current_power = 0
         if current_power > 10:
             unit.main_battery = True
             unit.secondary_battery = False
