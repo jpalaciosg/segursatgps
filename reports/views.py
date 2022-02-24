@@ -88,6 +88,17 @@ def fleet_status_view(request):
         else:
             units_stopped += 1
         unit.timeout = int(timeout)
+        device_reader = DeviceReader(unit.uniqueid)
+        unit.last_ignition = device_reader.detect_ignition_event({
+            'attributes':json.loads(unit.last_attributes)
+        })
+        current_power = json.dumps(unit.last_attributes)['power']
+        if current_power > 10:
+            unit.main_battery = True
+            unit.secondary_battery = False
+        else:
+            unit.main_battery = False
+            unit.secondary_battery = True
     units_transmitting = len(units) - units_not_transmitted
     return render(request,'reports/fleet-status.html',{
         'units': units,
