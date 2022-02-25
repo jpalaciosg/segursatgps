@@ -28,6 +28,8 @@ def alerts_view(request):
     # fin - verificar privilegios
     if request.user.profile.account.name == 'civa':
         return render(request,'alerts/civa-alert.html')
+    elif request.user.profile.account.name == 'hng_inversiones':
+        return render(request,'alerts/hng-inversiones.html')
     return render(request,'alerts/alerts.html')
 
 def alert_history_view(request):
