@@ -256,7 +256,17 @@ def get_groups(request):
     try:
         groups = Group.objects.filter(account=request.user.profile.account)
         serializer = GroupSerializer(groups,many=True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        data = serializer.data
+        for item in data:
+            c_units = item['units']
+            item['units'] = []
+            for index in c_units:
+                try:
+                    unit = Device.objects.get(id=index)
+                    item['units'].append(unit.name)
+                except:
+                    pass
+        return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
