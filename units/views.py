@@ -13,7 +13,7 @@ from pytz import timezone
 
 from .models import Device,Group
 from .forms import UnitCreateForm,UnitUpdateForm
-from .serializers import DeviceSerializer
+from .serializers import DeviceSerializer,GroupSerializer
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -250,4 +250,13 @@ def create_group(request):
         'status': 'OK',
     }
     return Response(response,status=status.HTTP_200_OK)
-        
+
+@api_view(['GET'])
+def get_groups(request):
+    try:
+        groups = Group.objects.filter(account=request.user.profile.account)
+        serializer = GroupSerializer(groups,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)

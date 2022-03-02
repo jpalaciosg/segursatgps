@@ -78,6 +78,7 @@ urlpatterns = [
     path('web/api/units/get-units/', units_views.get_units),
     path('web/api/units/get-unit/<str:name>/', units_views.get_unit),
     path('web/api/units/get-unit-status/<str:name>/', units_views.get_unit_status),
+    path('web/api/units/get-groups/', units_views.get_groups),
     path('web/api/drivers/get-drivers/', drivers_views.get_drivers),
     path('web/api/drivers/get-driver/<int:id>/', drivers_views.get_driver),
     path('web/api/geofences/get-geofences/', geofences_views.get_geofences),
