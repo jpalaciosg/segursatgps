@@ -27,6 +27,7 @@ import locations.views as locations_views
 import maintenances.views as maintenances_views
 import generic.views as generic_views
 import management.views as management_views
+import mails.views as mails_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -73,6 +74,7 @@ urlpatterns = [
     path('management/accounts/', management_views.accounts_view, name='management-accounts'),
     path('management/users/', management_views.users_view, name='management-users'),
     path('management/units/', management_views.units_view, name='management-units'),
+    path('mails/mail-lists/', mails_views.mail_list_view, name='mail-lists'),
     path('main/', generic_views.main_view, name='main'),
     # REST FRAMEWORK
     path('web/api/units/get-units/', units_views.get_units),
