@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'alerts',
     'locations',
     'maintenances',
+    'mails',
 ]
 
 REST_FRAMEWORK = {
