@@ -1,7 +1,12 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+
 from .models import MailList
+from .serializers import MailListSerializer
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -28,3 +33,15 @@ def mail_list_view(request):
     return render(request,'mails/mail-lists.html',{
         'mail_lists': mail_lists,
     })
+
+@api_view(['GET'])
+def get_mail_list(request,id):
+    try:
+        mail_list = MailList.objects.get(id=id,account=request.user.profile.account)
+        serializer = MailListSerializer(mail_list,many=False)
+        data = serializer.data
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
