@@ -40,8 +40,7 @@ def get_mail_list(request,id):
         mail_list = MailList.objects.get(id=id,account=request.user.profile.account)
         serializer = MailListSerializer(mail_list,many=False)
         data = serializer.data
-        data['mails'] = data['mails'].split(';')
-        data['mails'] = [x.strip() for x in data['mails']]
+        data['mails'] = data['mails'].replace(' ','').split(';')
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
