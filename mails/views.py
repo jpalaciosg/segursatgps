@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 from rest_framework.response import Response
@@ -7,7 +7,6 @@ from rest_framework.decorators import api_view
 
 from .models import MailList
 from .serializers import MailListSerializer,UpdateMailListSerializer
-from users.models import Account
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -113,4 +112,18 @@ def update_mail_list(request,id):
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_mail_list(request,id):
+    try:
+        mail_list = MailList.objects.get(id=id,account=request.user.profile.account)
+        mail_list.delete()
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
