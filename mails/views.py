@@ -41,6 +41,11 @@ def get_mail_lists(request):
         mail_lists = MailList.objects.filter(account=request.user.profile.account)
         serializer = MailListSerializer(mail_lists,many=True)
         data = serializer.data
+        for item in data:
+            mail_list = item['mails'].split(',')
+            mail_list = [x.replace(' ','') for x in mail_list]
+            item['email_number'] = len(mail_list)
+            del item['account']
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
@@ -54,6 +59,10 @@ def get_mail_list(request,id):
         mail_list = MailList.objects.get(id=id,account=request.user.profile.account)
         serializer = MailListSerializer(mail_list,many=False)
         data = serializer.data
+        mail_list = data['mails'].split(',')
+        mail_list = [x.replace(' ','') for x in mail_list]
+        data['email_number'] = len(mail_list)
+        del data['account']
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
