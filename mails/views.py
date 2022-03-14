@@ -46,3 +46,35 @@ def get_mail_list(request,id):
         print(e)
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_mail_list(request):
+    data = request.data
+    serializer = MailListSerializer(data=data)
+    if serializer.is_valid():
+        serializer.create(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_mail_list(request,id):
+    data = request.data
+    try:
+        mail_list = MailList.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': "Error"
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = MailListSerializer(mail_list,data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
