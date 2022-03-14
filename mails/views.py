@@ -36,7 +36,7 @@ def mail_list_view(request):
     })
 
 @api_view(['GET'])
-def get_mail_lists(request,id):
+def get_mail_lists(request):
     try:
         mail_lists = MailList.objects.filter(account=request.user.profile.account)
         serializer = MailListSerializer(mail_lists,many=True)
