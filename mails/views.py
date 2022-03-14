@@ -6,7 +6,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from .models import MailList
-from .serializers import MailListSerializer
+from .serializers import MailListSerializer,UpdateMailListSerializer
+from users.models import Account
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -50,6 +51,13 @@ def get_mail_list(request,id):
 @api_view(['POST'])
 def create_mail_list(request):
     data = request.data
+    try:
+        data['account'] = request.user.profile.account.id
+    except Exception as e:
+        error = {
+            'detail': 'Account does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST) 
     serializer = MailListSerializer(data=data)
     if serializer.is_valid():
         serializer.create(data)
@@ -68,12 +76,15 @@ def update_mail_list(request,id):
         mail_list = MailList.objects.get(id=id)
     except Exception as e:
         error = {
-            'detail': "Error"
+            'detail': "Mail list does not exist."
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    serializer = MailListSerializer(mail_list,data=data)
+    serializer = UpdateMailListSerializer(mail_list,data=data)
     if serializer.is_valid():
-        serializer.save()
+        mail_list.name = data['name']
+        mail_list.description = data['description']
+        mail_list.mails = data['mails']
+        mail_list.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
