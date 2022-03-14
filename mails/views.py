@@ -27,8 +27,8 @@ def mail_list_view(request):
     mail_lists = MailList.objects.filter(account=request.user.profile.account)
     for mail_list in mail_lists:
         try:
-            mail_list.created = gmt_conversor.convert_localtimetoutc(mail_list.created)
-            mail_list.modified = gmt_conversor.convert_localtimetoutc(mail_list.modified)
+            mail_list.created = gmt_conversor.convert_utctolocaltime(mail_list.created)
+            mail_list.modified = gmt_conversor.convert_utctolocaltime(mail_list.modified)
         except Exception as e:
             print(e)
     return render(request,'mails/mail-lists.html',{
@@ -41,11 +41,13 @@ def get_mail_lists(request):
         mail_lists = MailList.objects.filter(account=request.user.profile.account)
         serializer = MailListSerializer(mail_lists,many=True)
         data = serializer.data
-        for item in data:
-            mail_list = item['mails'].split(',')
+        for i in range(len(data)):
+            mail_list = data[i]['mails'].split(',')
             mail_list = [x.replace(' ','') for x in mail_list]
-            item['email_number'] = len(mail_list)
-            del item['account']
+            data[i]['email_number'] = len(mail_list)
+            del data[i]['account']
+            data[i]['created'] = gmt_conversor.convert_utctolocaltime(mail_lists[i].created)
+            data[i]['modified'] = gmt_conversor.convert_utctolocaltime(mail_lists[i].modified)
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
@@ -63,6 +65,8 @@ def get_mail_list(request,id):
         mail_list = [x.replace(' ','') for x in mail_list]
         data['email_number'] = len(mail_list)
         del data['account']
+        data['created'] = gmt_conversor.convert_utctolocaltime(mail_list.created)
+        data['modified'] = gmt_conversor.convert_utctolocaltime(mail_list.modified)
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
