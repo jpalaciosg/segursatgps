@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import Account
 from geofences.models import Geofence
+from mails.models import MailList
 
 ALERT_TYPE_CHOICES = [
     (1001, 'ALERTA DE PANICO'),
@@ -58,6 +59,7 @@ class FleetTrigger(models.Model):
     is_active = models.BooleanField(default=True)
     send_notification = models.BooleanField(default=True)
     send_mail_notification = models.BooleanField(default=True)
+    mail_list = models.OneToOneField(MailList,null=True,blank=True,on_delete=models.SET_NULL)
     extension1003 = models.OneToOneField(FleetTriggerExtension1003,null=True,blank=True,on_delete=models.CASCADE)
     extension1006 = models.OneToOneField(FleetTriggerExtension1006,null=True,blank=True,on_delete=models.CASCADE)
     extension1007 = models.OneToOneField(FleetTriggerExtension1007,null=True,blank=True,on_delete=models.CASCADE)
