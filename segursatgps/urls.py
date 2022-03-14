@@ -116,6 +116,7 @@ urlpatterns = [
     path('web/api/management/update-unit/<int:id>/', management_views.update_unit),
     path('web/api/management/delete-unit/<int:id>/', management_views.delete_unit),
     path('web/api/management/get-traccar-unit/<int:uniqueid>/', management_views.get_traccar_unit),
+    path('web/api/mails/get-mail-lists/', mails_views.get_mail_lists),
     path('web/api/mails/get-mail-list/<int:id>/', mails_views.get_mail_list),
     path('web/api/mails/create-mail-list/', mails_views.create_mail_list),
     path('web/api/mails/update-mail-list/<int:id>/', mails_views.update_mail_list),
