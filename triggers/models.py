@@ -29,6 +29,14 @@ class FleetTriggerExtension1003(models.Model):
     speed = models.IntegerField()
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
+class FleetTriggerExtension1004(models.Model):
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
+class FleetTriggerExtension1005(models.Model):
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
 class FleetTriggerExtension1006(models.Model):
     speed = models.IntegerField()
     geofences = models.ManyToManyField(Geofence)

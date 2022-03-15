@@ -74,6 +74,14 @@ def get_fleet_trigger(request,id):
             data['extension1003'] = {
                 'speed': trigger.extension1003.speed
             }
+        elif trigger.alert_type == 1004:
+            data['extension1004'] = {
+                'geofences': [ {'id':x.id,'name':x.name} for x in trigger.extension1004.geofences.all() ]
+            }
+        elif trigger.alert_type == 1005:
+            data['extension1005'] = {
+                'geofences': [ {'id':x.id,'name':x.name} for x in trigger.extension1005.geofences.all() ]
+            }
         elif trigger.alert_type == 1006:
             data['extension1006'] = {
                 'speed': trigger.extension1006.speed,
@@ -83,6 +91,11 @@ def get_fleet_trigger(request,id):
             data['extension1007'] = {
                 'seconds': trigger.extension1007.seconds,
                 'geofences': [ {'id':x.id,'name':x.name} for x in trigger.extension1007.geofences.all() ]
+            }
+        elif trigger.alert_type == 1008:
+            data['extension1008'] = {
+                'seconds': trigger.extension1008.seconds,
+                'geofences': [ {'id':x.id,'name':x.name} for x in trigger.extension1008.geofences.all() ]
             }
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
