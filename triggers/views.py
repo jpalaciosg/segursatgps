@@ -11,6 +11,7 @@ from triggers.serializers import FleetTriggerSerializer
 
 from .models import FleetTrigger
 from mails.models import MailList
+from geofences.models import Geofence
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -27,6 +28,7 @@ def fleet_trigger_view(request):
     # fin - verificar privilegios
     triggers = FleetTrigger.objects.filter(account=request.user.profile.account)
     mail_lists = MailList.objects.filter(account=request.user.profile.account)
+    geofences = Geofence.objects.filter(account=request.user.profile.account)
     for trigger in triggers:
         try:
             trigger.created = gmt_conversor.convert_utctolocaltime(trigger.created)
@@ -36,6 +38,7 @@ def fleet_trigger_view(request):
     return render(request,'triggers/fleet-trigger.html',{
         'triggers':triggers,
         'mail_lists':mail_lists,
+        'geofences': geofences,
     })
 
 @api_view(['GET'])
