@@ -60,12 +60,12 @@ def get_mail_list(request,id):
         mail_list = MailList.objects.get(id=id,account=request.user.profile.account)
         serializer = MailListSerializer(mail_list,many=False)
         data = serializer.data
-        mail_list = data['mails'].split(',')
-        mail_list = [x.replace(' ','') for x in mail_list]
-        data['email_number'] = len(mail_list)
+        mails = data['mails'].split(',')
+        mails = [x.replace(' ','') for x in mails]
+        data['email_number'] = len(mails)
         del data['account']
-        data['created'] = gmt_conversor.convert_utctolocaltime(mail_list.created)
-        data['modified'] = gmt_conversor.convert_utctolocaltime(mail_list.modified)
+        data['created'] = gmt_conversor.convert_utctolocaltime(mails.created)
+        data['modified'] = gmt_conversor.convert_utctolocaltime(mails.modified)
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
