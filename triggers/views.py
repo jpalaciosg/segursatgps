@@ -38,16 +38,6 @@ def fleet_trigger_view(request):
         'mail_lists':mail_lists,
     })
 
-@login_required
-def delete_fleet_trigger(request,id):
-    try:
-        trigger = FleetTrigger.objects.get(id=id,account=request.user.profile.account)
-        trigger.delete()
-        messages.success('El trigger fue eliminado')
-        return redirect('triggers')
-    except:
-        return redirect('triggers')
-
 @api_view(['GET'])
 def get_fleet_triggers(request):
     try:
@@ -117,7 +107,7 @@ def create_generic_fleet_trigger(request):
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     if 'alert_type' in data:
-        if data['alert_type'] not in [1001,1002]:
+        if data['alert_type'] not in [1001,1002,1009,1010,1011]:
             error = {
                 'detail': 'Alert type not allowed.'
             }
@@ -132,3 +122,36 @@ def create_generic_fleet_trigger(request):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_fleet_trigger(request,id):
+    data = request.data
+    try:
+        fleet_trigger = FleetTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    try:
+        fleet_trigger.extension1003.delete()
+    except Exception as e:
+        print(e)
+    try:
+        fleet_trigger.extension1006.delete()
+    except Exception as e:
+        print(e)
+    try:
+        fleet_trigger.extension1007.delete()
+    except Exception as e:
+        print(e)
+    try:
+        fleet_trigger.extension1008.delete()
+    except Exception as e:
+        print(e)
+    fleet_trigger.delete()
+    response = {
+        'status': 'OK',
+        'description': 'Fleet trigger was deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
