@@ -28,6 +28,7 @@ import maintenances.views as maintenances_views
 import generic.views as generic_views
 import management.views as management_views
 import mails.views as mails_views
+import triggers.views as triggers_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -121,4 +122,6 @@ urlpatterns = [
     path('web/api/mails/create-mail-list/', mails_views.create_mail_list),
     path('web/api/mails/update-mail-list/<int:id>/', mails_views.update_mail_list),
     path('web/api/mails/delete-mail-list/<int:id>/', mails_views.delete_mail_list),
+    path('web/api/mails/get-fleet-triggers/', triggers_views.get_fleet_triggers),
+    path('web/api/mails/get-fleet-trigger/<int:id>/', triggers_views.get_fleet_trigger),
 ]

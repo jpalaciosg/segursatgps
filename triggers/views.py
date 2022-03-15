@@ -1,8 +1,14 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import HttpResponse
 
-from .forms import TriggerCreateForm
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+
+from triggers.serializers import FleetTriggerSerializer
+
 from .models import FleetTrigger
 
 from common.gmt_conversor import GMTConversor
@@ -18,17 +24,15 @@ def fleet_trigger_view(request):
     if privilege.view_latest_alerts(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    form = TriggerCreateForm()
     triggers = FleetTrigger.objects.filter(account=request.user.profile.account)
     for trigger in triggers:
         try:
-            trigger.created = gmt_conversor.convert_localtimetoutc(trigger.created)
-            trigger.modified = gmt_conversor.convert_localtimetoutc(trigger.modified)
+            trigger.created = gmt_conversor.convert_utctolocaltime(trigger.created)
+            trigger.modified = gmt_conversor.convert_utctolocaltime(trigger.modified)
         except Exception as e:
             print(e)
     return render(request,'triggers/fleet-trigger.html',{
         'triggers':triggers,
-        'form':form,
     })
 
 @login_required
@@ -36,6 +40,38 @@ def delete_fleet_trigger(request,id):
     try:
         trigger = FleetTrigger.objects.get(id=id,account=request.user.profile.account)
         trigger.delete()
+        messages.success('El trigger fue eliminado')
         return redirect('triggers')
     except:
         return redirect('triggers')
+
+@api_view(['GET'])
+def get_fleet_triggers(request):
+    try:
+        triggers = FleetTrigger.objects.filter(account=request.user.profile.account)
+        serializer = FleetTrigger(triggers,many=True)
+        data = serializer.data
+        for i in range(len(data)):
+            del data[i]['account']
+            data[i]['created'] = gmt_conversor.convert_utctolocaltime(triggers[i].created)
+            data[i]['modified'] = gmt_conversor.convert_utctolocaltime(triggers[i].modified)
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_fleet_trigger(request,id):
+    try:
+        trigger = FleetTrigger.objects.get(id=id,account=request.user.profile.account)
+        serializer = FleetTriggerSerializer(trigger,many=False)
+        data = serializer.data
+        del data['account']
+        data['created'] = gmt_conversor.convert_utctolocaltime(trigger.created)
+        data['modified'] = gmt_conversor.convert_utctolocaltime(trigger.modified)
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
