@@ -102,3 +102,30 @@ def get_fleet_trigger(request,id):
         print(e)
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_fleet_trigger(request):
+    data = request.data
+    try:
+        data['account'] = request.user.profile.account.id
+    except Exception as e:
+        error = {
+            'detail': 'Account does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    if 'alert_type' in data:
+        if data['alert_type'] in [1001,1002]:
+            error = {
+                'detail': 'Alert type not allowed.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = FleetTriggerSerializer(data=data)
+    if serializer.is_valid():
+        serializer.create(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
