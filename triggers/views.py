@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 from triggers.serializers import FleetTriggerSerializer
 
 from .models import FleetTrigger
+from mails.models import MailList
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -25,6 +26,7 @@ def fleet_trigger_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     triggers = FleetTrigger.objects.filter(account=request.user.profile.account)
+    mail_lists = MailList.objects.filter(account=request.user.profile.account)
     for trigger in triggers:
         try:
             trigger.created = gmt_conversor.convert_utctolocaltime(trigger.created)
@@ -33,6 +35,7 @@ def fleet_trigger_view(request):
             print(e)
     return render(request,'triggers/fleet-trigger.html',{
         'triggers':triggers,
+        'mail_lists':mail_lists,
     })
 
 @login_required
@@ -114,7 +117,7 @@ def create_generic_fleet_trigger(request):
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     if 'alert_type' in data:
-        if data['alert_type'] in [1001,1002]:
+        if data['alert_type'] not in [1001,1002]:
             error = {
                 'detail': 'Alert type not allowed.'
             }
