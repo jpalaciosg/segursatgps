@@ -49,7 +49,7 @@ def delete_fleet_trigger(request,id):
 def get_fleet_triggers(request):
     try:
         triggers = FleetTrigger.objects.filter(account=request.user.profile.account)
-        serializer = FleetTrigger(triggers,many=True)
+        serializer = FleetTriggerSerializer(triggers,many=True)
         data = serializer.data
         for i in range(len(data)):
             del data[i]['account']
