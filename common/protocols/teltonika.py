@@ -277,9 +277,9 @@ class Teltonika:
                             ).km
                         distance += distance2
                 tr['distance'] = round(distance,2)
-
             for i in range(len(travel_report)):
                 if travel_report[i]['duration'] < 5:
-                    del travel_report[i]
-        
+                    print(travel_report[i]['duration'])
+                    #del travel_report[i]
+
         return travel_report
