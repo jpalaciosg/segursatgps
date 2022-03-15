@@ -104,7 +104,7 @@ def get_fleet_trigger(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-def create_fleet_trigger(request):
+def create_generic_fleet_trigger(request):
     data = request.data
     try:
         data['account'] = request.user.profile.account.id
