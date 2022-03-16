@@ -1161,6 +1161,8 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime):
                     summarization.append({
                         "unit_name" : unit.name,
                         "unit_description": unit.description,
+                        "initial_datetime": dr[0].strftime("%Y-%m-%d, %H:%M:%S"),
+                        "final_datetime" : dr[1].strftime("%Y-%m-%d, %H:%M:%S"),
                         "number_of_trips": number_of_trips,
                         "distance": distance,
                         "duration": duration,
@@ -1249,6 +1251,8 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime):
             summarization.append({
                 "unit_name" : unit.name,
                 "unit_description": unit.description,
+                "initial_datetime": dr[0].strftime("%Y-%m-%d, %H:%M:%S"),
+                "final_datetime" : dr[1].strftime("%Y-%m-%d, %H:%M:%S"),
                 "number_of_trips": number_of_trips,
                 "distance": distance,
                 "duration": duration,
