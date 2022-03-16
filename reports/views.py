@@ -931,6 +931,8 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
                 summarization.append({
                     "unit_name" : unit.name,
                     "unit_description": unit.description,
+                    "initial_datetime": initial_datetime,
+                    "final_datetime" : final_datetime,
                     "number_of_trips": number_of_trips,
                     "distance": distance,
                     "duration": duration,
@@ -1008,6 +1010,8 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
         summarization.append({
             "unit_name" : unit.name,
             "unit_description": unit.description,
+            "initial_datetime": initial_datetime,
+            "final_datetime" : final_datetime,
             "number_of_trips": number_of_trips,
             "distance": distance,
             "duration": duration,
