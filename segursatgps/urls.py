@@ -126,6 +126,6 @@ urlpatterns = [
     path('web/api/mails/delete-mail-list/<int:id>/', mails_views.delete_mail_list),
     path('web/api/triggers/get-fleet-triggers/', triggers_views.get_fleet_triggers),
     path('web/api/triggers/get-fleet-trigger/<int:id>/', triggers_views.get_fleet_trigger),
-    path('web/api/triggers/create-generic-fleet-triggers/', triggers_views.create_generic_fleet_trigger),
+    path('web/api/triggers/create-generic-fleet-trigger/', triggers_views.create_generic_fleet_trigger),
     path('web/api/triggers/delete-fleet-triggers/', triggers_views.delete_fleet_trigger),
 ]
