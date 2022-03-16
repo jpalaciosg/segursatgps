@@ -863,7 +863,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
             locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lt=final_timestamp
+                timestamp__lte=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -897,7 +897,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
                 duration += tr['duration']
                 qs = locations_qs.filter(
                     timestamp__gte=tr['initial_timestamp'],
-                    timestamp__lt=tr['final_timestamp']
+                    timestamp__lte=tr['final_timestamp']
                 )
                 locations = []
                 for item in qs:
@@ -940,7 +940,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
         locations_qs = Location.objects.filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
-            timestamp__lt=final_timestamp
+            timestamp__lte=final_timestamp
         ).order_by('timestamp').exclude(
             latitude=0.0,
             longitude=0.0
@@ -975,7 +975,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
             duration += tr['duration']
             qs = locations_qs.filter(
                 timestamp__gte=tr['initial_timestamp'],
-                timestamp__lt=tr['final_timestamp']
+                timestamp__lte=tr['final_timestamp']
             )
             locations = []
             for item in qs:
@@ -1001,18 +1001,17 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
             total_stop_duration += stop_duration
             tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
 
-        if len(unit_trip_report) != 0:
-            driving_duration = duration - total_stop_duration
-            summarization.append({
-                "unit_name" : unit.name,
-                "unit_description": unit.description,
-                "number_of_trips": number_of_trips,
-                "distance": distance,
-                "duration": duration,
-                "time": str(timedelta(seconds=duration)),
-                "driving_time": str(timedelta(seconds=driving_duration)),
-                "stopped_time": str(timedelta(seconds=total_stop_duration))
-            })
+        driving_duration = duration - total_stop_duration
+        summarization.append({
+            "unit_name" : unit.name,
+            "unit_description": unit.description,
+            "number_of_trips": number_of_trips,
+            "distance": distance,
+            "duration": duration,
+            "time": str(timedelta(seconds=duration)),
+            "driving_time": str(timedelta(seconds=driving_duration)),
+            "stopped_time": str(timedelta(seconds=total_stop_duration))
+        })
     
     # CALCULAR GEOCERCAS
     geofences = Geofence.objects.filter(account=request.user.profile.account)
