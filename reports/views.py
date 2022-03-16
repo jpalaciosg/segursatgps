@@ -1059,7 +1059,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime,geofence_o
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-def get_trip_report2(request,unit_name,initial_datetime,final_datetime):
+def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_option):
     unit = None
     if unit_name.upper() != 'ALL':
         try:
@@ -1074,6 +1074,9 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime):
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
         final_datetime_str = f"{final_datetime}:00"
         final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # validar geofence option
+        geofence_option = bool(geofence_option)
+        # --
     except Exception as e:
         error = {
             'error':str(e)
@@ -1268,6 +1271,41 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime):
                 "driving_time": str(timedelta(seconds=driving_duration)),
                 "stopped_time": str(timedelta(seconds=total_stop_duration))
             })
+
+    # CALCULAR GEOCERCAS
+    if geofence_option:
+        geofences = Geofence.objects.filter(account=request.user.profile.account)
+        for tr in trip_report:
+            matching_initial_geofences = []
+            matching_final_geofences = []
+            for geofence in geofences:
+                feature = json.loads(geofence.geojson)['features'][0]
+                s = shape(feature['geometry'])
+                point = Point(tr['initial_longitude'],tr['initial_latitude'])
+                if s.contains(point):
+                    matching_initial_geofences.append(geofence.name)
+                point = Point(tr['final_longitude'],tr['final_latitude'])
+                if s.contains(point):
+                    matching_final_geofences.append(geofence.name)
+            s_str = ""
+            for i in range(len(matching_initial_geofences)):
+                if i==0:
+                    s_str += matching_initial_geofences[i]
+                else:
+                    s_str += f', {matching_initial_geofences[i]}'
+            tr['initial_geofences'] = s_str
+            d_str = ""
+            for i in range(len(matching_final_geofences)):
+                if i==0:
+                    d_str += matching_final_geofences[i]
+                else:
+                    d_str += f', {matching_final_geofences[i]}'
+            tr['final_geofences'] = d_str
+    else:
+        for tr in trip_report:
+            tr['initial_geofences'] = 'N/D'
+            tr['final_geofences'] = 'N/D'
+    # FIN - CALCULAR GEOCERCAS
 
     data = {
         'trip_report': trip_report,
