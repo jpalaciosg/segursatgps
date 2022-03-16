@@ -937,8 +937,8 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
                     "distance": distance,
                     "duration": duration,
                     "time": str(timedelta(seconds=duration)),
-                    "driving_time": str(timedelta(seconds=driving_duration)),
-                    "stopped_time": str(timedelta(seconds=total_stop_duration))
+                    "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
+                    "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration))
                 })            
 
     else:
@@ -1006,19 +1006,20 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
             total_stop_duration += stop_duration
             tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
 
-        driving_duration = duration - total_stop_duration
-        summarization.append({
-            "unit_name" : unit.name,
-            "unit_description": unit.description,
-            "initial_datetime": initial_datetime,
-            "final_datetime" : final_datetime,
-            "number_of_trips": number_of_trips,
-            "distance": distance,
-            "duration": duration,
-            "time": str(timedelta(seconds=duration)),
-            "driving_time": str(timedelta(seconds=driving_duration)),
-            "stopped_time": str(timedelta(seconds=total_stop_duration))
-        })
+        if len(unit_trip_report) != 0:
+            driving_duration = duration - total_stop_duration
+            summarization.append({
+                "unit_name" : unit.name,
+                "unit_description": unit.description,
+                "initial_datetime": initial_datetime,
+                "final_datetime" : final_datetime,
+                "number_of_trips": number_of_trips,
+                "distance": distance,
+                "duration": duration,
+                "time": str(timedelta(seconds=duration)),
+                "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
+                "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration))
+            })
     
     # CALCULAR GEOCERCAS
     if geofence_option:
@@ -1098,7 +1099,6 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
             initial_datetime_obj = initial_datetime_obj.replace(hour=0,minute=0,second=0)
             final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
             datetime_ranges = []
-            total_distance = 0.0
             while initial_datetime_obj < final_datetime_obj:
                 datetime_ranges.append([
                     initial_datetime_obj,
@@ -1182,8 +1182,9 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                         "distance": distance,
                         "duration": duration,
                         "time": str(timedelta(seconds=duration)),
-                        "driving_time": str(timedelta(seconds=driving_duration)),
-                        "stopped_time": str(timedelta(seconds=total_stop_duration))
+                        "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
+                        "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration)),
+                        "stopped_time": str(timedelta(seconds=(86400-duration)))
                     })     
     else:
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -1272,8 +1273,9 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                 "distance": distance,
                 "duration": duration,
                 "time": str(timedelta(seconds=duration)),
-                "driving_time": str(timedelta(seconds=driving_duration)),
-                "stopped_time": str(timedelta(seconds=total_stop_duration))
+                "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
+                "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration)),
+                "stopped_time": str(timedelta(seconds=(86400-duration)))
             })
 
     # CALCULAR GEOCERCAS
