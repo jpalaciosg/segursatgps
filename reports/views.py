@@ -145,7 +145,7 @@ def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
     locations = Location.objects.filter(
         unitid=unit.id,
         timestamp__gte=initial_timestamp,
-        timestamp__lte=final_timestamp
+        timestamp__lt=final_timestamp
     ).order_by('timestamp').exclude(
         latitude=0.0,
         longitude=0.0
@@ -219,7 +219,7 @@ def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
     locations = Location.objects.filter(
         unitid=unit.id,
         timestamp__gte=initial_timestamp,
-        timestamp__lte=final_timestamp
+        timestamp__lt=final_timestamp
     ).order_by('timestamp').exclude(
         latitude=0.0,
         longitude=0.0
@@ -373,7 +373,7 @@ def detailed_report_view(request):
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -483,7 +483,7 @@ def detailed_mileage_report_view(request):
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -582,7 +582,7 @@ def detailed_report_with_attributes_view(request):
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -671,7 +671,7 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
     locations = Location.objects.using('history_db_replica').filter(
         unitid=unit.id,
         timestamp__gte=initial_timestamp,
-        timestamp__lte=final_timestamp
+        timestamp__lt=final_timestamp
     ).order_by('timestamp').exclude(
         latitude=0.0,
         longitude=0.0
@@ -784,7 +784,7 @@ def driving_style_report_view(request):
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -863,7 +863,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
             locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -897,7 +897,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
                 duration += tr['duration']
                 qs = locations_qs.filter(
                     timestamp__gte=tr['initial_timestamp'],
-                    timestamp__lte=tr['final_timestamp']
+                    timestamp__lt=tr['final_timestamp']
                 )
                 locations = []
                 for item in qs:
@@ -940,7 +940,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
         locations_qs = Location.objects.filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
-            timestamp__lte=final_timestamp
+            timestamp__lt=final_timestamp
         ).order_by('timestamp').exclude(
             latitude=0.0,
             longitude=0.0
@@ -975,7 +975,7 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime):
             duration += tr['duration']
             qs = locations_qs.filter(
                 timestamp__gte=tr['initial_timestamp'],
-                timestamp__lte=tr['final_timestamp']
+                timestamp__lt=tr['final_timestamp']
             )
             locations = []
             for item in qs:
@@ -1109,7 +1109,7 @@ def trip_report_view(request):
                     locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
                         timestamp__gte=initial_timestamp,
-                        timestamp__lte=final_timestamp
+                        timestamp__lt=final_timestamp
                     ).order_by('timestamp')
                     locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                     locations = []
@@ -1147,7 +1147,7 @@ def trip_report_view(request):
                         duration += tr['duration']
                         qs = locations_qs.filter(
                             timestamp__gte=tr['initial_timestamp'],
-                            timestamp__lte=tr['final_timestamp']
+                            timestamp__lt=tr['final_timestamp']
                         )
                         locations = []
                         for item in qs:
@@ -1190,7 +1190,7 @@ def trip_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('timestamp')
                 locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                 locations = []
@@ -1237,7 +1237,7 @@ def trip_report_view(request):
                     duration += tr['duration']
                     qs = locations_qs.filter(
                         timestamp__gte=tr['initial_timestamp'],
-                        timestamp__lte=tr['final_timestamp']
+                        timestamp__lt=tr['final_timestamp']
                     )
                     locations = []
                     for item in qs:
@@ -1382,7 +1382,7 @@ def group_trip_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('timestamp').exclude(latitude=0.0,longitude=0.0)
                 locations = []
                 for location_qs in locations_qs:
@@ -1414,7 +1414,7 @@ def group_trip_report_view(request):
                     duration += tr['duration']
                     qs = locations_qs.filter(
                         timestamp__gte=tr['initial_timestamp'],
-                        timestamp__lte=tr['final_timestamp']
+                        timestamp__lt=tr['final_timestamp']
                     )
                     locations = []
                     for item in qs:
@@ -1607,7 +1607,7 @@ def stop_report_view(request):
                     locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
                         timestamp__gte=initial_timestamp,
-                        timestamp__lte=final_timestamp
+                        timestamp__lt=final_timestamp
                     ).order_by('timestamp')
                     locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                     locations = []
@@ -1641,7 +1641,7 @@ def stop_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('id')
                 locations_qs = locations_qs.order_by('timestamp')
                 locations = []
@@ -1778,7 +1778,7 @@ def group_stop_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('timestamp').exclude(latitude=0.0,longitude=0.0)
                 locations = []
                 for location_qs in locations_qs:
@@ -1894,7 +1894,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
             locations_qs = Location.objects.filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -1932,7 +1932,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
         locations_qs = Location.objects.filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
-            timestamp__lte=final_timestamp
+            timestamp__lt=final_timestamp
         ).order_by('timestamp').exclude(
             latitude=0.0,
             longitude=0.0
@@ -2027,7 +2027,7 @@ def speed_report_view(request):
                     locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
                         timestamp__gte=initial_timestamp,
-                        timestamp__lte=final_timestamp
+                        timestamp__lt=final_timestamp
                     ).order_by('timestamp')
                     locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                     locations = []
@@ -2053,7 +2053,7 @@ def speed_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('id')
                 locations_qs = locations_qs.order_by('timestamp')
                 locations = []
@@ -2160,7 +2160,7 @@ def group_speed_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('id')
                 locations_qs = locations_qs.order_by('timestamp')
                 locations = []
@@ -2249,7 +2249,7 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=timestamp1,
-                    timestamp__lte=timestamp2
+                    timestamp__lt=timestamp2
                 ).order_by('timestamp')
                 locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                 locations = []
@@ -2303,7 +2303,7 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
             locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=timestamp1,
-                timestamp__lte=timestamp2
+                timestamp__lt=timestamp2
             ).order_by('timestamp')
             locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
             locations = []
@@ -2401,7 +2401,7 @@ def mileage_report_view(request):
                     locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
                         timestamp__gte=initial_timestamp,
-                        timestamp__lte=final_timestamp
+                        timestamp__lt=final_timestamp
                     ).order_by('timestamp')
                     locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                     locations = []
@@ -2431,7 +2431,7 @@ def mileage_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('timestamp')
                 locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                 locations = []
@@ -2539,7 +2539,7 @@ def group_mileage_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('id')
                 locations_qs = locations_qs.order_by('timestamp')
                 locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
@@ -2646,7 +2646,7 @@ def geofence_report_view(request):
                     locations_qs = Location.objects.using('history_db_replica').filter(
                         unitid=unit.id,
                         timestamp__gte=initial_timestamp,
-                        timestamp__lte=final_timestamp
+                        timestamp__lt=final_timestamp
                     ).order_by('timestamp')
                     locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                     locations = []
@@ -2677,7 +2677,7 @@ def geofence_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('id')
                 locations_qs = locations_qs.order_by('timestamp')
                 locations = []
@@ -2751,9 +2751,9 @@ def geofence_report_view(request):
         'geofences':geofences,
         'form':form,
     })
-
-@api_view(['GET'])
-def get_geofence_report(request,unit_name,initial_datetime,final_datetime):
+"""
+@api_view(['POST'])
+def get_geofence_report(request):
     initial_timestamp = None
     final_timestamp = None
     unit = None
@@ -2793,7 +2793,7 @@ def get_geofence_report(request,unit_name,initial_datetime,final_datetime):
             locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp')
             locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
             locations = []
@@ -2819,7 +2819,7 @@ def get_geofence_report(request,unit_name,initial_datetime,final_datetime):
         locations_qs = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
-            timestamp__lte=final_timestamp
+            timestamp__lt=final_timestamp
         ).order_by('id')
         locations_qs = locations_qs.order_by('timestamp')
         locations = []
@@ -2842,7 +2842,7 @@ def get_geofence_report(request,unit_name,initial_datetime,final_datetime):
             item['unit_name'] = unit.name
             item['unit_description'] = unit.description
             geofence_report.append(item)
-            
+"""         
 
 # GROUP GEOFENCE REPORT
 @login_required
@@ -2905,7 +2905,7 @@ def group_geofence_report_view(request):
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
                     timestamp__gte=initial_timestamp,
-                    timestamp__lte=final_timestamp
+                    timestamp__lt=final_timestamp
                 ).order_by('timestamp')
                 locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
                 locations = []
@@ -3012,7 +3012,7 @@ def telemetry_report_view(request):
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
+                timestamp__lt=final_timestamp
             ).order_by('timestamp').exclude(
                 latitude=0.0,
                 longitude=0.0
@@ -3151,7 +3151,7 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
     locations = Location.objects.using('history_db_replica').filter(
         unitid=unit.id,
         timestamp__gte=initial_timestamp,
-        timestamp__lte=final_timestamp
+        timestamp__lt=final_timestamp
     ).order_by('timestamp').exclude(
         latitude=0.0,
         longitude=0.0
