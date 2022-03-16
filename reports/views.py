@@ -1561,7 +1561,7 @@ def trip_report_view(request):
 
 # TRIP REPORT
 @login_required
-def trip_report_view2(request):
+def trip_report2_view(request):
     # verificar privilegios
     if privilege.view_trip_report(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
