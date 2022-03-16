@@ -848,6 +848,9 @@ def get_trip_report(request,unit_name,initial_datetime,final_datetime,geofence_o
         final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
         # --
         final_timestamp = datetime.timestamp(final_datetime_obj)
+        # validar geofence option
+        geofence_option = bool(geofence_option)
+        # --
     except Exception as e:
         error = {
             'error':str(e)
