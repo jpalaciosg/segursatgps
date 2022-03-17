@@ -1089,7 +1089,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
     # Aqui va la logica del resultado
-    final_trip_report = []
+    trip_report = []
     summarization = []
 
     if unit_name.upper() == 'ALL':
