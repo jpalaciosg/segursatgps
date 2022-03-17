@@ -1184,7 +1184,10 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                         "time": str(timedelta(seconds=duration)),
                         "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
                         "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration)),
-                        "stopped_time": str(timedelta(seconds=(86400-duration)))
+                        "stopped_time": str(timedelta(seconds=(86400-duration))),
+                        "percentage_driving_time_in_trip": str(driving_duration*100/86400)+' %',
+                        "percentage_stopped_time_in_trip": str(total_stop_duration*100/86400)+' %',
+                        "percentage_stopped_time": str((86400-duration)*100/86400)+' %',
                     })     
     else:
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
@@ -1275,7 +1278,10 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                 "time": str(timedelta(seconds=duration)),
                 "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
                 "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration)),
-                "stopped_time": str(timedelta(seconds=(86400-duration)))
+                "stopped_time": str(timedelta(seconds=(86400-duration))),
+                "percentage_driving_time_in_trip": str(driving_duration*100/86400)+' %',
+                "percentage_stopped_time_in_trip": str(total_stop_duration*100/86400)+' %',
+                "percentage_stopped_time": str((86400-duration)*100/86400)+' %',
             })
 
     # CALCULAR GEOCERCAS
