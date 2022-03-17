@@ -1129,10 +1129,6 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                     })
                 device_reader = DeviceReader(unit.uniqueid)
                 unit_trip_report = device_reader.generate_trip_report(locations)
-                for item in unit_trip_report:
-                    item['unit_name'] = unit.name
-                    item['unit_description'] = unit.description
-                    trip_report.append(item)
 
                 total_stop_duration = 0
                 number_of_trips = 0
@@ -1140,6 +1136,8 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                 duration = 0
 
                 for tr in unit_trip_report:
+                    tr['unit_name'] = unit.name
+                    tr['unit_description'] = unit.description
                     number_of_trips += 1
                     distance += tr['distance']
                     duration += tr['duration']
@@ -1224,10 +1222,6 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                 })
             device_reader = DeviceReader(unit.uniqueid)
             unit_trip_report = device_reader.generate_trip_report(locations)
-            for item in unit_trip_report:
-                item['unit_name'] = unit.name
-                item['unit_description'] = unit.description
-                trip_report.append(item)
            
             total_stop_duration = 0
             number_of_trips = 0
@@ -1235,6 +1229,8 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
             duration = 0
 
             for tr in unit_trip_report:
+                tr['unit_name'] = unit.name
+                tr['unit_description'] = unit.description
                 number_of_trips += 1
                 distance += tr['distance']
                 duration += tr['duration']
