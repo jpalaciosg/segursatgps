@@ -1089,7 +1089,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
     # Aqui va la logica del resultado
-    final_trip_report = []
+    trip_report = []
     summarization = []
 
     if unit_name.upper() == 'ALL':
@@ -1129,11 +1129,9 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                     })
                 device_reader = DeviceReader(unit.uniqueid)
                 unit_trip_report = device_reader.generate_trip_report(locations)
-                trip_report = []
                 for item in unit_trip_report:
                     item['unit_name'] = unit.name
                     item['unit_description'] = unit.description
-                    final_trip_report.append(item)
                     trip_report.append(item)
 
                 total_stop_duration = 0
@@ -1226,11 +1224,9 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                 })
             device_reader = DeviceReader(unit.uniqueid)
             unit_trip_report = device_reader.generate_trip_report(locations)
-            trip_report = []
             for item in unit_trip_report:
                 item['unit_name'] = unit.name
                 item['unit_description'] = unit.description
-                final_trip_report.append(item)
                 trip_report.append(item)
            
             total_stop_duration = 0
@@ -1238,7 +1234,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
             distance = 0.0
             duration = 0
 
-            for tr in trip_report:
+            for tr in unit_trip_report:
                 number_of_trips += 1
                 distance += tr['distance']
                 duration += tr['duration']
@@ -1324,7 +1320,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
     # FIN - CALCULAR GEOCERCAS
 
     data = {
-        'trip_report': final_trip_report,
+        'trip_report': trip_report,
         'summarization': summarization
     }
     return Response(data,status=status.HTTP_200_OK)
