@@ -277,8 +277,13 @@ class Teltonika:
                             ).km
                         distance += distance2
                 tr['distance'] = round(distance,2)
-        for i in range(len(travel_report)):
-            if travel_report[i]['duration'] < 5:
-                del travel_report[i]
+        
+        # Borrar viajes falsos
+        travel_report2 = []
+        for tr in travel_report:
+            if tr['duration'] > 5:
+                travel_report2.append(tr)
+        travel_report = travel_report2
+        # Fin - Borrar viajes falsos
 
         return travel_report
