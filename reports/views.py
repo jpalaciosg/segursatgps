@@ -1202,6 +1202,8 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
             initial_datetime_obj = initial_datetime_obj+timedelta(days=1)
         datetime_ranges[0][0] = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
         datetime_ranges[len(datetime_ranges)-1][1] = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        print('NALGAS DE KAROL')
+        print(datetime_ranges)
         for dr in datetime_ranges:
             timestamp1 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[0])))
             timestamp2 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[1])))
