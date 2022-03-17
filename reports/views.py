@@ -1168,6 +1168,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                     tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                     total_stop_duration += stop_duration
                     tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
+                    trip_report.append(tr)
                 
                 if len(unit_trip_report) != 0:
                     driving_duration = duration - total_stop_duration
@@ -1261,6 +1262,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                 tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                 total_stop_duration += stop_duration
                 tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
+                trip_report.append(tr)
 
             driving_duration = duration - total_stop_duration
             summarization.append({
