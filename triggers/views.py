@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from triggers.serializers import FleetTriggerSerializer
+from triggers.serializers import FleetTriggerSerializer,UpdateFleetTriggerSerializer
 
 from .models import FleetTrigger
 from mails.models import MailList
@@ -158,3 +158,28 @@ def delete_fleet_trigger(request,id):
         'description': 'Fleet trigger was deleted.',
     }
     return Response(response,status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+def update_generic_fleet_trigger(request,id):
+    data = request.data
+    try:
+        fleet_trigger = FleetTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UpdateFleetTriggerSerializer(data=data)
+    if serializer.is_valid():
+        fleet_trigger.name = data['name']
+        fleet_trigger.description = data['description']
+        fleet_trigger.alert_type = data['alert_type']
+        fleet_trigger.alert_priority = data['alert_priority']
+        fleet_trigger.is_active = data['is_active']
+        fleet_trigger.send_notification = data['send_notification']
+        fleet_trigger.send_mail_notification = data['send_mail_notification']
+        fleet_trigger.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
