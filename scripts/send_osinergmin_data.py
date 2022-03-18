@@ -30,7 +30,7 @@ def thread_function(json_payload,id):
     'Response:\n'+\
     response.text+'\n')
 
-locations = OsinergminLocation.objects.filter(it_was_sent=False).order_by('id')[:100]
+locations = OsinergminLocation.objects.using('history_db_replica').filter(it_was_sent=False).order_by('id')[:100]
 print(len(locations))
 
 for location in locations:
