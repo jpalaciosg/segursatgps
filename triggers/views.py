@@ -58,7 +58,7 @@ def get_fleet_triggers(request):
                     'name': mail_list.name
                 }
             except:
-                pass
+                print(e)
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
@@ -81,7 +81,7 @@ def get_fleet_trigger(request,id):
                 'name': mail_list.name
             }
         except:
-            pass
+            print(e)
         if trigger.alert_type == 1003:
             data['extension1003'] = {
                 'speed': trigger.extension1003.speed
