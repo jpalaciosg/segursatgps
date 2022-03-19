@@ -57,6 +57,7 @@ def get_fleet_triggers(request):
                     'id': mail_list.id,
                     'name': mail_list.name
                 }
+                data[0]['mail_list'] = mail_list
             except:
                 print(e)
         return Response(data,status=status.HTTP_200_OK)
@@ -80,6 +81,7 @@ def get_fleet_trigger(request,id):
                 'id': mail_list.id,
                 'name': mail_list.name
             }
+            data['mail_list'] = mail_list
         except:
             print(e)
         if trigger.alert_type == 1003:
