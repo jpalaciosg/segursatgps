@@ -129,4 +129,5 @@ urlpatterns = [
     path('web/api/triggers/create-generic-fleet-trigger/', triggers_views.create_generic_fleet_trigger),
     path('web/api/triggers/delete-fleet-trigger/<int:id>/', triggers_views.delete_fleet_trigger),
     path('web/api/triggers/update-generic-fleet-trigger/<int:id>/', triggers_views.update_generic_fleet_trigger),
+    path('web/api/triggers/create-1003-fleet-trigger/', triggers_views.create_1003_fleet_trigger),
 ]

@@ -18,11 +18,11 @@ ALERT_TYPE_CHOICES = [
 ]
 
 PRIORITY_CHOICES = [
-        ('L', 'LOW'),
-        ('M', 'MEDIUM'),
-        ('H', 'HIGH'),
-        ('V', 'VERY HIGH'),
-    ]
+    ('L', 'LOW'),
+    ('M', 'MEDIUM'),
+    ('H', 'HIGH'),
+    ('V', 'VERY HIGH'),
+]
 
 # Create your models here.
 class FleetTriggerExtension1003(models.Model):

@@ -7,9 +7,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-from triggers.serializers import FleetTriggerSerializer,UpdateFleetTriggerSerializer
+from triggers.serializers import FleetTriggerSerializer,UpdateFleetTriggerSerializer,FleetTrigger1003Serializer
 
-from .models import FleetTrigger
+from .models import FleetTrigger,FleetTriggerExtension1003
 from mails.models import MailList
 from geofences.models import Geofence
 
@@ -136,6 +136,34 @@ def create_generic_fleet_trigger(request):
     serializer = FleetTriggerSerializer(data=data)
     if serializer.is_valid():
         serializer.create(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_1003_fleet_trigger(request):
+    data = request.data
+    serializer = FleetTrigger1003Serializer(data=data)
+    if serializer.is_valid():
+        extension1003 = FleetTriggerExtension1003.objects.create(
+            speed = data['speed'],
+            account = request.user.profile.account,
+        )
+        FleetTrigger.objects.create(
+            name = data['name'],
+            description = data['description'],
+            alert_type = 1003,
+            alert_priority = data['alert_priority'],
+            is_active = data['is_active'],
+            send_notification = data['send_notification'],
+            send_mail_notification = data['send_mail_notification'],
+            extension1003 = extension1003,
+            account = request.user.profile.account
+        )
         response = {
             'status':'OK'
         }
