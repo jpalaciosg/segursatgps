@@ -230,7 +230,7 @@ def create_1004_fleet_trigger(request):
             is_active = data['is_active'],
             send_notification = data['send_notification'],
             send_mail_notification = data['send_mail_notification'],
-            extension1006 = extension1004,
+            extension1004 = extension1004,
             mail_list =  mail_list,
             account = request.user.profile.account
         )
@@ -284,7 +284,7 @@ def create_1005_fleet_trigger(request):
             is_active = data['is_active'],
             send_notification = data['send_notification'],
             send_mail_notification = data['send_mail_notification'],
-            extension1006 = extension1005,
+            extension1005 = extension1005,
             mail_list =  mail_list,
             account = request.user.profile.account
         )
