@@ -147,6 +147,17 @@ def create_1003_fleet_trigger(request):
     data = request.data
     serializer = FleetTrigger1003Serializer(data=data)
     if serializer.is_valid():
+        try:
+            check_fleet_trigger = FleetTrigger.objects.get(
+                name = data['name'],
+                account = request.user.profile.account,
+            )
+            error = {
+                'detail': 'Fleet trigger name must be unique.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
         extension1003 = FleetTriggerExtension1003.objects.create(
             speed = data['speed'],
             account = request.user.profile.account,
@@ -175,6 +186,17 @@ def create_1006_fleet_trigger(request):
     data = request.data
     serializer = FleetTrigger1006Serializer(data=data)
     if serializer.is_valid():
+        try:
+            check_fleet_trigger = FleetTrigger.objects.get(
+                name = data['name'],
+                account = request.user.profile.account,
+            )
+            error = {
+                'detail': 'Fleet trigger name must be unique.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
         extension1006 = FleetTriggerExtension1006.objects.create(
             speed = data['speed'],
             account = request.user.profile.account,
