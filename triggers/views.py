@@ -480,6 +480,10 @@ def delete_fleet_trigger(request,id):
     except Exception as e:
         print(e)
     try:
+        fleet_trigger.extension1006.delete()
+    except Exception as e:
+        print(e)
+    try:
         fleet_trigger.extension1007.delete()
     except Exception as e:
         print(e)
