@@ -29,7 +29,7 @@ class AlertMailQueue(models.Model):
     account_id = models.IntegerField()
     customer_description = models.TextField(blank=True)
     mails = models.TextField(blank=True)
-    it_was_sent = models.BooleanField(default=False)
+    it_was_sent = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
