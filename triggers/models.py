@@ -77,8 +77,6 @@ class FleetTrigger(models.Model):
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    class Meta:
-        unique_together = (('name','account'),)
     def __str__(self):
         return f"{self.account}_{self.name}"
 
