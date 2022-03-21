@@ -1,6 +1,7 @@
 from triggers.models import FleetTrigger
 from units.models import Device,LastAlert
 from alerts.models import Alert
+from mails.models import AlertMailQueue
 from geofences.models import Geofence
 from shapely.geometry import Point,shape
 
@@ -198,6 +199,21 @@ class AlertReader:
                                     }
                                 }
                             )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
+                            )
                 except Exception as e:
                     file = open("/tmp/panic_log.log",'a')
                     file.write(f"{str(e)}\n")
@@ -296,6 +312,21 @@ class AlertReader:
                                     }
                                 }
                             )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
+                            )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
                     file.write(f"{str(e)}\n")
@@ -352,7 +383,7 @@ class AlertReader:
                             alert_description = "ALERTA DE EXCESO DE VELOCIDAD",
                             alert_priority = trigger.alert_priority,
                             reference = unit.name,
-                            accountid = unit.account.id
+                            accountid = unit.account.id,
                         )
                         dt = datetime.fromtimestamp(alert.timestamp)
                         dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
@@ -396,6 +427,21 @@ class AlertReader:
                                         }
                                     }
                                 }
+                            )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
                             )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
@@ -497,6 +543,21 @@ class AlertReader:
                                     }
                                 }
                             )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
+                            )
                 except Exception as e:
                     print(e)
             # FIN ALERTA DE INGRESO A GEOCERCA
@@ -594,6 +655,21 @@ class AlertReader:
                                         }
                                     }
                                 }
+                            )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
                             )
                 except Exception as e:
                     print(e)
@@ -698,6 +774,21 @@ class AlertReader:
                                                 }
                                             }
                                         }
+                                    )
+                                if trigger.send_mail_notification and trigger.mail_list:
+                                    AlertMailQueue.objects.create(
+                                        alert_description = alert.alert_description,
+                                        alert_timestamp = alert.timestamp,
+                                        alert_latitude = alert.latitude,
+                                        alert_longitude = alert.longitude,
+                                        alert_speed = alert.speed,
+                                        alert_angle = alert.angle,
+                                        alert_address = alert.address,
+                                        unit_name = unit.name,
+                                        unit_description = unit.description,
+                                        account_id = unit.account.id,
+                                        customer_description = unit.account.description,
+                                        mails = trigger.mail_list.mails,
                                     )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
@@ -812,6 +903,21 @@ class AlertReader:
                                                 }
                                             }
                                         )
+                                    if trigger.send_mail_notification and trigger.mail_list:
+                                        AlertMailQueue.objects.create(
+                                            alert_description = alert.alert_description,
+                                            alert_timestamp = alert.timestamp,
+                                            alert_latitude = alert.latitude,
+                                            alert_longitude = alert.longitude,
+                                            alert_speed = alert.speed,
+                                            alert_angle = alert.angle,
+                                            alert_address = alert.address,
+                                            unit_name = unit.name,
+                                            unit_description = unit.description,
+                                            account_id = unit.account.id,
+                                            customer_description = unit.account.description,
+                                            mails = trigger.mail_list.mails,
+                                        )
                                 # FIN INSERTAR ALERTA EN EL HISTORIAL
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
@@ -912,6 +1018,21 @@ class AlertReader:
                                     }
                                 }
                             )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
+                            )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
                     file.write(f"{str(e)}\n")
@@ -1011,6 +1132,21 @@ class AlertReader:
                                     }
                                 }
                             )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
+                            )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
                     file.write(f"{str(e)}\n")
@@ -1109,6 +1245,21 @@ class AlertReader:
                                         }
                                     }
                                 }
+                            )
+                        if trigger.send_mail_notification and trigger.mail_list:
+                            AlertMailQueue.objects.create(
+                                alert_description = alert.alert_description,
+                                alert_timestamp = alert.timestamp,
+                                alert_latitude = alert.latitude,
+                                alert_longitude = alert.longitude,
+                                alert_speed = alert.speed,
+                                alert_angle = alert.angle,
+                                alert_address = alert.address,
+                                unit_name = unit.name,
+                                unit_description = unit.description,
+                                account_id = unit.account.id,
+                                customer_description = unit.account.description,
+                                mails = trigger.mail_list.mails,
                             )
                 except Exception as e:
                     file = open("/tmp/alert_log.log",'a')
