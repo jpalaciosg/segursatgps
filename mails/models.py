@@ -16,7 +16,6 @@ class MailList(models.Model):
         return f"{self.account}_{self.name}"
 
 class AlertMailQueue(models.Model):
-    alert_name = models.CharField(max_length=50)
     alert_description = models.TextField(blank=True)
     alert_timestamp = models.IntegerField()
     alert_latitude = models.FloatField
