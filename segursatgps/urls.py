@@ -135,4 +135,5 @@ urlpatterns = [
     path('web/api/triggers/create-1006-fleet-trigger/', triggers_views.create_1006_fleet_trigger),
     path('web/api/triggers/create-1007-fleet-trigger/', triggers_views.create_1007_fleet_trigger),
     path('web/api/triggers/create-1008-fleet-trigger/', triggers_views.create_1008_fleet_trigger),
+    path('web/api/triggers/update-1003-fleet-trigger/', triggers_views.update_1003_fleet_trigger),
 ]
