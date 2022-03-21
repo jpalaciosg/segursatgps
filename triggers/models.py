@@ -69,6 +69,8 @@ class FleetTrigger(models.Model):
     send_mail_notification = models.BooleanField(default=True)
     mail_list = models.ForeignKey(MailList,null=True,blank=True,on_delete=models.SET_NULL)
     extension1003 = models.OneToOneField(FleetTriggerExtension1003,null=True,blank=True,on_delete=models.CASCADE)
+    extension1004 = models.OneToOneField(FleetTriggerExtension1004,null=True,blank=True,on_delete=models.CASCADE)
+    extension1005 = models.OneToOneField(FleetTriggerExtension1005,null=True,blank=True,on_delete=models.CASCADE)
     extension1006 = models.OneToOneField(FleetTriggerExtension1006,null=True,blank=True,on_delete=models.CASCADE)
     extension1007 = models.OneToOneField(FleetTriggerExtension1007,null=True,blank=True,on_delete=models.CASCADE)
     extension1008 = models.OneToOneField(FleetTriggerExtension1008,null=True,blank=True,on_delete=models.CASCADE)
