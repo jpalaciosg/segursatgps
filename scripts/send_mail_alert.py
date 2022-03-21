@@ -84,38 +84,3 @@ for item in queue:
 
     x = threading.Thread(target=thread_function, args=(item,))
     x.start()
-
-    """
-    msg_content = f'''
-    Estimados señores:
-
-    Se notifica {item.alert_description}.
-
-    - Unidad: {item.unit_name}/{item.unit_description}
-    - Fecha y Hora: {item.alert_timestamp}
-    - Coordenadas: {item.alert_latitude}/{item.alert_longitude}
-    - Velocidad: {item.alert_speed}
-    - Direccion: {item.alert_address}
-    - Enlace a Google: http://maps.google.com/maps?q={item.alert_latitude},{item.alert_longitude}
-
-    Favor validar esta informacion con el conductor a la brevedad.
-
-    Atentamente,
-    Central Segursat
-    '''
-    msg = MIMEText(msg_content)
-    subject = f'NOTIFICACION DE {item.alert_description}'
-    msg['Subject'] = subject
-    sender = 'alertas@segursat.com'
-    msg['From'] = email.utils.formataddr(('Central de Alertas',sender))
-    recipients = [
-        "jpalacios@segursat.com",
-        "edaga@segursat.com",
-    ]
-    msg['To'] = ", ".join(recipients)
-    s = smtplib.SMTP("mail.segursat.com:587")
-    s.starttls()
-    s.login('alertas@segursat.com','Alertas2020')
-    s.sendmail(sender, recipients, msg.as_string())
-    s.quit
-    """
