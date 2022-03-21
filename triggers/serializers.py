@@ -57,4 +57,4 @@ class UpdateFleetTriggerSerializer(serializers.Serializer):
     is_active = serializers.BooleanField()
     send_notification = serializers.BooleanField()
     send_mail_notification = serializers.BooleanField()
-    #mail_list = serializers.IntegerField()
+    mail_list = serializers.IntegerField(required=False)

@@ -281,6 +281,15 @@ def update_generic_fleet_trigger(request,id):
         fleet_trigger.is_active = data['is_active']
         fleet_trigger.send_notification = data['send_notification']
         fleet_trigger.send_mail_notification = data['send_mail_notification']
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(
+                    id = data['mail_list'],
+                    account = request.user.profile.account,
+                )
+                fleet_trigger.mail_list = mail_list
+            except Exception as e:
+                print(e)
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
