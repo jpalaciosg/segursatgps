@@ -36,6 +36,18 @@ class FleetTrigger1003Serializer(serializers.Serializer):
     mail_list = serializers.IntegerField(required=False)
     speed = serializers.IntegerField()
 
+class FleetTrigger1004and1005Serializer(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    description = serializers.CharField(max_length=100)
+    alert_priority = serializers.ChoiceField(choices = PRIORITY_CHOICES)
+    is_active = serializers.BooleanField()
+    send_notification = serializers.BooleanField()
+    send_mail_notification = serializers.BooleanField()
+    mail_list = serializers.IntegerField(required=False)
+    geofences = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+
 class FleetTrigger1006Serializer(serializers.Serializer):
     name = serializers.CharField(max_length=50)
     description = serializers.CharField(max_length=100)

@@ -162,6 +162,12 @@ def create_1003_fleet_trigger(request):
             speed = data['speed'],
             account = request.user.profile.account,
         )
+        mail_list = None
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(id=data['mail_list'])
+            except Exception as e:
+                print(e)
         FleetTrigger.objects.create(
             name = data['name'],
             description = data['description'],
@@ -171,6 +177,115 @@ def create_1003_fleet_trigger(request):
             send_notification = data['send_notification'],
             send_mail_notification = data['send_mail_notification'],
             extension1003 = extension1003,
+            mail_list =  mail_list,
+            account = request.user.profile.account
+        )
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_1004_fleet_trigger(request):
+    data = request.data
+    serializer = FleetTrigger1004and1005Serializer(data=data)
+    if serializer.is_valid():
+        try:
+            check_fleet_trigger = FleetTrigger.objects.get(
+                name = data['name'],
+                account = request.user.profile.account,
+            )
+            error = {
+                'detail': 'Fleet trigger name must be unique.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
+        extension1004 = FleetTriggerExtension1004.objects.create(
+            account = request.user.profile.account,
+        )
+        for item in data['geofences']:
+            try:
+                geofence = Geofence.objects.get(
+                    id = item,
+                    account = request.user.profile.account,
+                )
+                extension1004.geofences.add(geofence)
+            except Exception as e:
+                print(e)
+        mail_list = None
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(id=data['mail_list'])
+            except Exception as e:
+                print(e)
+        FleetTrigger.objects.create(
+            name = data['name'],
+            description = data['description'],
+            alert_type = 1004,
+            alert_priority = data['alert_priority'],
+            is_active = data['is_active'],
+            send_notification = data['send_notification'],
+            send_mail_notification = data['send_mail_notification'],
+            extension1006 = extension1004,
+            mail_list =  mail_list,
+            account = request.user.profile.account
+        )
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_1005_fleet_trigger(request):
+    data = request.data
+    serializer = FleetTrigger1004and1005Serializer(data=data)
+    if serializer.is_valid():
+        try:
+            check_fleet_trigger = FleetTrigger.objects.get(
+                name = data['name'],
+                account = request.user.profile.account,
+            )
+            error = {
+                'detail': 'Fleet trigger name must be unique.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
+        extension1005 = FleetTriggerExtension1005.objects.create(
+            account = request.user.profile.account,
+        )
+        for item in data['geofences']:
+            try:
+                geofence = Geofence.objects.get(
+                    id = item,
+                    account = request.user.profile.account,
+                )
+                extension1005.geofences.add(geofence)
+            except Exception as e:
+                print(e)
+        mail_list = None
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(id=data['mail_list'])
+            except Exception as e:
+                print(e)
+        FleetTrigger.objects.create(
+            name = data['name'],
+            description = data['description'],
+            alert_type = 1005,
+            alert_priority = data['alert_priority'],
+            is_active = data['is_active'],
+            send_notification = data['send_notification'],
+            send_mail_notification = data['send_mail_notification'],
+            extension1006 = extension1005,
+            mail_list =  mail_list,
             account = request.user.profile.account
         )
         response = {
@@ -210,6 +325,12 @@ def create_1006_fleet_trigger(request):
                 extension1006.geofences.add(geofence)
             except Exception as e:
                 print(e)
+        mail_list = None
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(id=data['mail_list'])
+            except Exception as e:
+                print(e)
         FleetTrigger.objects.create(
             name = data['name'],
             description = data['description'],
@@ -219,6 +340,7 @@ def create_1006_fleet_trigger(request):
             send_notification = data['send_notification'],
             send_mail_notification = data['send_mail_notification'],
             extension1006 = extension1006,
+            mail_list =  mail_list,
             account = request.user.profile.account
         )
         response = {
