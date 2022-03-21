@@ -394,7 +394,7 @@ def create_1007_fleet_trigger(request):
             is_active = data['is_active'],
             send_notification = data['send_notification'],
             send_mail_notification = data['send_mail_notification'],
-            extension1006 = extension1007,
+            extension1007 = extension1007,
             mail_list =  mail_list,
             account = request.user.profile.account
         )
@@ -432,7 +432,7 @@ def create_1008_fleet_trigger(request):
                     id = item,
                     account = request.user.profile.account,
                 )
-                extension1007.geofences.add(geofence)
+                extension1008.geofences.add(geofence)
             except Exception as e:
                 print(e)
         mail_list = None
@@ -449,7 +449,7 @@ def create_1008_fleet_trigger(request):
             is_active = data['is_active'],
             send_notification = data['send_notification'],
             send_mail_notification = data['send_mail_notification'],
-            extension1006 = extension1008,
+            extension1008 = extension1008,
             mail_list =  mail_list,
             account = request.user.profile.account
         )
