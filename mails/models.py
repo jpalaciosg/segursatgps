@@ -18,8 +18,8 @@ class MailList(models.Model):
 class AlertMailQueue(models.Model):
     alert_description = models.TextField(blank=True)
     alert_timestamp = models.IntegerField()
-    alert_latitude = models.FloatField
-    alert_longitude = models.FloatField
+    alert_latitude = models.FloatField()
+    alert_longitude = models.FloatField()
     alert_speed = models.IntegerField()
     alert_angle = models.IntegerField()
     alert_address = models.TextField(blank=True)
