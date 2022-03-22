@@ -520,8 +520,7 @@ def update_1004_fleet_trigger(request,id):
         fleet_trigger.is_active = data['is_active']
         fleet_trigger.send_notification = data['send_notification']
         fleet_trigger.send_mail_notification = data['send_mail_notification']
-        for geofence in fleet_trigger.extension1004.geofences:
-            fleet_trigger.extension1004.geofences(geofence)
+        fleet_trigger.extension1004.geofences.clear()
         for item in data['geofences']:
             try:
                 geofence = Geofence.objects.get(
