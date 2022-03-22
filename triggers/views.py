@@ -480,7 +480,7 @@ def update_1003_fleet_trigger(request,id):
     if serializer.is_valid():
         fleet_trigger.name = data['name']
         fleet_trigger.description = data['description']
-        fleet_trigger.alert_type = data['alert_type']
+        fleet_trigger.alert_type = 1003
         fleet_trigger.alert_priority = data['alert_priority']
         fleet_trigger.is_active = data['is_active']
         fleet_trigger.send_notification = data['send_notification']
@@ -515,7 +515,7 @@ def update_1004_fleet_trigger(request,id):
     if serializer.is_valid():
         fleet_trigger.name = data['name']
         fleet_trigger.description = data['description']
-        fleet_trigger.alert_type = data['alert_type']
+        fleet_trigger.alert_type = 1004
         fleet_trigger.alert_priority = data['alert_priority']
         fleet_trigger.is_active = data['is_active']
         fleet_trigger.send_notification = data['send_notification']
@@ -559,7 +559,7 @@ def update_1005_fleet_trigger(request,id):
     if serializer.is_valid():
         fleet_trigger.name = data['name']
         fleet_trigger.description = data['description']
-        fleet_trigger.alert_type = data['alert_type']
+        fleet_trigger.alert_type = 1005
         fleet_trigger.alert_priority = data['alert_priority']
         fleet_trigger.is_active = data['is_active']
         fleet_trigger.send_notification = data['send_notification']
@@ -603,7 +603,7 @@ def update_1006_fleet_trigger(request,id):
     if serializer.is_valid():
         fleet_trigger.name = data['name']
         fleet_trigger.description = data['description']
-        fleet_trigger.alert_type = data['alert_type']
+        fleet_trigger.alert_type = 1006
         fleet_trigger.alert_priority = data['alert_priority']
         fleet_trigger.is_active = data['is_active']
         fleet_trigger.send_notification = data['send_notification']
@@ -617,6 +617,96 @@ def update_1006_fleet_trigger(request,id):
                     account = request.user.profile.account,
                 )
                 fleet_trigger.extension1005.geofences.add(geofence)
+            except Exception as e:
+                print(e)
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(
+                    id = data['mail_list'],
+                    account = request.user.profile.account,
+                )
+                fleet_trigger.mail_list = mail_list
+            except Exception as e:
+                print(e)
+        fleet_trigger.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_1007_fleet_trigger(request,id):
+    data = request.data
+    try:
+        fleet_trigger = FleetTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = FleetTrigger1007and1008Serializer(data=data)
+    if serializer.is_valid():
+        fleet_trigger.name = data['name']
+        fleet_trigger.description = data['description']
+        fleet_trigger.alert_type = 1007
+        fleet_trigger.alert_priority = data['alert_priority']
+        fleet_trigger.is_active = data['is_active']
+        fleet_trigger.send_notification = data['send_notification']
+        fleet_trigger.send_mail_notification = data['send_mail_notification']
+        fleet_trigger.extension1007.seconds = data['seconds']
+        fleet_trigger.extension1007.geofences.clear()
+        for item in data['geofences']:
+            try:
+                geofence = Geofence.objects.get(
+                    id = item,
+                    account = request.user.profile.account,
+                )
+                fleet_trigger.extension1007.geofences.add(geofence)
+            except Exception as e:
+                print(e)
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(
+                    id = data['mail_list'],
+                    account = request.user.profile.account,
+                )
+                fleet_trigger.mail_list = mail_list
+            except Exception as e:
+                print(e)
+        fleet_trigger.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_1008_fleet_trigger(request,id):
+    data = request.data
+    try:
+        fleet_trigger = FleetTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = FleetTrigger1007and1008Serializer(data=data)
+    if serializer.is_valid():
+        fleet_trigger.name = data['name']
+        fleet_trigger.description = data['description']
+        fleet_trigger.alert_type = 1008
+        fleet_trigger.alert_priority = data['alert_priority']
+        fleet_trigger.is_active = data['is_active']
+        fleet_trigger.send_notification = data['send_notification']
+        fleet_trigger.send_mail_notification = data['send_mail_notification']
+        fleet_trigger.extension1008.seconds = data['seconds']
+        fleet_trigger.extension1008.geofences.clear()
+        for item in data['geofences']:
+            try:
+                geofence = Geofence.objects.get(
+                    id = item,
+                    account = request.user.profile.account,
+                )
+                fleet_trigger.extension1008.geofences.add(geofence)
             except Exception as e:
                 print(e)
         if 'mail_list' in data:
