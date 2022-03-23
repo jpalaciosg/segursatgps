@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Location
+from .models import Location,SutranLocation
 
 class InsertLocationSerializer(serializers.Serializer):
     deviceid = serializers.CharField(max_length=20)
@@ -28,9 +28,7 @@ class InsertLocationSerializer2(serializers.Serializer):
     protocol = serializers.CharField()
     address = serializers.CharField(max_length=500,allow_blank=True)
 
-class InsertSutranLocationSerializer(serializers.Serializer):
-    unit_name = serializers.CharField(max_length=20)
-    latitude = serializers.FloatField()
-    longitude = serializers.FloatField()
-    speed = serializers.IntegerField()
-    angle = serializers.IntegerField()
+class SutranLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SutranLocation
+        fields = ('__all__')

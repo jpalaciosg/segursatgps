@@ -90,3 +90,11 @@ class OsinergminLocation(models.Model):
     class Meta:
         # app_label helps django to recognize your db
         app_label = 'locations'
+
+class SutranPointsOfInterest(models.Model):
+    name = models.CharField(max_length=50,unique=True)
+    description = models.CharField(max_length=100,blank=True)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)

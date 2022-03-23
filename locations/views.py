@@ -18,7 +18,7 @@ from asgiref.sync import async_to_sync
 
 from .models import Location,SutranLocation,PanderoLocation
 from units.models import Device
-from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2
+from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2,SutranLocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
@@ -290,6 +290,15 @@ def insert_history_location_batch(request):
 @api_view(['POST'])
 def insert_sutran_location(request):
     data = request.data
-    serializer = InsertLocationSerializer(data=data)
+    serializer = SutranLocationSerializer(data=data)
     if serializer.is_valid():
-        pass
+        serializer.create()
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)

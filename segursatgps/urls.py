@@ -91,6 +91,7 @@ urlpatterns = [
     path('web/api/alerts/get-alert-history/<str:initial_datetime>/<str:final_datetime>/<str:unit_name>/<int:alert_type>/', alerts_views.get_alert_history),
     path('web/api/locations/insert-location-batch/', locations_views.insert_location_batch),
     path('web/api/locations/insert-history-location-batch/', locations_views.insert_history_location_batch),
+    path('web/api/locations/insert-sutran-location/', locations_views.insert_sutran_location),
     path('web/api/locations/get-location-history/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_location_history),
     path('web/api/locations/get-pandero-location-history/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_pandero_location_history),
     path('web/api/reports/get-detailed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_detailed_report),
