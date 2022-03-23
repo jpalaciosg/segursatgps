@@ -292,7 +292,7 @@ def insert_sutran_location(request):
     data = request.data
     serializer = SutranLocationSerializer(data=data)
     if serializer.is_valid():
-        serializer.create()
+        serializer.create(data)
         response = {
             'status':'OK'
         }
