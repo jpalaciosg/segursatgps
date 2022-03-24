@@ -3071,6 +3071,7 @@ def get_geofence_report(request):
                 'detail': 'Report time range exceeded.'
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        
         geofence_report = []
         if unit.upper() == 'ALL':
             units = privilege.get_units(request.user.profile)
@@ -3138,6 +3139,13 @@ def get_geofence_report(request):
                 item['unit_description'] = unit.description
                 geofence_report.append(item)
 
+        return Response(geofence_report,status=status.HTTP_200_OK)
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        
 # GROUP GEOFENCE REPORT
 @login_required
 def group_geofence_report_view(request):
