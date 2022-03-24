@@ -3099,7 +3099,7 @@ def get_geofence_report(request):
                         geofence = Geofence.objects.get(id=gqs)
                         geofences_qs.append(geofence)
                     except:
-                    pass
+                        pass
                 unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
                 for item in unit_geofence_report:
                     item['unit_name'] = unit.name
