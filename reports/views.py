@@ -3073,7 +3073,7 @@ def get_geofence_report(request):
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
         geofence_report = []
-        if unit.upper() == 'ALL':
+        if data['unit_name'].upper() == 'ALL':
             units = privilege.get_units(request.user.profile)
             for unit in units:
                 locations_qs = Location.objects.using('history_db_replica').filter(
@@ -3097,7 +3097,7 @@ def get_geofence_report(request):
                 geofences_qs = []
                 for gqs in data['geofences']:
                     try:
-                        geofence = Geofence.objects.get(id=gqs)
+                        geofence = Geofence.objects.get(id=gqs,account=request.user.profile.account)
                         geofences_qs.append(geofence)
                     except:
                         pass
@@ -3128,7 +3128,7 @@ def get_geofence_report(request):
             geofences_qs = []
             for gqs in data['geofences']:
                 try:
-                    geofence = Geofence.objects.get(id=gqs)
+                    geofence = Geofence.objects.get(id=gqs,account=request.user.profile.account)
                     geofences_qs.append(geofence)
                 except:
                     pass
@@ -3145,7 +3145,7 @@ def get_geofence_report(request):
             'errors':serializer.errors
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        
+
 # GROUP GEOFENCE REPORT
 @login_required
 def group_geofence_report_view(request):
