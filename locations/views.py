@@ -12,13 +12,13 @@ import channels.layers
 import requests
 import redis
 from time import sleep
-from datetime import datetime
+from datetime import datetime,timedelta
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
 
 from .models import Location,SutranLocation,PanderoLocation
 from units.models import Device
-from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2,SutranLocationSerializer
+from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2,InsertSutranLocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
@@ -291,9 +291,19 @@ def insert_history_location_batch(request):
 @api_view(['POST'])
 def insert_sutran_location(request):
     data = request.data
-    serializer = SutranLocationSerializer(data=data)
+    serializer = InsertSutranLocationSerializer(data=data)
     if serializer.is_valid():
-        serializer.create(data)
+        server_datetime = datetime.utcnow() - timedelta(hours=5)
+        device_datetime = server_datetime + timedelta(seconds=30)
+        SutranLocation.objects.create(
+            unit_name = data['unit_name'],
+            latitude = data['latitude'],
+            longitude = data['longitude'],
+            speed = data['speed'],
+            angle = data['angle'],
+            server_datetime = server_datetime,
+            device_datetime = device_datetime,
+        )
         response = {
             'status':'OK'
         }
