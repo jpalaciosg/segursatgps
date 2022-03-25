@@ -96,7 +96,8 @@ def insert_location_batch(request):
                 unit.previous_location = json.dumps(previous_location)
                 # FIN CALCULAR UBICACION PREVIA
                 unit.last_address = data['address']
-                unit.save()
+                if data['timestamp'] > previous_location['timestamp']:
+                    unit.save()
                 # INSERTAR UBICACION EN EL HISTORICO
                 data['unit_id'] = unit.id
                 data['unit_name'] = unit.name
@@ -118,36 +119,36 @@ def insert_location_batch(request):
                 # FIN - ALERTAS CENTRAL
 
                 # ACTUALIZAR UNIDADES EN EL MAPA
-                account = unit.account.name
-                last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data['timestamp']))
-                last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
-                channel_layer = channels.layers.get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    f'chat_{account}',
-                    {
-                        'type': 'send_message',
-                        'message': {
-                            'type':'update_location',
-                            'payload': {
-                                'unitid': unit.id,
-                                'unit_name': unit.name,
-                                'unit_description': unit.description,
-                                'timestamp': data['timestamp'],
-                                'latitude': data['latitude'],
-                                'longitude': data['longitude'],
-                                'altitude': data['altitude'],
-                                'angle': data['angle'],
-                                'speed': data['speed'],
-                                'attributes': data['attributes'],
-                                'address': data['address'],
-                                'odometer': round(unit.odometer,2),
-                                'last_report': last_report
+                if data['timestamp'] > previous_location['timestamp']:
+                    account = unit.account.name
+                    last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data['timestamp']))
+                    last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+                    channel_layer = channels.layers.get_channel_layer()
+                    async_to_sync(channel_layer.group_send)(
+                        f'chat_{account}',
+                        {
+                            'type': 'send_message',
+                            'message': {
+                                'type':'update_location',
+                                'payload': {
+                                    'unitid': unit.id,
+                                    'unit_name': unit.name,
+                                    'unit_description': unit.description,
+                                    'timestamp': data['timestamp'],
+                                    'latitude': data['latitude'],
+                                    'longitude': data['longitude'],
+                                    'altitude': data['altitude'],
+                                    'angle': data['angle'],
+                                    'speed': data['speed'],
+                                    'attributes': data['attributes'],
+                                    'address': data['address'],
+                                    'odometer': round(unit.odometer,2),
+                                    'last_report': last_report
+                                }
                             }
                         }
-                    }
-                )
+                    )
                 # FIN - ACTUALIZAR UNIDADES EN EL MAPA
-                #sleep(0.001)
         else:
             errors = {
                 'errors':serializer.errors
