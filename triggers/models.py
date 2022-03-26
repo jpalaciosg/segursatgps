@@ -25,29 +25,29 @@ PRIORITY_CHOICES = [
 ]
 
 # Create your models here.
-class FleetTriggerExtension1003(models.Model):
+class Extension1003(models.Model):
     speed = models.IntegerField()
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
-class FleetTriggerExtension1004(models.Model):
+class Extension1004(models.Model):
     geofences = models.ManyToManyField(Geofence)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
-class FleetTriggerExtension1005(models.Model):
+class Extension1005(models.Model):
     geofences = models.ManyToManyField(Geofence)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
-class FleetTriggerExtension1006(models.Model):
+class Extension1006(models.Model):
     speed = models.IntegerField()
     geofences = models.ManyToManyField(Geofence)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
-class FleetTriggerExtension1007(models.Model):
+class Extension1007(models.Model):
     seconds = models.IntegerField()
     geofences = models.ManyToManyField(Geofence)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
-class FleetTriggerExtension1008(models.Model):
+class Extension1008(models.Model):
     seconds = models.IntegerField()
     geofences = models.ManyToManyField(Geofence)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
@@ -68,12 +68,12 @@ class FleetTrigger(models.Model):
     send_notification = models.BooleanField(default=True)
     send_mail_notification = models.BooleanField(default=True)
     mail_list = models.ForeignKey(MailList,null=True,blank=True,on_delete=models.SET_NULL)
-    extension1003 = models.OneToOneField(FleetTriggerExtension1003,null=True,blank=True,on_delete=models.CASCADE)
-    extension1004 = models.OneToOneField(FleetTriggerExtension1004,null=True,blank=True,on_delete=models.CASCADE)
-    extension1005 = models.OneToOneField(FleetTriggerExtension1005,null=True,blank=True,on_delete=models.CASCADE)
-    extension1006 = models.OneToOneField(FleetTriggerExtension1006,null=True,blank=True,on_delete=models.CASCADE)
-    extension1007 = models.OneToOneField(FleetTriggerExtension1007,null=True,blank=True,on_delete=models.CASCADE)
-    extension1008 = models.OneToOneField(FleetTriggerExtension1008,null=True,blank=True,on_delete=models.CASCADE)
+    extension1003 = models.OneToOneField(Extension1003,null=True,blank=True,on_delete=models.CASCADE)
+    extension1004 = models.OneToOneField(Extension1004,null=True,blank=True,on_delete=models.CASCADE)
+    extension1005 = models.OneToOneField(Extension1005,null=True,blank=True,on_delete=models.CASCADE)
+    extension1006 = models.OneToOneField(Extension1006,null=True,blank=True,on_delete=models.CASCADE)
+    extension1007 = models.OneToOneField(Extension1007,null=True,blank=True,on_delete=models.CASCADE)
+    extension1008 = models.OneToOneField(Extension1008,null=True,blank=True,on_delete=models.CASCADE)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
