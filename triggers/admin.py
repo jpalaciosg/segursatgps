@@ -1,14 +1,13 @@
 from django.contrib import admin
-from .models import FleetTrigger,UnitTrigger,Extension1003,Extension1004,Extension1005,Extension1006,Extension1007,Extension1008
+from .models import *
 
 # Register your models here.
 admin.site.register([
   FleetTrigger,
-  UnitTrigger,
-  Extension1003,
-  Extension1004,
-  Extension1005,
-  Extension1006,
-  Extension1007,
-  Extension1008,
+  FleetTriggerExtension1003,
+  FleetTriggerExtension1004,
+  FleetTriggerExtension1005,
+  FleetTriggerExtension1006,
+  FleetTriggerExtension1007,
+  FleetTriggerExtension1008,
 ])
