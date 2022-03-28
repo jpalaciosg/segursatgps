@@ -21,7 +21,7 @@ privilege = Privilege()
 @login_required
 def fleet_trigger_view(request):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_triggers(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     triggers = FleetTrigger.objects.filter(account=request.user.profile.account)
@@ -34,6 +34,27 @@ def fleet_trigger_view(request):
         except Exception as e:
             print(e)
     return render(request,'triggers/fleet-trigger.html',{
+        'triggers':triggers,
+        'mail_lists':mail_lists,
+        'geofences': geofences,
+    })
+
+@login_required
+def unit_trigger_view(request):
+    # verificar privilegios
+    if privilege.view_triggers(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    triggers = UnitTrigger.objects.filter(account=request.user.profile.account)
+    mail_lists = MailList.objects.filter(account=request.user.profile.account)
+    geofences = Geofence.objects.filter(account=request.user.profile.account)
+    for trigger in triggers:
+        try:
+            trigger.created = gmt_conversor.convert_utctolocaltime(trigger.created)
+            trigger.modified = gmt_conversor.convert_utctolocaltime(trigger.modified)
+        except Exception as e:
+            print(e)
+    return render(request,'triggers/unit-trigger.html',{
         'triggers':triggers,
         'mail_lists':mail_lists,
         'geofences': geofences,

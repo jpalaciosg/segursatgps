@@ -81,3 +81,26 @@ class FleetTrigger(models.Model):
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"{self.account}_{self.name}"
+
+class UnitTrigger(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    description = models.TextField(blank=True)
+    alert_type = models.IntegerField(
+        choices=ALERT_TYPE_CHOICES,
+    )
+    alert_priority = models.CharField(
+        max_length=9,
+        choices=PRIORITY_CHOICES,
+        default='L',
+    )
+    is_active = models.BooleanField(default=True)
+    send_notification = models.BooleanField(default=True)
+    send_mail_notification = models.BooleanField(default=True)
+    mail_list = models.ForeignKey(MailList,null=True,blank=True,on_delete=models.SET_NULL)
+    units = models.ManyToManyField(Device)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    def __str__(self):
+        return f"{self.account}_{self.name}"
