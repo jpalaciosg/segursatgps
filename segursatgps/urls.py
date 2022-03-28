@@ -64,6 +64,7 @@ urlpatterns = [
     path('reports/temperature-report/', reports_views.temperature_report_view, name='temperature-report'),
     path('maps/', maps_views.map_view, name='map'),
     path('triggers/fleet-trigger/', triggers_views.fleet_trigger_view, name='fleet-trigger'),
+    path('triggers/unit-trigger/', triggers_views.unit_trigger_view, name='unit-trigger'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
     path('triggers/delete-fleet-trigger/<int:id>/', triggers_views.delete_fleet_trigger, name='delete-fleet-trigger'),
     path('alerts/history/', alerts_views.alert_history_view, name='alert-history'),
