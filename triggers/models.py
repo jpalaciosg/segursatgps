@@ -26,6 +26,9 @@ PRIORITY_CHOICES = [
 ]
 
 # Create your models here.
+
+# Fleet trigger models
+
 class FleetTriggerExtension1003(models.Model):
     speed = models.IntegerField()
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
@@ -69,7 +72,6 @@ class FleetTrigger(models.Model):
     send_notification = models.BooleanField(default=True)
     send_mail_notification = models.BooleanField(default=True)
     mail_list = models.ForeignKey(MailList,null=True,blank=True,on_delete=models.SET_NULL)
-    units = models.ManyToManyField(Device)
     extension1003 = models.OneToOneField(FleetTriggerExtension1003,null=True,blank=True,on_delete=models.CASCADE)
     extension1004 = models.OneToOneField(FleetTriggerExtension1004,null=True,blank=True,on_delete=models.CASCADE)
     extension1005 = models.OneToOneField(FleetTriggerExtension1005,null=True,blank=True,on_delete=models.CASCADE)
@@ -81,6 +83,35 @@ class FleetTrigger(models.Model):
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"{self.account}_{self.name}"
+
+# Unit trigger models
+
+class UnitTriggerExtension1003(models.Model):
+    speed = models.IntegerField()
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
+class UnitTriggerExtension1004(models.Model):
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
+class UnitTriggerExtension1005(models.Model):
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
+class UnitTriggerExtension1006(models.Model):
+    speed = models.IntegerField()
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
+class UnitTriggerExtension1007(models.Model):
+    seconds = models.IntegerField()
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
+class UnitTriggerExtension1008(models.Model):
+    seconds = models.IntegerField()
+    geofences = models.ManyToManyField(Geofence)
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
 class UnitTrigger(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -99,6 +130,12 @@ class UnitTrigger(models.Model):
     send_mail_notification = models.BooleanField(default=True)
     mail_list = models.ForeignKey(MailList,null=True,blank=True,on_delete=models.SET_NULL)
     units = models.ManyToManyField(Device)
+    extension1003 = models.OneToOneField(UnitTriggerExtension1003,null=True,blank=True,on_delete=models.CASCADE)
+    extension1004 = models.OneToOneField(UnitTriggerExtension1004,null=True,blank=True,on_delete=models.CASCADE)
+    extension1005 = models.OneToOneField(UnitTriggerExtension1005,null=True,blank=True,on_delete=models.CASCADE)
+    extension1006 = models.OneToOneField(UnitTriggerExtension1006,null=True,blank=True,on_delete=models.CASCADE)
+    extension1007 = models.OneToOneField(UnitTriggerExtension1007,null=True,blank=True,on_delete=models.CASCADE)
+    extension1008 = models.OneToOneField(UnitTriggerExtension1008,null=True,blank=True,on_delete=models.CASCADE)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
