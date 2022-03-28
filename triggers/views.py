@@ -769,6 +769,7 @@ def get_unit_triggers(request):
                 data[0]['mail_list'] = mail_list
             except Exception as e:
                 print(e)
+            data[i]['units'] = [ {'id':x.id,'name':x.name} for x in triggers[i].units.all() ]
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
@@ -793,6 +794,7 @@ def get_unit_trigger(request,id):
             data['mail_list'] = mail_list
         except Exception as e:
             print(e)
+        data['units'] = [ {'id':x.id,'name':x.name} for x in trigger.units.all() ]
         if trigger.alert_type == 1003:
             data['extension1003'] = {
                 'speed': trigger.extension1003.speed
