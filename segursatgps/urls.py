@@ -144,4 +144,7 @@ urlpatterns = [
     path('web/api/triggers/update-1006-fleet-trigger/<int:id>/', triggers_views.update_1006_fleet_trigger),
     path('web/api/triggers/update-1007-fleet-trigger/<int:id>/', triggers_views.update_1007_fleet_trigger),
     path('web/api/triggers/update-1008-fleet-trigger/<int:id>/', triggers_views.update_1008_fleet_trigger),
+    path('web/api/triggers/get-unit-triggers/', triggers_views.get_unit_triggers),
+    path('web/api/triggers/get-unit-trigger/<int:id>/', triggers_views.get_unit_trigger),
+    path('web/api/triggers/create-generic-unit-trigger/', triggers_views.create_generic_unit_trigger),
 ]

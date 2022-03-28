@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from mails.models import MailList
-from .models import FleetTrigger
+from .models import FleetTrigger,UnitTrigger
 from users.models import Account
 
 PRIORITY_CHOICES = [
@@ -10,6 +10,8 @@ PRIORITY_CHOICES = [
     ('H', 'HIGH'),
     ('V', 'VERY HIGH'),
 ]
+
+# FLEET TRIGGER SERIALIZERS
 
 class FleetTriggerSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
@@ -83,3 +85,21 @@ class UpdateFleetTriggerSerializer(serializers.Serializer):
     send_notification = serializers.BooleanField()
     send_mail_notification = serializers.BooleanField()
     mail_list = serializers.IntegerField(required=False)
+
+
+# UNIT TRIGGER SERIALIZERS
+
+class UnitTriggerSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        account = Account.objects.get(id=validated_data['account'])
+        validated_data['account'] = account
+        try:
+            mail_list = MailList.objects.get(id=validated_data['mail_list'])
+            validated_data['mail_list'] = mail_list
+        except:
+            pass
+        unit_trigger = UnitTrigger.objects.create(**validated_data)
+        return unit_trigger
+    class Meta:
+        model = UnitTrigger
+        fields = ('__all__')
