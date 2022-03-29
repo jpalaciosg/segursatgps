@@ -150,6 +150,9 @@ class UnitTrigger1006Serializer(serializers.Serializer):
     send_notification = serializers.BooleanField()
     send_mail_notification = serializers.BooleanField()
     mail_list = serializers.IntegerField(required=False)
+    units = serializers.ListField(
+        child=serializers.IntegerField()
+    )
     speed = serializers.IntegerField()
     geofences = serializers.ListField(
         child=serializers.IntegerField()
