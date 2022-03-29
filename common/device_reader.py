@@ -43,6 +43,10 @@ class DeviceReader:
         reader = Teltonika(self.deviceid)
         return reader.get_odometer(location)
 
+    def get_engine_hours(self,location):
+        reader = Teltonika(self.deviceid)
+        return reader.get_engine_hours(location)
+
     def get_unit_status(self,unit):
         serializer = DeviceSerializer(unit,many=False)
         data = serializer.data
@@ -50,6 +54,10 @@ class DeviceReader:
             data['last_attributes'] = json.loads(data['last_attributes'])
         except:
             data['last_attributes'] = ''
+        try:
+            data['engine_hours'] = data['last_attributes']['engine_hours']+' h'
+        except:
+            data['engine_hours'] = 'N/D'
         data['last_report'] = gmt_conversor.convert_utctolocaltime(
             datetime.fromtimestamp(unit.last_timestamp)
         )

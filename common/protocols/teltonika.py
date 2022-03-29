@@ -138,6 +138,13 @@ class Teltonika:
         except:
             return 0
 
+    def get_engine_hours(self,location):
+        try:
+            engine_hours = location['attributes']['hours']
+            return engine_hours
+        except:
+            return 0
+
     def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
         stop_report = []
         for i in range(len(locations)):
