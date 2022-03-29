@@ -55,7 +55,11 @@ class DeviceReader:
         except:
             data['last_attributes'] = ''
         try:
-            data['engine_hours'] = str(data['last_attributes']['hours'])+' h'
+            engine_hours = int(data['last_attributes']['hours'])
+            engine_hours = int(engine_hours/1000)
+            engine_hours = engine_hours % 60
+            engine_seconds = engine_hours - engine_hours % 60
+            data['engine_hours'] = f"{engine_hours} h {engine_seconds} s"
         except Exception as e:
             data['engine_hours'] = 'N/D'
         data['last_report'] = gmt_conversor.convert_utctolocaltime(
