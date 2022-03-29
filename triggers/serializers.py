@@ -1,8 +1,9 @@
 from rest_framework import serializers
 
-from mails.models import MailList
 from .models import FleetTrigger,UnitTrigger
+from mails.models import MailList
 from users.models import Account
+from units.models import Device
 
 PRIORITY_CHOICES = [
     ('L', 'LOW'),
@@ -98,8 +99,30 @@ class UnitTriggerSerializer(serializers.ModelSerializer):
             validated_data['mail_list'] = mail_list
         except:
             pass
+        units = validated_data['units']
+        del validated_data['units']
         unit_trigger = UnitTrigger.objects.create(**validated_data)
+        for id in units:
+            try:
+                device = Device.objects.get(id=id,account=account)
+                unit_trigger.units.add(device)
+            except:
+                pass
+        unit_trigger.save()
         return unit_trigger
     class Meta:
         model = UnitTrigger
         fields = ('__all__')
+
+class UnitTrigger1003Serializer(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    description = serializers.CharField(max_length=100)
+    alert_priority = serializers.ChoiceField(choices = PRIORITY_CHOICES)
+    is_active = serializers.BooleanField()
+    send_notification = serializers.BooleanField()
+    send_mail_notification = serializers.BooleanField()
+    mail_list = serializers.IntegerField(required=False)
+    units = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+    speed = serializers.IntegerField()
