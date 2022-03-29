@@ -149,4 +149,5 @@ urlpatterns = [
     path('web/api/triggers/create-generic-unit-trigger/', triggers_views.create_generic_unit_trigger),
     path('web/api/triggers/create-1003-unit-trigger/', triggers_views.create_1003_unit_trigger),
     path('web/api/triggers/create-1004-unit-trigger/', triggers_views.create_1004_unit_trigger),
+    path('web/api/triggers/create-1005-unit-trigger/', triggers_views.create_1005_unit_trigger),
 ]
