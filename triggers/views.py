@@ -1043,3 +1043,53 @@ def create_1006_unit_trigger(request):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def create_1007_unit_trigger(request):
+    data = request.data
+    serializer = UnitTrigger1007and1008Serializer(data=data)
+    if serializer.is_valid():
+        extension1007 = UnitTriggerExtension1007.objects.create(
+            seconds = data['seconds'],
+            account = request.user.profile.account,
+        )
+        for item in data['geofences']:
+            try:
+                geofence = Geofence.objects.get(
+                    id = item,
+                    account = request.user.profile.account,
+                )
+                extension1007.geofences.add(geofence)
+            except Exception as e:
+                print(e)
+        mail_list = None
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(id=data['mail_list'])
+            except Exception as e:
+                print(e)
+        unit_trigger = UnitTrigger.objects.create(
+            name = data['name'],
+            description = data['description'],
+            alert_type = 1007,
+            alert_priority = data['alert_priority'],
+            is_active = data['is_active'],
+            send_notification = data['send_notification'],
+            send_mail_notification = data['send_mail_notification'],
+            extension1007 = extension1007,
+            mail_list =  mail_list,
+            account = request.user.profile.account
+        )
+        for id in data['units']:
+            try:
+                device = Device.objects.get(id=id,account=request.user.profile.account)
+                unit_trigger.units.add(device)
+            except:
+                pass
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)

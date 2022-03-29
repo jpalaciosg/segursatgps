@@ -157,3 +157,19 @@ class UnitTrigger1006Serializer(serializers.Serializer):
     geofences = serializers.ListField(
         child=serializers.IntegerField()
     )
+
+class UnitTrigger1007and1008Serializer(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    description = serializers.CharField(max_length=100)
+    alert_priority = serializers.ChoiceField(choices = PRIORITY_CHOICES)
+    is_active = serializers.BooleanField()
+    send_notification = serializers.BooleanField()
+    send_mail_notification = serializers.BooleanField()
+    mail_list = serializers.IntegerField(required=False)
+    units = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+    seconds = serializers.IntegerField(min_value=60)
+    geofences = serializers.ListField(
+        child=serializers.IntegerField()
+    )

@@ -151,4 +151,5 @@ urlpatterns = [
     path('web/api/triggers/create-1004-unit-trigger/', triggers_views.create_1004_unit_trigger),
     path('web/api/triggers/create-1005-unit-trigger/', triggers_views.create_1005_unit_trigger),
     path('web/api/triggers/create-1006-unit-trigger/', triggers_views.create_1006_unit_trigger),
+    path('web/api/triggers/create-1007-unit-trigger/', triggers_views.create_1007_unit_trigger),
 ]
