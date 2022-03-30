@@ -514,7 +514,7 @@ def delete_unit(request,id):
     if request.user.is_staff == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    data = request.data
+    #data = request.data
     try:
         unit = Device.objects.get(id=id)
     except Exception as e:
