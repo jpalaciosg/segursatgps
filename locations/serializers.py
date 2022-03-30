@@ -29,17 +29,9 @@ class InsertLocationSerializer2(serializers.Serializer):
     protocol = serializers.CharField()
     address = serializers.CharField(max_length=500,allow_blank=True)
 
-EVENT_CHOICES =( 
-    ("BP", "BP"), 
-    ("EX", "EX"), 
-    ("ER", "ER"),
-    ("PA", "PA"),
-)
-
 class InsertSutranLocationSerializer(serializers.Serializer):
     unit_name = serializers.CharField(max_length=50)
     latitude = serializers.FloatField()
     longitude = serializers.FloatField()
     speed = serializers.IntegerField()
     angle = serializers.IntegerField()
-    event = serializers.ChoiceField(choices=EVENT_CHOICES)

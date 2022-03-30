@@ -295,12 +295,15 @@ def insert_sutran_location(request):
     if serializer.is_valid():
         server_datetime = datetime.utcnow() - timedelta(hours=5)
         device_datetime = server_datetime + timedelta(seconds=30)
+        event = "PA"
+        if data['speed'] > 0: event = "EN"
         SutranLocation.objects.create(
             unit_name = data['unit_name'],
             latitude = data['latitude'],
             longitude = data['longitude'],
-            speed = data['speed'],
             angle = data['angle'],
+            speed = data['speed'],
+            event = event,
             server_datetime = server_datetime,
             device_datetime = device_datetime,
         )
