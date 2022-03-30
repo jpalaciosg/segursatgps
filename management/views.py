@@ -522,7 +522,7 @@ def delete_unit(request,id):
             'id': str(e)
         }}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    #unit.delete()
+    unit.delete()
     response = {
         'status': 'OK',
         'description': 'Unit was deleted.',
