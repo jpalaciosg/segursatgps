@@ -449,7 +449,7 @@ def update_generic_fleet_trigger(request,id):
     if serializer.is_valid():
         fleet_trigger.name = data['name']
         fleet_trigger.description = data['description']
-        fleet_trigger.alert_type = data['alert_type']
+        #fleet_trigger.alert_type = data['alert_type']
         fleet_trigger.alert_priority = data['alert_priority']
         fleet_trigger.is_active = data['is_active']
         fleet_trigger.send_notification = data['send_notification']
@@ -1140,6 +1140,46 @@ def create_1008_unit_trigger(request):
             'status':'OK'
         }
         return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_generic_unit_trigger(request,id):
+    data = request.data
+    try:
+        unit_trigger = UnitTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UpdateUnitTriggerSerializer(data=data)
+    if serializer.is_valid():
+        unit_trigger.name = data['name']
+        unit_trigger.description = data['description']
+        #unit_trigger.alert_type = data['alert_type']
+        unit_trigger.alert_priority = data['alert_priority']
+        unit_trigger.is_active = data['is_active']
+        unit_trigger.send_notification = data['send_notification']
+        unit_trigger.send_mail_notification = data['send_mail_notification']
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(
+                    id = data['mail_list'],
+                    account = request.user.profile.account,
+                )
+                unit_trigger.mail_list = mail_list
+            except Exception as e:
+                print(e)
+        for id in data['units']:
+            try:
+                device = Device.objects.get(id=id,account=request.user.profile.account)
+                unit_trigger.units.add(device)
+            except:
+                pass
+        unit_trigger.save()
+        return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)

@@ -80,7 +80,7 @@ class FleetTrigger1007and1008Serializer(serializers.Serializer):
 class UpdateFleetTriggerSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=50)
     description = serializers.CharField(max_length=100)
-    alert_type = serializers.IntegerField()
+    #alert_type = serializers.IntegerField()
     alert_priority = serializers.CharField()
     is_active = serializers.BooleanField()
     send_notification = serializers.BooleanField()
@@ -171,5 +171,18 @@ class UnitTrigger1007and1008Serializer(serializers.Serializer):
     )
     seconds = serializers.IntegerField(min_value=60)
     geofences = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+
+class UpdateUnitTriggerSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    description = serializers.CharField(max_length=100)
+    #alert_type = serializers.IntegerField()
+    alert_priority = serializers.CharField()
+    is_active = serializers.BooleanField()
+    send_notification = serializers.BooleanField()
+    send_mail_notification = serializers.BooleanField()
+    mail_list = serializers.IntegerField(required=False)
+    units = serializers.ListField(
         child=serializers.IntegerField()
     )
