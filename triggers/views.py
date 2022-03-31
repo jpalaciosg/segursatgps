@@ -400,7 +400,6 @@ def create_1008_fleet_trigger(request):
 
 @api_view(['DELETE'])
 def delete_fleet_trigger(request,id):
-    data = request.data
     try:
         fleet_trigger = FleetTrigger.objects.get(id=id)
     except Exception as e:
@@ -410,6 +409,14 @@ def delete_fleet_trigger(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     try:
         fleet_trigger.extension1003.delete()
+    except Exception as e:
+        print(e)
+    try:
+        fleet_trigger.extension1004.delete()
+    except Exception as e:
+        print(e)
+    try:
+        fleet_trigger.extension1005.delete()
     except Exception as e:
         print(e)
     try:
@@ -1143,6 +1150,50 @@ def create_1008_unit_trigger(request):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_unit_trigger(request,id):
+    try:
+        unit_trigger = UnitTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    try:
+        unit_trigger.extension1003.delete()
+    except Exception as e:
+        print(e)
+    try:
+        unit_trigger.extension1004.delete()
+    except Exception as e:
+        print(e)
+    try:
+        unit_trigger.extension1005.delete()
+    except Exception as e:
+        print(e)
+    try:
+        unit_trigger.extension1006.delete()
+    except Exception as e:
+        print(e)
+    try:
+        unit_trigger.extension1006.delete()
+    except Exception as e:
+        print(e)
+    try:
+        unit_trigger.extension1007.delete()
+    except Exception as e:
+        print(e)
+    try:
+        unit_trigger.extension1008.delete()
+    except Exception as e:
+        print(e)
+    unit_trigger.delete()
+    response = {
+        'status': 'OK',
+        'description': 'Unit trigger was deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
 def update_generic_unit_trigger(request,id):
