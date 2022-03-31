@@ -238,6 +238,12 @@ def get_unit_status(request,name):
 @api_view(['PUT'])
 def update_unit(request,id):
     data = request.data
+    if 'account' in data:
+        del data['account']
+    if 'uniqueid' in data:
+        del data['uniqueid']
+    if 'imei' in data:
+        del data['imei']
     try:
         unit = Device.objects.get(id=id)
     except Exception as e:
