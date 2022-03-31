@@ -1274,3 +1274,53 @@ def update_1004_unit_trigger(request,id):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_1005_unit_trigger(request,id):
+    data = request.data
+    try:
+        unit_trigger = UnitTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UnitTrigger1004and1005Serializer(data=data)
+    if serializer.is_valid():
+        unit_trigger.name = data['name']
+        unit_trigger.description = data['description']
+        unit_trigger.alert_type = 1005
+        unit_trigger.alert_priority = data['alert_priority']
+        unit_trigger.is_active = data['is_active']
+        unit_trigger.send_notification = data['send_notification']
+        unit_trigger.send_mail_notification = data['send_mail_notification']
+        unit_trigger.extension1005.geofences.clear()
+        for item in data['geofences']:
+            try:
+                geofence = Geofence.objects.get(
+                    id = item,
+                    account = request.user.profile.account,
+                )
+                unit_trigger.extension1005.geofences.add(geofence)
+            except Exception as e:
+                print(e)
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(
+                    id = data['mail_list'],
+                    account = request.user.profile.account,
+                )
+                unit_trigger.mail_list = mail_list
+            except Exception as e:
+                print(e)
+        for id in data['units']:
+            try:
+                device = Device.objects.get(id=id,account=request.user.profile.account)
+                unit_trigger.units.add(device)
+            except:
+                pass
+        unit_trigger.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
