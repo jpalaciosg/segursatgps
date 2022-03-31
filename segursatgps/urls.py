@@ -158,4 +158,6 @@ urlpatterns = [
     path('web/api/triggers/update-1004-unit-trigger/<int:id>/', triggers_views.update_1004_unit_trigger),
     path('web/api/triggers/update-1005-unit-trigger/<int:id>/', triggers_views.update_1005_unit_trigger),
     path('web/api/triggers/update-1006-unit-trigger/<int:id>/', triggers_views.update_1006_unit_trigger),
+    path('web/api/triggers/update-1007-unit-trigger/<int:id>/', triggers_views.update_1007_unit_trigger),
+    path('web/api/triggers/update-1008-unit-trigger/<int:id>/', triggers_views.update_1008_unit_trigger),
 ]
