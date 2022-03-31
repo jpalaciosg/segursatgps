@@ -228,6 +228,31 @@ def get_unit(request,name):
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET'])
+def get_unit_status(request,name):
+    unit = Device.objects.get(name=name)
+    device_reader = DeviceReader(unit.uniqueid)
+    response = device_reader.get_unit_status(unit)
+    return Response(response,status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+def update_unit(request,id):
+    data = request.data
+    try:
+        unit = Device.objects.get(id=id)
+    except Exception as e:
+        error = {'errors':{
+            'id': str(e)
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = DeviceSerializer(unit,data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @login_required
 def delete_unit(request,id):
     try:
@@ -237,13 +262,6 @@ def delete_unit(request,id):
     except:
         return redirect('units')
 
-@api_view(['GET'])
-def get_unit_status(request,name):
-    unit = Device.objects.get(name=name)
-    device_reader = DeviceReader(unit.uniqueid)
-    response = device_reader.get_unit_status(unit)
-    return Response(response,status=status.HTTP_200_OK)
-        
 @api_view(['POST'])
 def create_group(request):
     response = {
