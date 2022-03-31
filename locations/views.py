@@ -293,6 +293,7 @@ def insert_sutran_location(request):
     data = request.data
     serializer = InsertSutranLocationSerializer(data=data)
     if serializer.is_valid():
+        data = serializer.validated_data
         server_datetime = datetime.utcnow() - timedelta(hours=5)
         device_datetime = server_datetime + timedelta(seconds=30)
         event = "PA"
