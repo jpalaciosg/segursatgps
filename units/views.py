@@ -12,7 +12,7 @@ from datetime import datetime
 from pytz import timezone
 
 from .models import Device,Group
-from .serializers import DeviceSerializer,GroupSerializer
+from .serializers import DeviceSerializer,UpdateDeviceSerializer,GroupSerializer
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -109,12 +109,6 @@ def get_unit_status(request,name):
 @api_view(['PUT'])
 def update_unit(request,id):
     data = request.data
-    if 'account' in data:
-        del data['account']
-    if 'uniqueid' in data:
-        del data['uniqueid']
-    if 'imei' in data:
-        del data['imei']
     try:
         unit = Device.objects.get(id=id)
     except Exception as e:
@@ -122,14 +116,16 @@ def update_unit(request,id):
             'detail': str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    serializer = DeviceSerializer(unit,data=data)
+    serializer = UpdateDeviceSerializer(data=data)
     if serializer.is_valid():
-        serializer.save()
+        unit.name = data['unit_name']
+        unit.description = data['description']
+        unit.odometer = data['ododmeter']
+        unit.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['POST'])
 def create_group(request):
