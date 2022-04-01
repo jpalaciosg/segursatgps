@@ -172,8 +172,8 @@ def units_view(request):
     """
     for unit in units:
         unit.odometer = str(unit.odometer)
-        unit.modified = gmt_conversor.convert_utctolocaltime(unit.modified) # convertir a zona horaria
-        unit.created = gmt_conversor.convert_utctolocaltime(unit.created) # convertir a zona horaria
+        unit.modified = gmt_conversor.convert_utctolocaltime(unit.modified).strftime("%d/%m/%Y %H:%M:%S") # convertir a zona horaria
+        unit.created = gmt_conversor.convert_utctolocaltime(unit.created).strftime("%d/%m/%Y %H:%M:%S") # convertir a zona horaria
     return render(request,'units/units.html',{
         'units':units,
         'create_form':create_form
@@ -247,9 +247,9 @@ def update_unit(request,id):
     try:
         unit = Device.objects.get(id=id)
     except Exception as e:
-        error = {'errors':{
-            'id': str(e)
-        }}
+        error = {
+            'detail': str(e)
+        }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = DeviceSerializer(unit,data=data)
     if serializer.is_valid():
