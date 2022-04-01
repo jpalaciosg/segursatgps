@@ -120,7 +120,7 @@ def update_unit(request,id):
     if serializer.is_valid():
         unit.name = data['unit_name']
         unit.description = data['description']
-        unit.odometer = data['ododmeter']
+        unit.odometer = data['odometer']
         unit.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
