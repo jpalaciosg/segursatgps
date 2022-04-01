@@ -3526,20 +3526,35 @@ def get_hours_report(request):
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+
         hours_report = []
         device_reader = DeviceReader(unit.uniqueid)
-        for i in range(len(data)):
-            data[i]['unit_name'] = unit.name
-            data[i]['unit_description'] = unit.description
-            dt = datetime.utcfromtimestamp(data[i]['timestamp'])
+        for location in locations:
+            dt = datetime.utcfromtimestamp(location.timestamp)
             dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-            data[i]['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
-            data[i]['ignition'] = device_reader.detect_ignition_event({
-                'attributes':json.loads(data[i]['attributes'])
-            })
+            item = {
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'datetime': dt.strftime("%d/%m/%Y %H:%M:%S"),
+                'latitude': location.latitude,
+                'longitude': location.longitude,
+                'speed': location.speed,
+                'ignition': device_reader.detect_ignition_event({
+                    'attributes':json.loads(location.attributes)
+                }),
+                'address': location.address,
+            }
             try:
-                data[i]['hours'] = json.loads(data[i]['attributes'])['io449']
-                hours_report.append(data[i])
+                item['hours'] = json.loads(location.attributes)['io449']
+                hours_report.append(item)
             except Exception as e:
                 pass
         return Response(hours_report,status=status.HTTP_200_OK)
