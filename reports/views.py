@@ -3538,7 +3538,7 @@ def get_hours_report(request):
                 'attributes':json.loads(data[i]['attributes'])
             })
             try:
-                data[i]['temp'] = json.loads(data[i]['attributes'])['temp1']
+                data[i]['temp'] = json.loads(data[i]['attributes'])['io449']
                 hours_report.append(data[i])
             except Exception as e:
                 pass
