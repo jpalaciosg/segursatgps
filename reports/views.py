@@ -3,13 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
 from rest_framework.response import Response
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.decorators import api_view
 
 from datetime import datetime,timedelta
 import time
 import json
-import openpyxl
 import pandas as pd
 from geopy.distance import great_circle
 from shapely.geometry import Point,shape
@@ -22,7 +21,7 @@ from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
 
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
-from .serializers import GeofenceReportSerializer
+from .serializers import ReportSerializer,GeofenceReportSerializer
 from units.models import Device,Group
 from locations.serializers import LocationSerializer
 
@@ -3422,7 +3421,7 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
         try:
             unit = Device.objects.get(
                 name=unit_name,
-                #account=request.user.profile.account
+                account=request.user.profile.account
             )
         except Exception as e:
             error = {
@@ -3485,4 +3484,59 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
     }    
     return Response(final_report,status=status.HTTP_200_OK)
 
-
+@api_view(['POST'])
+def get_hours_report(request):
+    data = request.data
+    serializer = ReportSerializer(data=data)
+    if serializer.is_valid():
+        if data['unit_name'].upper() != 'ALL':
+            try:
+                unit = Device.objects.get(name=data['unit_name'],account=request.user.profile.account)
+            except Exception as e:
+                error = {
+                    'error':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        #
+        initial_datetime_str = data['initial_datetime']
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = data['final_datetime']
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+        #
+        if final_timestamp - initial_timestamp > 604800:
+            error = {
+                'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        
+        hours_report = []
+        device_reader = DeviceReader(unit.uniqueid)
+        for i in range(len(data)):
+            data[i]['unit_name'] = unit.name
+            data[i]['unit_description'] = unit.description
+            dt = datetime.utcfromtimestamp(data[i]['timestamp'])
+            dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+            data[i]['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+            data[i]['ignition'] = device_reader.detect_ignition_event({
+                'attributes':json.loads(data[i]['attributes'])
+            })
+            try:
+                data[i]['temp'] = json.loads(data[i]['attributes'])['temp1']
+                hours_report.append(data[i])
+            except Exception as e:
+                pass
+        return Response(hours_report,status=status.HTTP_200_OK)
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
