@@ -3484,6 +3484,14 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
     }    
     return Response(final_report,status=status.HTTP_200_OK)
 
+@login_required
+def hours_report_view(request):
+    #GET
+    units = privilege.get_units(request.user.profile)
+    return render(request,'reports/hours-report.html',{
+        'units':units,
+    })
+
 @api_view(['POST'])
 def get_hours_report(request):
     data = request.data
