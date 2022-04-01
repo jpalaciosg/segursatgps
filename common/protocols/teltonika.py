@@ -140,7 +140,7 @@ class Teltonika:
 
     def get_engine_hours(self,location):
         try:
-            engine_hours = location['attributes']['hours']
+            engine_hours = location['attributes']['449']
             return engine_hours
         except:
             return 0

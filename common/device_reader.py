@@ -55,7 +55,9 @@ class DeviceReader:
         except:
             data['last_attributes'] = ''
         try:
-            engine_hours = int(data['last_attributes']['hours'])
+            engine_hours = int(self.get_engine_hours({
+                'attributes':data['last_attributes']
+            }))
             engine_hours = int(engine_hours/1000)
             engine_hours = engine_hours % 60
             engine_seconds = engine_hours - engine_hours % 60
