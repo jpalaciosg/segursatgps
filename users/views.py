@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from users.models import User
 from .models import Account, Profile
 from .forms import UserCreateForm,UserUpdateForm
-from .serializers import AccountSerializer
+from .serializers import AccountSerializer,ProfileSerializer
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -163,11 +163,23 @@ def users_view(request):
         'create_form':create_form,
     })
 
-@login_required
-def delete_user(request,username):
+@api_view(['GET'])
+def get_users(request):
+    profiles = Profile.objects.filter(account=request.user.profile.account)
+    serializer = ProfileSerializer(profiles,many=True)
+    data = serializer.data
+    for i in range(len(data)):
+        data[i]['created'] = gmt_conversor.convert_utctolocaltime(profiles[i].created).strftime("%d/%m/%Y %H:%M:%S")
+        data[i]['modified'] = gmt_conversor.convert_utctolocaltime(profiles[i].modified).strftime("%d/%m/%Y %H:%M:%S")
+    return Response(data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_user(request,id):
     try:
-        user = User.objects.get(username=username)
-        user.delete()
-        return redirect('users')
-    except:
-        return redirect('users')
+        profile = Profile.objects.get(id=id,account=request.user.profile.account)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = ProfileSerializer(profile,many=False)
+    data = serializer.data
+    return Response(data,status=status.HTTP_200_OK)
