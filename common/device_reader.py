@@ -43,9 +43,9 @@ class DeviceReader:
         reader = Teltonika(self.deviceid)
         return reader.get_odometer(location)
 
-    def get_engine_hours(self,location):
+    def get_hours(self,location):
         reader = Teltonika(self.deviceid)
-        return reader.get_engine_hours(location)
+        return reader.get_hours(location)
 
     def get_unit_status(self,unit):
         serializer = DeviceSerializer(unit,many=False)
