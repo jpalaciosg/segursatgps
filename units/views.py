@@ -118,6 +118,16 @@ def update_unit(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = UpdateDeviceSerializer(data=data)
     if serializer.is_valid():
+        try:
+            Device.objects.get(
+                name=data['unit_name'],
+                account=request.user.profile.account
+            )
+        except Exception as e:
+            error = {
+                'detail': str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
         unit.name = data['unit_name']
         unit.description = data['description']
         unit.odometer = data['odometer']
