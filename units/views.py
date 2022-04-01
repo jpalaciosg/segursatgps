@@ -12,7 +12,6 @@ from datetime import datetime
 from pytz import timezone
 
 from .models import Device,Group
-from .forms import UnitCreateForm,UnitUpdateForm
 from .serializers import DeviceSerializer,GroupSerializer
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
