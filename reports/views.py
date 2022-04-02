@@ -142,7 +142,7 @@ def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = Location.objects.filter(
+    locations = Location.objects.using('history_db_replica').filter(
         unitid=unit.id,
         timestamp__gte=initial_timestamp,
         timestamp__lt=final_timestamp
@@ -216,7 +216,7 @@ def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = Location.objects.filter(
+    locations = Location.objects.using('history_db_replica').filter(
         unitid=unit.id,
         timestamp__gte=initial_timestamp,
         timestamp__lt=final_timestamp
@@ -369,7 +369,6 @@ def detailed_report_view(request):
                     'units':units,
                     'form':form,
                 })
-            #locations = Location.objects.filter(
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
@@ -479,7 +478,6 @@ def detailed_mileage_report_view(request):
                     'units':units,
                     'form':form,
                 })
-            #locations = Location.objects.filter(  
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
@@ -578,7 +576,6 @@ def detailed_report_with_attributes_view(request):
                     'units':units,
                     'form':form,
                 })
-            #locations = Location.objects.filter(
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
@@ -780,7 +777,6 @@ def driving_style_report_view(request):
                     'units':units,
                     'form':form,
                 })
-            #locations = Location.objects.filter(
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
@@ -942,7 +938,7 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
                 })            
 
     else:
-        locations_qs = Location.objects.filter(
+        locations_qs = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
             timestamp__lte=final_timestamp
@@ -2176,7 +2172,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
         units = privilege.get_units(request.user.profile)
         for unit in units:
             number_of_speeds = 0
-            locations_qs = Location.objects.filter(
+            locations_qs = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
                 timestamp__lt=final_timestamp
@@ -2214,7 +2210,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
                 })
     else:
         number_of_speeds = 0
-        locations_qs = Location.objects.filter(
+        locations_qs = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
             timestamp__lt=final_timestamp
@@ -3309,7 +3305,6 @@ def telemetry_report_view(request):
                     'units':units,
                     'form':form,
                 })
-            #locations = Location.objects.filter(
             locations = Location.objects.using('history_db_replica').filter(
                 unitid=unit.id,
                 timestamp__gte=initial_timestamp,
