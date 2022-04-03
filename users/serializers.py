@@ -6,12 +6,6 @@ class AccountSerializer(serializers.ModelSerializer):
         model = Account
         fields = ('__all__')
 
-class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(required=True)
-    class Meta:
-        model = Profile
-        fields = ('__all__')
-
 class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data, request):
         del validated_data['password_confirmation']
@@ -24,4 +18,10 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     class Meta:
         model = User
+        fields = ('__all__')
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(required=True)
+    class Meta:
+        model = Profile
         fields = ('__all__')
