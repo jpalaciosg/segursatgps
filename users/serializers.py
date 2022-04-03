@@ -20,6 +20,12 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('__all__')
 
+class UpdateUserSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    description = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    is_active = serializers.BooleanField
+
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=True)
     class Meta:

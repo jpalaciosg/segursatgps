@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from users.models import User
 from .models import Account, Profile
 from .forms import UserCreateForm,UserUpdateForm
-from .serializers import AccountSerializer,ProfileSerializer,UserSerializer
+from .serializers import AccountSerializer,ProfileSerializer,UserSerializer,UpdateUserSerializer
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -203,4 +203,25 @@ def create_user(request):
         return Response(response,status=status.HTTP_200_OK)
     else:
         error = {'errors':user_serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_user(request,id):
+    data = request.data
+    try:
+        profile = Profile.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': 'Profile does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UpdateUserSerializer(data=data)
+    if serializer.is_valid():
+        profile.user.description = data['description']
+        profile.user.email = data['email']
+        profile.user.is_active = data['is_active']
+        profile.user.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
