@@ -194,7 +194,7 @@ def create_user(request):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
     if 'password' in data:
         data['password'] = make_password(data['password'])
-    user_serializer = UserSerializer(data=data,request)
+    user_serializer = UserSerializer(data=data)
     if user_serializer.is_valid():
         user_serializer.create(data,request)
         response = {
