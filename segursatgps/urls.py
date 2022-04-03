@@ -81,6 +81,7 @@ urlpatterns = [
     # REST FRAMEWORK
     path('web/api/users/get-users/', users_views.get_users),
     path('web/api/users/get-user/<int:id>/', users_views.get_user),
+    path('web/api/users/create-user/', users_views.create_user),
     path('web/api/units/get-units/', units_views.get_units),
     path('web/api/units/get-unit/<str:name>/', units_views.get_unit),
     path('web/api/units/get-unit-status/<str:name>/', units_views.get_unit_status),

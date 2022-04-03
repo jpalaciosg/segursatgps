@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view
 from users.models import User
 from .models import Account, Profile
 from .forms import UserCreateForm,UserUpdateForm
-from .serializers import AccountSerializer,ProfileSerializer
+from .serializers import AccountSerializer,ProfileSerializer,UserSerializer
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -183,3 +183,24 @@ def get_user(request,id):
     serializer = ProfileSerializer(profile,many=False)
     data = serializer.data
     return Response(data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def create_user(request):
+    data = request.data
+    if 'is_superuser' in data or 'is_staff' in data:
+        error = {
+            'detail': "Te crees pendejo!"
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    if 'password' in data:
+        data['password'] = make_password(data['password'])
+    user_serializer = UserSerializer(data=data,request)
+    if user_serializer.is_valid():
+        user_serializer.create(data,request)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':user_serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
