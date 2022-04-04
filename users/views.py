@@ -226,3 +226,35 @@ def update_user(request,id):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_password(request,id):
+    data = request.data
+    try:
+        profile = Profile.objects.get(id=id,account=request.user.profile.account)
+    except Exception as e:
+        error = {
+            'detail': 'User does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UpdatePasswordSerializer(data=data)
+    if serializer.is_valid():
+        if data['password'] == data['password_confirmation']:
+            profile.user.password = make_password(data['password'])
+            profile.user.save()
+            response = {
+                'status': 'OK',
+                'description': 'Password has been changed.',
+            }
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            response = {
+                'status': 'ERROR',
+                'description': 'The password has not been changed.',
+            }
+    else:
+        response = {
+            'status': 'ERROR',
+            'description': 'The password has not been changed.',
+        }
+        return Response(response,status=status.HTTP_400_BAD_REQUEST)
