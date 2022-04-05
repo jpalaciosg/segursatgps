@@ -80,7 +80,7 @@ class UpdateProfileSerializer(serializers.Serializer):
     view_latest_alerts = serializers.BooleanField()
     view_alert_history = serializers.BooleanField()
     units = serializers.ListField(
-        child=serializers.IntegerField(min_value=0, max_value=10000)
+        child=serializers.IntegerField(min_value=0, max_value=20000)
     )
 
 class UpdatePasswordSerializer(serializers.Serializer):

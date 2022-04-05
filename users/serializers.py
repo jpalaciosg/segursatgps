@@ -35,3 +35,29 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ('__all__')
+
+class UpdateProfileSerializer(serializers.Serializer):
+    is_admin = serializers.BooleanField()
+    view_detailed_report = serializers.BooleanField()
+    view_speed_report = serializers.BooleanField()
+    view_stop_report = serializers.BooleanField()
+    view_trip_report = serializers.BooleanField()
+    view_mileage_report = serializers.BooleanField()
+    view_geofence_report = serializers.BooleanField()
+    view_driving_style_report = serializers.BooleanField()
+    view_telemetry_report = serializers.BooleanField()
+    view_detailed_report_with_attributes = serializers.BooleanField()
+    view_group_trip_report = serializers.BooleanField()
+    view_group_speed_report = serializers.BooleanField()
+    view_group_mileage_report = serializers.BooleanField()
+    view_group_stop_report = serializers.BooleanField()
+    view_group_geofence_report = serializers.BooleanField()
+    view_units = serializers.BooleanField()
+    view_triggers = serializers.BooleanField()
+    view_geofences = serializers.BooleanField()
+    view_users = serializers.BooleanField()
+    view_latest_alerts = serializers.BooleanField()
+    view_alert_history = serializers.BooleanField()
+    units = serializers.ListField(
+        child=serializers.IntegerField(min_value=0, max_value=20000)
+    )

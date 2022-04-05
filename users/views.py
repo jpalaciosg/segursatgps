@@ -258,3 +258,46 @@ def update_password(request,id):
             'description': 'The password has not been changed.',
         }
         return Response(response,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_profile(request,id):
+    data = request.data
+    try:
+        profile = Profile.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': 'User does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UpdateProfileSerializer(profile,data=data)
+    if serializer.is_valid():
+        profile.is_admin = data['is_admin']
+        profile.view_detailed_report = data['view_detailed_report']
+        profile.view_speed_report = data['view_speed_report']
+        profile.view_stop_report = data['view_stop_report']
+        profile.view_trip_report = data['view_trip_report']
+        profile.view_mileage_report = data['view_mileage_report']
+        profile.view_geofence_report = data['view_geofence_report']
+        profile.view_driving_style_report = data['view_driving_style_report']
+        profile.view_telemetry_report = data['view_telemetry_report']
+        profile.view_detailed_report_with_attributes = data['view_detailed_report_with_attributes']
+        profile.view_group_trip_report = data['view_group_trip_report']
+        profile.view_group_speed_report = data['view_group_speed_report']
+        profile.view_group_mileage_report = data['view_group_mileage_report']
+        profile.view_group_stop_report = data['view_group_stop_report']
+        profile.view_group_geofence_report = data['view_group_geofence_report']
+        profile.view_units = data['view_units']
+        profile.view_triggers = data['view_triggers']
+        profile.view_geofences = data['view_geofences']
+        profile.view_users = data['view_users']
+        for id in data['units']:
+            try:
+                device = Device.objects.get(id=id,account=request.user.profile.account)
+                profile.units.add(device)
+            except:
+                pass
+        profile.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
