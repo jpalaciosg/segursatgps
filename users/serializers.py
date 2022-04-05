@@ -26,6 +26,10 @@ class UpdateUserSerializer(serializers.Serializer):
     email = serializers.EmailField()
     is_active = serializers.BooleanField
 
+class UpdatePasswordSerializer(serializers.Serializer):
+    password = serializers.CharField()
+    password_confirmation = serializers.CharField()
+
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(required=True)
     class Meta:
