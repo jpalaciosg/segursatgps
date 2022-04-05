@@ -12,7 +12,7 @@ from rest_framework.decorators import api_view
 from users.models import User
 from .models import Account, Profile
 from .forms import UserCreateForm,UserUpdateForm
-from .serializers import AccountSerializer,ProfileSerializer,UserSerializer,UpdateUserSerializer
+from .serializers import AccountSerializer,ProfileSerializer,UserSerializer,UpdateUserSerializer,UpdateProfileSerializer,UpdatePasswordSerializer
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
