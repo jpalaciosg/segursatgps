@@ -3,7 +3,8 @@ from .models import Geofence
 
 class GeofenceSerializer(serializers.ModelSerializer):
     def create(self,validated_data,request):
-        validated_data['account'] = request.user.profile.account
+        account = Account.objects.get(id=validated_data['account'])
+        validated_data['account'] = account
         geofence = Geofence.objects.create(**validated_data)
         return geofence
     class Meta:
