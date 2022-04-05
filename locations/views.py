@@ -188,7 +188,7 @@ def get_location_history(request,unit_name,initial_datetime,final_datetime):
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = Location.objects.filter(unitid=unit.id,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('timestamp')
+    locations = Location.objects.using('history_db_replica').filter(unitid=unit.id,timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('timestamp')
     serializer = LocationSerializer(locations,many=True)
     data = serializer.data
     data1 = []
