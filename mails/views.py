@@ -75,16 +75,9 @@ def get_mail_list(request,id):
 @api_view(['POST'])
 def create_mail_list(request):
     data = request.data
-    try:
-        data['account'] = request.user.profile.account.id
-    except Exception as e:
-        error = {
-            'detail': 'Account does not exist.'
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST) 
     serializer = MailListSerializer(data=data)
     if serializer.is_valid():
-        serializer.create(data)
+        serializer.create(data,request)
         response = {
             'status':'OK'
         }

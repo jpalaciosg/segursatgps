@@ -3,9 +3,8 @@ from .models import MailList
 from users.models import Account
 
 class MailListSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        account = Account.objects.get(id=validated_data['account'])
-        validated_data['account'] = account
+    def create(self,validated_data,request):
+        validated_data['account'] = request.user.profile.account
         mail_list = MailList.objects.create(**validated_data)
         return mail_list
     class Meta:
