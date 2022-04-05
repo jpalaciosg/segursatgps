@@ -101,6 +101,27 @@ def get_geofence(request,id):
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+def create_geofence(request):
+    data = request.data
+    serializer = MailListSerializer(data=data)
+    if serializer.is_valid():
+        try:
+            geojson = json.loads(data['geojson'])
+        except Exception as e:
+            error = {'errors':{
+                'geojson': e
+            }}
+            return Response(error,status=status.HTTP_400_BAD_REQUEST) 
+        serializer.create(data,request)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @login_required
 def delete_geofence(request,id):
     try:
