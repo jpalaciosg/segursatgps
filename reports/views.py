@@ -3549,8 +3549,8 @@ def get_hours_report(request):
             }
             try:
                 c_time = int(json.loads(location.attributes)['io449'])
-                hours = c_time/3600
-                minutes = c_time%3600
+                hours = int(c_time/3600)
+                minutes = int(c_time%3600/60)
                 item['hours'] = f"{hours} h {minutes} m"
                 hours_report.append(item)
             except Exception as e:
