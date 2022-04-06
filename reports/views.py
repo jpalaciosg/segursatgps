@@ -3548,9 +3548,9 @@ def get_hours_report(request):
                 'address': location.address,
             }
             try:
-                item['hours'] = device_reader.get_hours({
-                    'attributes':json.loads(location.attributes)
-                })
+                c_time = int(json.loads(location.attributes)['io449'])
+                hours = int(c_time/3600)
+                item['hours'] = f"{hours} h"
                 hours_report.append(item)
             except Exception as e:
                 pass
