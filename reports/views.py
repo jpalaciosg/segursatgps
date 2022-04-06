@@ -3554,6 +3554,7 @@ def get_hours_report(request):
                 item['hours'] = f"{hours} h {minutes} m"
                 hours_report.append(item)
             except Exception as e:
+                print(e)
                 pass
         return Response(hours_report,status=status.HTTP_200_OK)
     else:
