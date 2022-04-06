@@ -140,7 +140,7 @@ class Teltonika:
 
     def get_hours(self,location):
         try:
-            hours = location['attributes']['449']
+            hours = location['attributes']['io449']
             return hours
         except Exception as e:
             print(e)
