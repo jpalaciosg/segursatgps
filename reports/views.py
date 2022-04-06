@@ -3549,7 +3549,7 @@ def get_hours_report(request):
             }
             try:
                 c_time = int(json.loads(location.attributes)['io449'])
-                hours = int(c_time/3600)
+                hours = c_time/3600
                 minutes = c_time%3600
                 item['hours'] = f"{hours} h {minutes} m"
                 hours_report.append(item)
