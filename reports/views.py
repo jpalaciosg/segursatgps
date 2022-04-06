@@ -3548,7 +3548,7 @@ def get_hours_report(request):
                 'address': location.address,
             }
             try:
-                c_time = int(json.loads(location.attributes)['io449'])
+                c_time = device_reader.get_hours({'attributes':json.loads(location.attributes)})
                 hours = int(c_time/3600)
                 minutes = int(c_time%3600/60)
                 item['hours'] = f"{hours} h {minutes} m"
