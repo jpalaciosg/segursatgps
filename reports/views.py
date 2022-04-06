@@ -3531,6 +3531,8 @@ def get_hours_report(request):
         )
 
         hours_report = []
+        summarization = []
+        hours_list = []
         device_reader = DeviceReader(unit.uniqueid)
         for location in locations:
             dt = datetime.utcfromtimestamp(location.timestamp)
@@ -3554,10 +3556,15 @@ def get_hours_report(request):
                 minutes = int(c_time%3600/60)
                 item['hours'] = f"{hours} h {minutes} m"
                 hours_report.append(item)
+                hours_list.append(c_time)
             except Exception as e:
                 print(e)
                 pass
-        return Response(hours_report,status=status.HTTP_200_OK)
+        final_report = {
+            'hours_report':hours_report,
+            'summarization':summarization,
+        } 
+        return Response(final_report,status=status.HTTP_200_OK)
     else:
         error = {
             'errors':serializer.errors
