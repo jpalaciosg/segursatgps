@@ -100,7 +100,11 @@ def insert_location_batch(request):
                 hours = int(device_reader.get_hours({
                     'attributes':data['attributes']
                 }))
-                unit.last_hours = hours
+                last_hours = int(device_reader.get_hours({
+                    'attributes':attributes
+                }))
+                if hours > last_hours:
+                    unit.last_hours = hours
                 # FIN CALCULAR LAST_HOURS
                 unit.last_address = data['address']
                 if data['timestamp'] > previous_location['timestamp']:
