@@ -24,7 +24,7 @@ gmt_conversor = GMTConversor()
 @login_required
 def management_map_view(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     return render(request,'management/map.html')
@@ -32,7 +32,7 @@ def management_map_view(request):
 @login_required
 def management_dashboard_view(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = Device.objects.all()
@@ -68,7 +68,7 @@ def management_dashboard_view(request):
 @login_required
 def accounts_view(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     return render(request,'management/accounts.html')
@@ -76,7 +76,7 @@ def accounts_view(request):
 @api_view(['GET'])
 def get_account(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     try:
@@ -94,7 +94,7 @@ def get_account(request,id):
 @api_view(['PUT'])
 def update_account(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -116,7 +116,7 @@ def update_account(request,id):
 @api_view(['DELETE'])
 def delete_account(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -137,7 +137,7 @@ def delete_account(request,id):
 @api_view(['GET'])
 def get_accounts(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     accounts = Account.objects.all()
@@ -152,7 +152,7 @@ def get_accounts(request):
 @api_view(['POST'])
 def create_account(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -170,7 +170,7 @@ def create_account(request):
 @api_view(['GET'])
 def delete_account(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     try:
@@ -190,7 +190,7 @@ def delete_account(request,id):
 @login_required
 def users_view(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     return render(request,'management/users.html')
@@ -198,7 +198,7 @@ def users_view(request):
 @api_view(['GET'])
 def get_users(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     profiles = Profile.objects.all()
@@ -212,7 +212,7 @@ def get_users(request):
 @api_view(['GET'])
 def get_user(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     try:
@@ -227,7 +227,7 @@ def get_user(request,id):
 @api_view(['POST'])
 def create_user(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -265,7 +265,7 @@ def create_user(request):
 @api_view(['PUT'])
 def update_user(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -290,7 +290,7 @@ def update_user(request,id):
 @api_view(['PUT'])
 def update_profile(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -339,7 +339,7 @@ def update_profile(request,id):
 @api_view(['PUT'])
 def update_password(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -375,7 +375,7 @@ def update_password(request,id):
 @login_required
 def units_view(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     return render(request,'management/units.html')
@@ -383,7 +383,7 @@ def units_view(request):
 @api_view(['GET'])
 def get_units(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = Device.objects.all()
@@ -408,7 +408,7 @@ def get_units(request):
 @api_view(['GET'])
 def get_units_from_account(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     try:
@@ -440,7 +440,7 @@ def get_units_from_account(request,id):
 @api_view(['GET'])
 def get_unit(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     try:
@@ -471,7 +471,7 @@ def get_unit(request,id):
 @api_view(['POST'])
 def create_unit(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -489,7 +489,7 @@ def create_unit(request):
 @api_view(['PUT'])
 def update_unit(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     data = request.data
@@ -511,7 +511,7 @@ def update_unit(request,id):
 @api_view(['DELETE'])
 def delete_unit(request,id):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     #data = request.data
@@ -522,7 +522,7 @@ def delete_unit(request,id):
             'id': str(e)
         }}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    unit.delete()
+    #unit.delete()
     response = {
         'status': 'OK',
         'description': 'Unit was deleted.',
@@ -532,7 +532,7 @@ def delete_unit(request,id):
 @login_required
 def management_view(request):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     return render(request,'management/main.html')
@@ -540,7 +540,7 @@ def management_view(request):
 @api_view(['GET'])
 def get_traccar_unit(request,uniqueid):
     # verificar privilegios
-    if request.user.is_staff == False:
+    if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     try:

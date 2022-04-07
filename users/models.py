@@ -22,7 +22,8 @@ from units.models import Device
 
 class Profile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
-    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+    account = models.ForeignKey(Account,null=True,blank=True,on_delete=models.CASCADE)
+    is_superadmin = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
     units = models.ManyToManyField(Device,blank=True)
     report_module = models.BooleanField(default=False)
@@ -50,13 +51,6 @@ class Profile(models.Model):
     view_latest_alerts = models.BooleanField(default=False)
     view_alert_history = models.BooleanField(default=False)
     # fin - privileges
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-    def __str__(self):
-        return self.user.username
-
-class AdminProfile(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):

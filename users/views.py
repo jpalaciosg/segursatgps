@@ -11,9 +11,9 @@ from rest_framework.decorators import api_view
 #from django.contrib.auth.models import User
 from users.models import User
 from units.models import Device
-from .models import Account, Profile
+from .models import Profile
 from .forms import UserCreateForm,UserUpdateForm
-from .serializers import AccountSerializer,ProfileSerializer,UserSerializer,UpdateUserSerializer,UpdateProfileSerializer,UpdatePasswordSerializer
+from .serializers import ProfileSerializer,UserSerializer,UpdateUserSerializer,UpdateProfileSerializer,UpdatePasswordSerializer
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -29,7 +29,7 @@ def login_view(request):
         user = authenticate(request,username=username,password=password)
         if user:
             login(request,user)
-            if request.user.is_staff:
+            if request.user.profile.is_admin:
                 return redirect('management-dashboard')
             try:
                 profile = request.user.profile
