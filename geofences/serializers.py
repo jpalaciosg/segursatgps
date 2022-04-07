@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Geofence
+from users.models import Account
 
 class GeofenceSerializer(serializers.ModelSerializer):
     def create(self,validated_data,request):

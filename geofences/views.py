@@ -111,7 +111,7 @@ def create_geofence(request):
             'detail': 'Account does not exist.'
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST) 
-    serializer = MailListSerializer(data=data)
+    serializer = GeofenceSerializer(data=data)
     if serializer.is_valid():
         try:
             geojson = json.loads(data['geojson'])
