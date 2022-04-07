@@ -3560,6 +3560,15 @@ def get_hours_report(request):
             except Exception as e:
                 print(e)
                 pass
+        if len(hours_list) > 0:
+            hours = max(hours_list) - min(hours_list)
+            summarization.append({
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'hours': hours,
+    })
         final_report = {
             'hours_report':hours_report,
             'summarization':summarization,
