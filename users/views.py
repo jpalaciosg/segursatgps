@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 
 #from django.contrib.auth.models import User
 from users.models import User
+from units.models import Device
 from .models import Account, Profile
 from .forms import UserCreateForm,UserUpdateForm
 from .serializers import AccountSerializer,ProfileSerializer,UserSerializer,UpdateUserSerializer,UpdateProfileSerializer,UpdatePasswordSerializer
