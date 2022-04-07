@@ -29,7 +29,7 @@ def login_view(request):
         user = authenticate(request,username=username,password=password)
         if user:
             login(request,user)
-            if request.user.profile.is_admin:
+            if request.user.profile.is_superadmin:
                 return redirect('management-dashboard')
             try:
                 profile = request.user.profile
