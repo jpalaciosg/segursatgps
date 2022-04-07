@@ -95,6 +95,13 @@ def insert_location_batch(request):
                         unit.odometer += distance
                 unit.previous_location = json.dumps(previous_location)
                 # FIN CALCULAR UBICACION PREVIA
+                # CALCULAR LAST_HOURS
+                device_reader = DeviceReader(unit.uniqueid)
+                hours = int(device_reader.get_hours({
+                    'attributes':data['attributes']
+                }))
+                unit.last_hours = hours
+                # FIN CALCULAR LAST_HOURS
                 unit.last_address = data['address']
                 if data['timestamp'] > previous_location['timestamp']:
                     unit.save()
