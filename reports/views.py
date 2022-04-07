@@ -3561,14 +3561,16 @@ def get_hours_report(request):
                 print(e)
                 pass
         if len(hours_list) > 0:
-            hours = max(hours_list) - min(hours_list)
+            c_time = max(hours_list) - min(hours_list)
+            hours = int(c_time/3600)
+            minutes = int(c_time%3600/60)
             summarization.append({
                 'unit_name': unit.name,
                 'unit_description': unit.description,
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'hours': hours,
-    })
+                'hours': f"{hours} h {minutes} m",
+            })
         final_report = {
             'hours_report':hours_report,
             'summarization':summarization,
