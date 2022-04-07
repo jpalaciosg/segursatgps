@@ -55,14 +55,14 @@ class DeviceReader:
         except:
             data['last_attributes'] = ''
         try:
-            hours = int(self.get_hours({
+            c_time = int(self.get_hours({
                 'attributes':data['last_attributes']
             }))
-            hour = int(hours/60)
-            second = hours%60
-            data['engine_hours'] = f"{hour} h {second} s"
+            hours = int(c_time/3600)
+            minutes = int(c_time%3600/60)
+            data['last_hours'] = f"{hours} h {minutes} m"
         except Exception as e:
-            data['engine_hours'] = 'N/D'
+            data['last_hours'] = 'N/D'
         data['last_report'] = gmt_conversor.convert_utctolocaltime(
             datetime.fromtimestamp(unit.last_timestamp)
         )
