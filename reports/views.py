@@ -92,6 +92,12 @@ def fleet_status_view(request):
         unit.last_ignition = device_reader.detect_ignition_event({
             'attributes':json.loads(unit.last_attributes)
         })
+        c_time = device_reader.get_hours({
+            'attributes':json.loads(unit.last_attributes)
+        })
+        hours = int(c_time/3600)
+        minutes = int(c_time%3600/60)
+        unit.last_hours = f"{hours} h {minutes} m"
         try:
             current_power = json.loads(unit.last_attributes)['power']
         except:
