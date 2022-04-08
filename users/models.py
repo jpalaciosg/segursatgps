@@ -10,8 +10,8 @@ class User(AbstractUser):
 
 # Create your models here.
 class Account(models.Model):
-    name = models.CharField(max_length=25,unique=True)
-    description = models.CharField(max_length=50)
+    name = models.CharField(max_length=50,unique=True)
+    description = models.CharField(max_length=100)
     device_timeout = models.PositiveIntegerField(default=86400)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
