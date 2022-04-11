@@ -3478,7 +3478,7 @@ def get_temperature_report(request):
                 'address': location.address,
             }
             try:
-                temp = json.loads(location['attributes'])['temp1']
+                temp = json.loads(location.attributes)['temp1']
                 item['temp'] = int(temp)
                 temperature_report.append(item)
                 temp_list.append(temp)
