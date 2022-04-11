@@ -10,6 +10,7 @@ from datetime import datetime,timedelta
 import time
 import json
 import pandas as pd
+from statistics import median
 from geopy.distance import great_circle
 from shapely.geometry import Point,shape
 from common.protocols.time_conversor import TimeConversor
@@ -3482,15 +3483,6 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
             temp_list.append(temp)
         except Exception as e:
             pass
-    
-    if len(temp_list) > 0:
-        avg2 = None
-        if len(temp_list) % 2 == 0:
-            index = int(len(temp_list)/2)
-            avg2 = (temp_list.sort()[index-1]+temp_list.sort()[index])/2
-        else:
-            index = int(len(temp_list)/2)
-            avg2 = temp_list.sort()[index]
         
         summarization.append({
             'unit_name': unit.name,
@@ -3500,7 +3492,7 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
             'max_temp': max(temp_list),
             'min_temp': min(temp_list),
             'avg1_temp': mean(temp_list),
-            'avg2_temp': avg2
+            'avg2_temp': median(temp_list)
         })  
     final_report = {
         'temperature_report':temperature_report,
