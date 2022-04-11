@@ -3456,27 +3456,31 @@ def get_temperature_report(request):
             latitude=0.0,
             longitude=0.0
         )
-        serializer = LocationSerializer(locations,many=True)
-        data = serializer.data
 
         temperature_report = []
         summarization = []
         temp_list = []
 
         device_reader = DeviceReader(unit.uniqueid)
-        for i in range(len(data)):
-            data[i]['unit_name'] = unit.name
-            data[i]['unit_description'] = unit.description
-            dt = datetime.utcfromtimestamp(data[i]['timestamp'])
+        for location in locations:
+            dt = datetime.utcfromtimestamp(location.timestamp)
             dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-            data[i]['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
-            data[i]['ignition'] = device_reader.detect_ignition_event({
-                'attributes':json.loads(data[i]['attributes'])
-            })
+            item = {
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'datetime': dt.strftime("%d/%m/%Y %H:%M:%S"),
+                'latitude': location.latitude,
+                'longitude': location.longitude,
+                'speed': location.speed,
+                'ignition': device_reader.detect_ignition_event({
+                    'attributes':json.loads(location.attributes)
+                }),
+                'address': location.address,
+            }
             try:
-                temp = json.loads(data[i]['attributes'])['temp1']
-                data[i]['temp'] = int(temp)
-                temperature_report.append(data[i])
+                temp = json.loads(location['attributes'])['temp1']
+                item['temp'] = int(temp)
+                temperature_report.append(item)
                 temp_list.append(temp)
             except Exception as e:
                 pass
