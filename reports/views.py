@@ -3481,6 +3481,7 @@ def get_temperature_report(request):
             except Exception as e:
                 pass
             
+        if len(temperature_list) > 0:
             summarization.append({
                 'unit_name': unit.name,
                 'unit_description': unit.description,
