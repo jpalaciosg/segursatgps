@@ -3462,6 +3462,8 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
     data = serializer.data
 
     temperature_report = []
+    summarization = []
+    temp_list = []
 
     device_reader = DeviceReader(unit.uniqueid)
     for i in range(len(data)):
@@ -3474,11 +3476,32 @@ def get_temperature_report(request,unit_name,initial_datetime,final_datetime):
             'attributes':json.loads(data[i]['attributes'])
         })
         try:
-            data[i]['temp'] = json.loads(data[i]['attributes'])['temp1']
+            temp = json.loads(data[i]['attributes'])['temp1']
+            data[i]['temp'] = int(temp)
             temperature_report.append(data[i])
+            temp_list.append(temp)
         except Exception as e:
             pass
-    summarization = []
+    
+    if len(temp_list) > 0:
+        avg2 = None
+        if len(temp_list) % 2 == 0:
+            index = int(len(temp_list)/2)
+            avg2 = (temp_list.sort()[index-1]+temp_list.sort()[index])/2
+        else:
+            index = int(len(temp_list)/2)
+            avg2 = temp_list.sort()[index]
+        
+        summarization.append({
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': data['initial_datetime'],
+            'final_datetime': data['final_datetime'],
+            'max_temp': max(temp_list),
+            'min_temp': min(temp_list),
+            'avg1_temp': mean(temp_list),
+            'avg2_temp': avg2
+        })  
     final_report = {
         'temperature_report':temperature_report,
         'summarization':summarization,
