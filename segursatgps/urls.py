@@ -108,7 +108,7 @@ urlpatterns = [
     path('web/api/reports/get-speed-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/<int:speed_limit>/', reports_views.get_speed_report),
     path('web/api/reports/get-driving-style-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_driving_style_report),
     path('web/api/reports/get-mileage-report/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', reports_views.get_mileage_report),
-    path('web/api/reports/get-temperature-report/', reports_views.get_temperature_report),
+    path('web/api/reports/temperature-report/', reports_views.get_temperature_report),
     path('web/api/reports/geofence-report/', reports_views.get_geofence_report),
     path('web/api/reports/hours-report/', reports_views.get_hours_report),
     path('web/api/management/get-accounts/', management_views.get_accounts),
