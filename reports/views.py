@@ -3478,10 +3478,15 @@ def get_temperature_report(request):
                 'address': location.address,
             }
             try:
-                temp = json.loads(location.attributes)['temp1']
-                item['temp'] = int(temp)
-                temperature_report.append(item)
-                temp_list.append(temp)
+                temp = float(json.loads(location.attributes)['temp1'])/0.1
+                if int(temp) == 3000:
+                    item['temp'] = int(temp)
+                    temperature_report.append(item)
+                    temp_list.append(int(temp))
+                else:
+                    item['temp'] = round(temp*0.001,2)
+                    temperature_report.append(item)
+                    temp_list.append(round(temp*0.001,2))
             except Exception as e:
                 pass
             
