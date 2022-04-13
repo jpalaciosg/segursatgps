@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'channels',
     'widget_tweaks',
+    'django_extensions',
     'users',
     'units',
     'drivers',

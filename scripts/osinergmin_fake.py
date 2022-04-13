@@ -4,13 +4,12 @@ from datetime import datetime
 import requests
 import json
 import time
-import sys
 
 URL = 'https://prod.osinergmin-agent-2021.com/api/v1/trama'
 TOKEN = '77616554-01CE-492A-AAB6-0A8E4273CAA8'
 
-unit_name = sys.argv[1]
-repetitions = int(sys.argv[2])
+unit_name = input("Ingresa la placa: ")
+repetitions = int(input("Ingresa el numero de envios: "))
 
 for i in range(repetitions):
     try:
@@ -38,7 +37,7 @@ for i in range(repetitions):
         print(item)
         print(response.text)
         print('----------------------------------')
-        time.sleep(18)
+        time.sleep(16)
     except Exception as e:
         print('ERROR:')
         print(e)
