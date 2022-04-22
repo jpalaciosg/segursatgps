@@ -330,6 +330,16 @@ def update_profile(request,id):
         profile.view_triggers = data['view_triggers']
         profile.view_geofences = data['view_geofences']
         profile.view_users = data['view_users']
+        profile.units.clear()
+        for id in data['units']:
+            try:
+                device = Device.objects.get(
+                    id = id,
+                    account = request.user.profile.account,
+                )
+                profile.units.add(device)
+            except Exception as e:
+                pass
         profile.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
