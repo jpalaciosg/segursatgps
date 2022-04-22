@@ -333,10 +333,7 @@ def update_profile(request,id):
         profile.units.clear()
         for id in data['units']:
             try:
-                device = Device.objects.get(
-                    id = id,
-                    account = request.user.profile.account,
-                )
+                device = Device.objects.get(id=id)
                 profile.units.add(device)
             except Exception as e:
                 pass
