@@ -22,8 +22,8 @@ privilege = Privilege()
 @login_required
 def geofences_view(request):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
-        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    if privilege.view_geofences(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>",status=403)
     # fin - verificar privilegios
     if request.method == 'POST':
         geofences = Geofence.objects.filter(account=request.user.profile.account)
@@ -86,7 +86,7 @@ def get_geofences(request):
             item['geojson'] = json.loads(item['geojson'])
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
-        error = {'error':str(e)}
+        error = {'detail':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -98,7 +98,7 @@ def get_geofence(request,id):
         data['geojson'] = json.loads(data['geojson'])
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
-        error = {'error':str(e)}
+        error = {'detail':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -129,11 +129,18 @@ def create_geofence(request):
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
-@login_required
+@api_view(['DELETE'])
 def delete_geofence(request,id):
     try:
         geofence = Geofence.objects.get(id=id,account=request.user.profile.account)
-        geofence.delete()
-        return redirect('geofences')
-    except:
-        return redirect('geofences')
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    geofence.delete()
+    response = {
+        'status': 'OK',
+        'description': 'Geofence was deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
