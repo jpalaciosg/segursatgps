@@ -110,7 +110,7 @@ def create_geofence(request):
         error = {
             'detail': 'Account does not exist.'
         }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST) 
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = GeofenceSerializer(data=data)
     if serializer.is_valid():
         try:
@@ -119,12 +119,37 @@ def create_geofence(request):
             error = {'errors':{
                 'geojson': e
             }}
-            return Response(error,status=status.HTTP_400_BAD_REQUEST) 
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
         serializer.create(data,request)
         response = {
             'status':'OK'
         }
         return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_geofence(request,id):
+    data = request.data
+    try:
+        geofence = Geofence.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = GeofenceSerializer(geofence,data=data)
+    if serializer.is_valid():
+        try:
+            geojson = json.loads(data['geojson'])
+        except Exception as e:
+            error = {'errors':{
+                'geojson': e
+            }}
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
