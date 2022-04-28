@@ -11,3 +11,9 @@ class GeofenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Geofence
         fields = ('__all__')
+
+class UpdateGeofenceSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    description = serializers.CharField()
+    geojson = serializers.JSONField()
+    show_geofence_on_map = serializers.BooleanField()

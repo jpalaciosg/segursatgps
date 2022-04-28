@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view
 import json
 
 from .models import Geofence
-from .serializers import GeofenceSerializer
+from .serializers import GeofenceSerializer,UpdateGeofenceSerializer
 from .forms import GeofenceCreateForm
 
 from common.gmt_conversor import GMTConversor
@@ -139,16 +139,13 @@ def update_geofence(request,id):
             'detail': str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    serializer = GeofenceSerializer(geofence,data=data)
+    serializer = UpdateGeofenceSerializer(data=data)
     if serializer.is_valid():
-        try:
-            geojson = json.loads(data['geojson'])
-        except Exception as e:
-            error = {'errors':{
-                'geojson': e
-            }}
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        geofence.name = data['name']
+        geofence.description = data['description']
+        geofence.geojson = data['geojson']
+        geofence.show_geofence_on_map = data['show_geofence_on_map']
+        geofence.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
         error = {'errors':serializer.errors}
