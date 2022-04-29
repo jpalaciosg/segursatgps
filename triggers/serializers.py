@@ -77,6 +77,16 @@ class FleetTrigger1007and1008Serializer(serializers.Serializer):
         child=serializers.IntegerField()
     )
 
+class FleetTrigger1012Serializer(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    description = serializers.CharField(max_length=100)
+    alert_priority = serializers.ChoiceField(choices = PRIORITY_CHOICES)
+    is_active = serializers.BooleanField()
+    send_notification = serializers.BooleanField()
+    send_mail_notification = serializers.BooleanField()
+    mail_list = serializers.IntegerField(required=False)
+    seconds = serializers.IntegerField(min_value=60)
+
 class UpdateFleetTriggerSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=50)
     description = serializers.CharField(max_length=100)

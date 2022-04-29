@@ -398,6 +398,41 @@ def create_1008_fleet_trigger(request):
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+def create_1012_fleet_trigger(request):
+    data = request.data
+    serializer = FleetTriggerExtension1012(data=data)
+    if serializer.is_valid():
+        extension1012 = FleetTriggerExtension1012.objects.create(
+            seconds = data['seconds'],
+            account = request.user.profile.account,
+        )
+        mail_list = None
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(id=data['mail_list'])
+            except Exception as e:
+                print(e)
+        FleetTrigger.objects.create(
+            name = data['name'],
+            description = data['description'],
+            alert_type = 1012,
+            alert_priority = data['alert_priority'],
+            is_active = data['is_active'],
+            send_notification = data['send_notification'],
+            send_mail_notification = data['send_mail_notification'],
+            extension1012 = extension1012,
+            mail_list =  mail_list,
+            account = request.user.profile.account
+        )
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['DELETE'])
 def delete_fleet_trigger(request,id):
     try:
@@ -433,6 +468,10 @@ def delete_fleet_trigger(request,id):
         print(e)
     try:
         fleet_trigger.extension1008.delete()
+    except Exception as e:
+        print(e)
+    try:
+        fleet_trigger.extension1012.delete()
     except Exception as e:
         print(e)
     fleet_trigger.delete()
@@ -719,6 +758,41 @@ def update_1008_fleet_trigger(request,id):
                 fleet_trigger.extension1008.geofences.add(geofence)
             except Exception as e:
                 print(e)
+        if 'mail_list' in data:
+            try:
+                mail_list = MailList.objects.get(
+                    id = data['mail_list'],
+                    account = request.user.profile.account,
+                )
+                fleet_trigger.mail_list = mail_list
+            except Exception as e:
+                print(e)
+        fleet_trigger.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_1012_fleet_trigger(request,id):
+    data = request.data
+    try:
+        fleet_trigger = FleetTrigger.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = FleetTrigger1012Serializer(data=data)
+    if serializer.is_valid():
+        fleet_trigger.name = data['name']
+        fleet_trigger.description = data['description']
+        fleet_trigger.alert_type = 1012
+        fleet_trigger.alert_priority = data['alert_priority']
+        fleet_trigger.is_active = data['is_active']
+        fleet_trigger.send_notification = data['send_notification']
+        fleet_trigger.send_mail_notification = data['send_mail_notification']
+        fleet_trigger.extension1012.seconds = data['seconds']
         if 'mail_list' in data:
             try:
                 mail_list = MailList.objects.get(

@@ -16,6 +16,7 @@ ALERT_TYPE_CHOICES = [
     (1009, 'ALERTA DE ACELERACION BRUSCA'),
     (1010, 'ALERTA DE FRENADO BRUSCO'),
     (1011, 'ALERTA DE GIRO BRUSCO'),
+    (1012, 'ALERTA DE FALLA DE TRANSMISION'),
 ]
 
 PRIORITY_CHOICES = [
@@ -56,6 +57,10 @@ class FleetTriggerExtension1008(models.Model):
     geofences = models.ManyToManyField(Geofence)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
 
+class FleetTriggerExtension1012(models.Model):
+    seconds = models.IntegerField()
+    account = models.ForeignKey(Account,on_delete=models.CASCADE)
+
 class FleetTrigger(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=50)
@@ -78,6 +83,7 @@ class FleetTrigger(models.Model):
     extension1006 = models.OneToOneField(FleetTriggerExtension1006,null=True,blank=True,on_delete=models.CASCADE)
     extension1007 = models.OneToOneField(FleetTriggerExtension1007,null=True,blank=True,on_delete=models.CASCADE)
     extension1008 = models.OneToOneField(FleetTriggerExtension1008,null=True,blank=True,on_delete=models.CASCADE)
+    extension1012 = models.OneToOneField(FleetTriggerExtension1012,null=True,blank=True,on_delete=models.CASCADE)
     account = models.ForeignKey(Account,on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
