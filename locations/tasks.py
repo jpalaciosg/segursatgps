@@ -68,8 +68,8 @@ def insert_location_in_history(data):
                 latitude = data['latitude'],
                 longitude = data['longitude'],
                 angle = data['angle'],
-                #speed = data['speed'],
-                speed = speed,
+                speed = data['speed'],
+                #speed = speed,
                 event = event,
                 #device_datetime = device_datetime,
                 device_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow())
