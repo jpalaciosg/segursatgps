@@ -72,7 +72,7 @@ def insert_location_in_history(data):
                 #speed = speed,
                 event = event,
                 #device_datetime = device_datetime,
-                device_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow())
+                device_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
                 server_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
             )
         except:
