@@ -10,13 +10,11 @@ for trigger in fleet_triggers:
         units = Device.objects.filter(account=trigger.account)
         seconds = trigger.extension1012.seconds
         for unit in units:
-            print(unit.name)
-            print(unit.last_timestamp)
-            print('-----------------')
             current_timestamp = int(datetime.now().timestamp())
             offset = current_timestamp - unit.last_timestamp
             if offset > seconds:
-                print('bingo')
+                print(unit.name)
+                print('ALERTA DE FALLA DE TRANSMISION')
                 """
                 # ACTUALIZAR ULTIMA ALERTA
                 try:
