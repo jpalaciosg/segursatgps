@@ -10,6 +10,7 @@ admin.site.register([
   FleetTriggerExtension1006,
   FleetTriggerExtension1007,
   FleetTriggerExtension1008,
+  FleetTriggerExtension1012,
   UnitTriggerExtension1003,
   UnitTrigger,
 ])
