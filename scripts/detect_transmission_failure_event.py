@@ -3,7 +3,17 @@ from triggers.models import FleetTrigger
 from units.models import Device
 from alerts.models import Alert
 from units.models import LastAlert
+
+
 from datetime import datetime
+from asgiref.sync import async_to_sync
+import json
+import channels.layers
+
+from common.device_reader import DeviceReader
+from common.gmt_conversor import GMTConversor
+
+gmt_conversor = GMTConversor() #conversor zona horaria
 
 fleet_triggers = FleetTrigger.objects.filter(alert_type=1012)
 
