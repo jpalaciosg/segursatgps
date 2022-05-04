@@ -22,7 +22,7 @@ for trigger in fleet_triggers:
         units = Device.objects.filter(account=trigger.account)
         seconds = trigger.extension1012.seconds
         for unit in units:
-            current_timestamp = int(datetime.now().timestamp())
+            current_timestamp = int(datetime.utcnow().timestamp())
             offset = current_timestamp - unit.last_timestamp
             if offset > seconds:
                 # ACTUALIZAR ULTIMA ALERTA
