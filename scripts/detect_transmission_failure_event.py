@@ -2,6 +2,7 @@ from async_timeout import current_task
 from triggers.models import FleetTrigger
 from units.models import Device
 from alerts.models import Alert,LastAlert
+from units.models import LastAlert
 from datetime import datetime
 
 fleet_triggers = FleetTrigger.objects.filter(alert_type=1012)
