@@ -31,7 +31,7 @@ for trigger in fleet_triggers:
                 except:
                     last_alert = None
                 if last_alert:
-                    last_alert.timestamp = unit.last_timestamp
+                    last_alert.timestamp = current_timestamp
                     last_alert.latitude = unit.last_latitude
                     last_alert.longitude = unit.last_longitude
                     last_alert.speed = unit.last_speed
@@ -45,7 +45,7 @@ for trigger in fleet_triggers:
                 else:
                     last_alert = LastAlert.objects.create(
                         unit = unit,
-                        timestamp = unit.last_timestamp,
+                        timestamp = current_timestamp,
                         latitude = unit.last_latitude,
                         longitude = unit.last_longitude,
                         speed = unit.last_speed,
@@ -59,7 +59,7 @@ for trigger in fleet_triggers:
                 # FIN - ACTUALIZAR ULTIMA ALERTA
                 alert = Alert.objects.create(
                     unitid = unit.id,
-                    timestamp = unit.last_timestamp,
+                    timestamp = current_timestamp,
                     latitude = unit.last_latitude,
                     longitude = unit.last_longitude,
                     speed = unit.last_speed,
