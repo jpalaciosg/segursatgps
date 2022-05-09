@@ -73,7 +73,7 @@ def get_units(request):
 @api_view(['GET'])
 def get_unit(request,name):
     try:
-        unit = Device.objects.get(name=name)
+        unit = Device.objects.get(name=name,account=request.user.profile.account)
         serializer = DeviceSerializer(unit,many=False)
         data = serializer.data
         try:
@@ -101,7 +101,7 @@ def get_unit(request,name):
 
 @api_view(['GET'])
 def get_unit_status(request,name):
-    unit = Device.objects.get(name=name)
+    unit = Device.objects.get(name=name,account=request.user.profile.account)
     device_reader = DeviceReader(unit.uniqueid)
     response = device_reader.get_unit_status(unit)
     return Response(response,status=status.HTTP_200_OK)
