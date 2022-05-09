@@ -1,4 +1,5 @@
 from units.models import Device
+from users.models import Account
 
 data = {
     "SHEET1": [
@@ -23542,10 +23543,13 @@ data = {
     ]
 }
 
+account = Account.objects.get(name='kft')
+
 for unit in data['SHEET1']:
     device = Device.objects.create(
         uniqueid = unit['CODE'],
         imei = unit['CODE'],
         name = unit['NAME'],
         description = f"{unit['GROUP']} - {unit['NAME']}",
+        account = account,
     )
