@@ -53,7 +53,7 @@ for location in locations:
         }
         item = json.dumps(item)
         print(item)
-        x = threading.Thread(target=thread_function, args=(item,))
+        x = threading.Thread(target=thread_function, args=(item,location.id,))
         x.start()
     except Exception as e:
         print('ERROR:')
