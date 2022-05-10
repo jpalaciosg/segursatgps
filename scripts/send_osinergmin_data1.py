@@ -35,26 +35,27 @@ print(len(locations))
 
 for location in locations:
     try:
-        #dt = datetime.utcfromtimestamp(location.timestamp)
-        dt = datetime.utcnow()
-        dt_str = dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-        item = {
-            "event": "none",
-            "plate": location.reference,
-            "speed": location.speed,
-            "odometer": 0,
-            "position": {
-                "latitude": location.latitude,
-                "longitude": location.longitude,
-                "altitude": location.altitude
-            },
-            "gpsDate": dt_str,
-            "tokenTrama": TOKEN
-        }
-        item = json.dumps(item)
-        print(item)
-        x = threading.Thread(target=thread_function, args=(item,location.id,))
-        x.start()
+        if location.speed > 0:
+            dt = datetime.utcfromtimestamp(location.timestamp)
+            #dt = datetime.utcnow()
+            dt_str = dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            item = {
+                "event": "none",
+                "plate": location.reference,
+                "speed": location.speed,
+                "odometer": 0,
+                "position": {
+                    "latitude": location.latitude,
+                    "longitude": location.longitude,
+                    "altitude": location.altitude
+                },
+                "gpsDate": dt_str,
+                "tokenTrama": TOKEN
+            }
+            item = json.dumps(item)
+            print(item)
+            x = threading.Thread(target=thread_function, args=(item,location.id,))
+            x.start()
     except Exception as e:
         print('ERROR:')
         print(e)
