@@ -7,7 +7,7 @@ import json
 URL = 'https://prod.osinergmin-agent-2021.com/api/v1/trama'
 TOKEN = '77616554-01CE-492A-AAB6-0A8E4273CAA8'
 
-def thread_function(json_payload,id):
+def thread_function(json_payload):
     global Device
     global requests
     global datetime
