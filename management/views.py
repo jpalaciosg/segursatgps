@@ -326,6 +326,8 @@ def update_profile(request,id):
         profile.view_group_mileage_report = data['view_group_mileage_report']
         profile.view_group_stop_report = data['view_group_stop_report']
         profile.view_group_geofence_report = data['view_group_geofence_report']
+	profile.view_latest_alerts = data['view_latest_alerts']
+	profile.view_alert_history = data['view_alert_history']
         profile.view_units = data['view_units']
         profile.view_triggers = data['view_triggers']
         profile.view_geofences = data['view_geofences']
