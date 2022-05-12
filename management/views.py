@@ -243,7 +243,7 @@ def create_user(request):
             error = {'errors':{
                 'account': "This account does not exist."
             }}
-            return Response(error,status=status.HTTP_400_BAD_REQUEST) 
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
     else:
         error = {'errors':{
             'account': "This field is required."
@@ -326,8 +326,8 @@ def update_profile(request,id):
         profile.view_group_mileage_report = data['view_group_mileage_report']
         profile.view_group_stop_report = data['view_group_stop_report']
         profile.view_group_geofence_report = data['view_group_geofence_report']
-	profile.view_latest_alerts = data['view_latest_alerts']
-	profile.view_alert_history = data['view_alert_history']
+        profile.view_latest_alerts = data['view_latest_alerts']
+        profile.view_alert_history = data['view_alert_history']
         profile.view_units = data['view_units']
         profile.view_triggers = data['view_triggers']
         profile.view_geofences = data['view_geofences']
@@ -399,7 +399,7 @@ def get_units(request):
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
     serializer = DeviceSerializer(units,many=True)
-    data = serializer.data    
+    data = serializer.data
     for i in range(len(data)):
         data[i]['odometer'] = round(data[i]['odometer'],1)
         dt = datetime.fromtimestamp(data[i]['last_timestamp'])
@@ -431,7 +431,7 @@ def get_units_from_account(request,id):
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
     serializer = DeviceSerializer(units,many=True)
-    data = serializer.data    
+    data = serializer.data
     for i in range(len(data)):
         data[i]['odometer'] = round(data[i]['odometer'],1)
         dt = datetime.fromtimestamp(data[i]['last_timestamp'])
