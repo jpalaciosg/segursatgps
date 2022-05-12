@@ -8,7 +8,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
 class UpdateDeviceSerializer(serializers.Serializer):
     unit_name = serializers.CharField(max_length=50)
-    description = serializers.CharField(max_length=200)
+    description = serializers.CharField(max_length=200,allow_blank=True)
     odometer = serializers.FloatField()
 
 class GroupSerializer(serializers.ModelSerializer):
