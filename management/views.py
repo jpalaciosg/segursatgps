@@ -287,6 +287,27 @@ def update_user(request,id):
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+#DELETE USER BY ID
+@api_view(['DELETE'])
+def delete_user(request,id):
+    # verificar privilegios
+    if request.user.profile.is_superadmin == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    try:
+        profile = Profile.objects.get(id=id)
+    except Exception as e:
+        error = {'errors':{
+            'name': str(e)
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    profile.delete()
+    response = {
+        'status': 'OK',
+        'description': 'The user was deleted successfully.'
+    }
+    return Response(response,status=status.HTTP_200_OK)
+
 @api_view(['PUT'])
 def update_profile(request,id):
     # verificar privilegios
