@@ -113,6 +113,7 @@ def insert_location_batch(request):
                 data['unit_id'] = unit.id
                 data['unit_name'] = unit.name
                 data['account'] = unit.account.name
+                data['sutran_process'] = unit.sutran_process
                 data['osinergmin_process'] = unit.osinergmin_process
                 insert_location_in_history.delay(data)
 
