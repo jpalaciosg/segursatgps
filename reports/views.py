@@ -3406,6 +3406,98 @@ def telemetry_report_view(request):
         'units':units,
     })
 
+@api_view(['POST'])
+def get_telemetry_report(request):
+    data = request.data
+    serializer = ReportSerializer(data=data)
+    if serializer.is_valid():
+        if data['unit_name'].upper() != 'ALL':
+            try:
+                unit = Device.objects.get(name=data['unit_name'],account=request.user.profile.account)
+            except Exception as e:
+                error = {
+                    'error':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        #
+        initial_datetime_str = data['initial_datetime']
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = data['final_datetime']
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+        #
+        if final_timestamp - initial_timestamp > 604800:
+            error = {
+                'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+
+        telemetry_report = []
+        summarization = []
+        rpm_list = []
+
+        device_reader = DeviceReader(unit.uniqueid)
+        for i in range(len(locations)):
+            dt = datetime.utcfromtimestamp(locations[i].timestamp)
+            dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+            attributes = json.loads(locations[i].attributes)
+            item = {
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'datetime': dt.strftime("%d/%m/%Y %H:%M:%S"),
+                'latitude': locations[i].latitude,
+                'longitude': locations[i].longitude,
+                'speed': locations[i].speed,
+                'ignition': device_reader.detect_ignition_event({
+                    'attributes':json.loads(locations[i].attributes)
+                }),
+                'address': locations[i].address,
+            }
+            try:
+                if locations[i].protocol == 'teltonika640'
+                    item['rpm_engine'] = attributes['io88']
+                    rpm_list.append(attributes['io88'])
+                else:
+                    item['rpm_engine'] = 'N/D'
+            except Exception as e:
+                item['rpm_engine'] = 'N/D'
+            
+        if len(telemetry_report) > 0:
+            summarization.append({
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'initial_datetime':data['initial_datetime'],
+                'final_datetime':data['final_datetime'],
+                'maximum_rpm': max(rpm_list),
+            })  
+        final_report = {
+            'telemetry_report':telemetry_report,
+            'summarization':summarization,
+        }    
+        return Response(final_report,status=status.HTTP_200_OK)
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @login_required
 def temperature_report_view(request):
     #GET
