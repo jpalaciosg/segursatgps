@@ -3473,7 +3473,7 @@ def get_telemetry_report(request):
                 'address': locations[i].address,
             }
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['rpm_engine'] = attributes['io88']
                     rpm_list.append(attributes['io88'])
                 else:
@@ -3481,7 +3481,7 @@ def get_telemetry_report(request):
             except Exception as e:
                 item['rpm_engine'] = 'N/D'
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['engine_coolant_temp'] = attributes['io127']
                     engine_coolant_temp_list.append(attributes['io127'])
                 else:
@@ -3489,7 +3489,7 @@ def get_telemetry_report(request):
             except Exception as e:
                 item['engine_coolant_temp'] = 'N/D'
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['ambient_air_temp'] = attributes['io128']
                     ambient_air_temp_list.append(attributes['io128'])
                 else:
@@ -3497,35 +3497,35 @@ def get_telemetry_report(request):
             except Exception as e:
                 item['ambient_air_temp'] = 'N/D'
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['odometer'] = attributes['io192']
                 else:
                     item['odometer'] = 'N/D'
             except Exception as e:
                 item['odometer'] = 'N/D'
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['acceleration_pedal_position'] = attributes['io84']
                 else:
                     item['acceleration_pedal_position'] = 'N/D'
             except Exception as e:
                 item['acceleration_pedal_position'] = 'N/D'
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['engine_current_load'] = attributes['io85']
                 else:
                     item['engine_current_load'] = 'N/D'
             except Exception as e:
                 item['engine_current_load'] = 'N/D'
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['engine_total_fuel_used'] = attributes['io86']
                 else:
                     item['engine_total_fuel_used'] = 'N/D'
             except Exception as e:
                 item['engine_total_fuel_used'] = 'N/D'
             try:
-                if locations[i].protocol == 'teltonika640'
+                if locations[i].protocol == 'teltonika640':
                     item['fuel_level'] = attributes['io87']
                 else:
                     item['fuel_level'] = 'N/D'
