@@ -68,8 +68,11 @@ def insert_location_batch(request):
                 # CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
                 ts = int(datetime.now().timestamp())
                 ts_offset = ts - data['timestamp']
-                if ts_offset > 31536000: data['timestamp'] = ts
-                # FIN CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
+                if ts_offset > 31536000 and unit.account.name='pampabaja_olmos': data['timestamp'] = ts
+                # FIN - CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
+                # CAMBIAR VELOCIDAD SI ES MAYOR A 105 PARA CIVA
+                if data['speed'] > 105 and unit.account.name='civa': data['speed'] = previous_location['speed']
+                # FIN - CAMBIAR VELOCIDAD SI ES MAYOR A 105 PARA CIVA
                 unit.last_timestamp = data['timestamp']
                 unit.last_latitude = data['latitude']
                 unit.last_longitude = data['longitude']
