@@ -112,6 +112,10 @@ def get_fleet_trigger(request,id):
                 'seconds': trigger.extension1008.seconds,
                 'geofences': [ {'id':x.id,'name':x.name} for x in trigger.extension1008.geofences.all() ]
             }
+        elif trigger.alert_type == 1012:
+            data['extension1012'] = {
+                'seconds': trigger.extension1012.seconds,
+            }
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
