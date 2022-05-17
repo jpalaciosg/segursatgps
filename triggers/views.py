@@ -593,6 +593,7 @@ def update_1004_fleet_trigger(request,id):
                 fleet_trigger.mail_list = mail_list
             except Exception as e:
                 print(e)
+        fleet_trigger.extension1004.save()
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
@@ -637,6 +638,7 @@ def update_1005_fleet_trigger(request,id):
                 fleet_trigger.mail_list = mail_list
             except Exception as e:
                 print(e)
+        fleet_trigger.extension1005.save()
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
@@ -682,6 +684,7 @@ def update_1006_fleet_trigger(request,id):
                 fleet_trigger.mail_list = mail_list
             except Exception as e:
                 print(e)
+        fleet_trigger.extension1006.save()
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
@@ -727,6 +730,7 @@ def update_1007_fleet_trigger(request,id):
                 fleet_trigger.mail_list = mail_list
             except Exception as e:
                 print(e)
+        fleet_trigger.extension1007.save()
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
@@ -772,6 +776,7 @@ def update_1008_fleet_trigger(request,id):
                 fleet_trigger.mail_list = mail_list
             except Exception as e:
                 print(e)
+        fleet_trigger.extension1008.save()
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
@@ -807,6 +812,7 @@ def update_1012_fleet_trigger(request,id):
                 fleet_trigger.mail_list = mail_list
             except Exception as e:
                 print(e)
+        fleet_trigger.extension1012.save()
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
