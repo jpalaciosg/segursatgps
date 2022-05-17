@@ -548,6 +548,7 @@ def update_1003_fleet_trigger(request,id):
                 fleet_trigger.mail_list = mail_list
             except Exception as e:
                 print(e)
+        fleet_trigger.extension1003.save()
         fleet_trigger.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
