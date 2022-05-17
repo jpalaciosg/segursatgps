@@ -405,7 +405,7 @@ def create_1008_fleet_trigger(request):
 @api_view(['POST'])
 def create_1012_fleet_trigger(request):
     data = request.data
-    serializer = FleetTriggerExtension1012(data=data)
+    serializer = FleetTrigger1012Serializer(data=data)
     if serializer.is_valid():
         extension1012 = FleetTriggerExtension1012.objects.create(
             seconds = data['seconds'],
