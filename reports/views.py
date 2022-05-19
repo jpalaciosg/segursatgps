@@ -3547,6 +3547,8 @@ def get_telemetry_report(request):
                 'max_rpm': max(rpm_list),
                 'max_engine_coolant_temp': max(engine_coolant_temp_list),
                 'max_ambient_air_temp': max(ambient_air_temp_list),
+                'max_acceleration_pedal_position': max(acceleration_pedal_position_list),
+                'max_engine_current_load': max(engine_current_load_list),
             })  
         final_report = {
             'telemetry_report':telemetry_report,
