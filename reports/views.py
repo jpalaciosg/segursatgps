@@ -3453,7 +3453,9 @@ def get_telemetry_report(request):
         summarization = []
         rpm_list = []
         engine_coolant_temp_list = []
-        ambient_air_temp_list = []	
+        ambient_air_temp_list = []
+        acceleration_pedal_position_list = []
+        engine_current_load_list = []
 
         device_reader = DeviceReader(unit.uniqueid)
         for i in range(len(locations)):
@@ -3506,6 +3508,7 @@ def get_telemetry_report(request):
             try:
                 if locations[i].protocol == 'teltonika640':
                     item['acceleration_pedal_position'] = attributes['io84']
+                    acceleration_pedal_position_list.append(attributes['io84'])
                 else:
                     item['acceleration_pedal_position'] = 'N/D'
             except Exception as e:
@@ -3513,6 +3516,7 @@ def get_telemetry_report(request):
             try:
                 if locations[i].protocol == 'teltonika640':
                     item['engine_current_load'] = attributes['io85']
+                    engine_current_load_list.append(attributes['io85'])
                 else:
                     item['engine_current_load'] = 'N/D'
             except Exception as e:
@@ -3540,7 +3544,9 @@ def get_telemetry_report(request):
                 'unit_description': unit.description,
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'maximum_rpm': max(rpm_list),
+                'max_rpm': max(rpm_list),
+                'max_engine_coolant_temp': max(engine_coolant_temp_list),
+                'max_ambient_air_temp': max(ambient_air_temp_list),
             })  
         final_report = {
             'telemetry_report':telemetry_report,
