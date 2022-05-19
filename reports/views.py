@@ -3543,7 +3543,7 @@ def get_telemetry_report(request):
             except Exception as e:
                 item['fuel_level'] = 'N/D'
             
-        telemetry_report.append(item)
+            telemetry_report.append(item)
             
         if len(telemetry_report) > 0:
             summarization.append({
