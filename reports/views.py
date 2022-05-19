@@ -3543,7 +3543,7 @@ def get_telemetry_report(request):
             except Exception as e:
                 item['fuel_level'] = 'N/D'
             
-            telemetry_report.append(item)
+        telemetry_report.append(item)
             
         if len(telemetry_report) > 0:
             summarization.append({
@@ -3559,7 +3559,7 @@ def get_telemetry_report(request):
                 'fuel_used': max(engine_total_fuel_used_list) - min(engine_total_fuel_used_list),
                 'max_fuel_level': max(fuel_level_list),
                 'min_fuel_level': min(fuel_level_list),
-                'mileage': max(odometer_list) - min(odometer_list)
+                'mileage': round(max(odometer_list)-min(odometer_list),2),
             })  
         final_report = {
             'telemetry_report':telemetry_report,
