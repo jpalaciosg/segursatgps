@@ -3458,6 +3458,7 @@ def get_telemetry_report(request):
         engine_current_load_list = []
         engine_total_fuel_used_list = []
         fuel_level_list = []
+        odometer_list = []
 
         device_reader = DeviceReader(unit.uniqueid)
         for i in range(len(locations)):
@@ -3503,6 +3504,7 @@ def get_telemetry_report(request):
             try:
                 if locations[i].protocol == 'teltonika640':
                     item['odometer'] = round(attributes['io192']/1000,2)
+                    odometer_list.append(round(attributes['io192']/1000,2))
                 else:
                     item['odometer'] = 'N/D'
             except Exception as e:
@@ -3556,6 +3558,7 @@ def get_telemetry_report(request):
                 'fuel_used': max(engine_total_fuel_used_list) - min(engine_total_fuel_used_list),
                 'max_fuel_level': max(fuel_level_list),
                 'min_fuel_level': min(fuel_level_list),
+                'mileage': max(odometer_list) - min(odometer_list)
             })  
         final_report = {
             'telemetry_report':telemetry_report,
