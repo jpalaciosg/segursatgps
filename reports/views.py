@@ -3456,6 +3456,7 @@ def get_telemetry_report(request):
         ambient_air_temp_list = []
         acceleration_pedal_position_list = []
         engine_current_load_list = []
+        engine_total_fuel_used_list = []
 
         device_reader = DeviceReader(unit.uniqueid)
         for i in range(len(locations)):
@@ -3524,6 +3525,7 @@ def get_telemetry_report(request):
             try:
                 if locations[i].protocol == 'teltonika640':
                     item['engine_total_fuel_used'] = attributes['io86']
+                    engine_total_fuel_used_list.append(attributes['io86'])
                 else:
                     item['engine_total_fuel_used'] = 'N/D'
             except Exception as e:
@@ -3549,6 +3551,7 @@ def get_telemetry_report(request):
                 'max_ambient_air_temp': max(ambient_air_temp_list),
                 'max_acceleration_pedal_position': max(acceleration_pedal_position_list),
                 'max_engine_current_load': max(engine_current_load_list),
+                'fuel_used': max(engine_total_fuel_used_list) - min(engine_total_fuel_used_list),
             })  
         final_report = {
             'telemetry_report':telemetry_report,
