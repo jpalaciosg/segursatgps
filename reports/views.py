@@ -3500,7 +3500,7 @@ def get_telemetry_report(request):
                 item['ambient_air_temp'] = 'N/D'
             try:
                 if locations[i].protocol == 'teltonika640':
-                    item['odometer'] = attributes['io192']
+                    item['odometer'] = round(attributes['io192']/1000,2)
                 else:
                     item['odometer'] = 'N/D'
             except Exception as e:
