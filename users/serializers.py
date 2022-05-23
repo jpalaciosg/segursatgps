@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UpdateUserSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     description = serializers.CharField(max_length=100)
-    email = serializers.EmailField()
+    email = serializers.EmailField(max_length=150, allow_blank=True)
     is_active = serializers.BooleanField
 
 class UpdatePasswordSerializer(serializers.Serializer):
