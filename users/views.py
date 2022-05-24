@@ -260,6 +260,24 @@ def update_password(request,id):
         }
         return Response(response,status=status.HTTP_400_BAD_REQUEST)
 
+#By Eslim
+@api_view(['DELETE'])
+def delete_user(request,id):
+    try:
+        profile = Profile.objects.get(id=id,account=request.user.profile.account)
+    except Exception as e:
+        error = {
+            'detail': 'User does not exist.'
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    #profile.delete()
+    response = {
+        'status': 'OK',
+        'description': 'User has been deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
+#By Eslim
+
 @api_view(['PUT'])
 def update_profile(request,id):
     data = request.data
