@@ -62,7 +62,7 @@ def insert_location_in_history(data):
             timestamp = data['timestamp']
             device_datetime = datetime.utcfromtimestamp(timestamp)
             device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-            speed = 92 if int(data['speed']) > 92 else data['speed']
+            speed = 95 if int(data['speed']) > 95 else data['speed']
             SutranLocation.objects.create(
                 unit_name = data['unit_name'],
                 latitude = data['latitude'],

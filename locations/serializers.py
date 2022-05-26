@@ -18,7 +18,6 @@ class LocationSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 class InsertLocationSerializer2(serializers.Serializer):
-    id = serializers.IntegerField()
     deviceid = serializers.CharField(max_length=20)
     timestamp = serializers.IntegerField()
     latitude = serializers.FloatField()

@@ -36,6 +36,7 @@ def insert_location_batch(request):
     for data in data_list:
         serializer = InsertLocationSerializer2(data=data)
         if serializer.is_valid():
+            data = serializer.validated_data
             deviceid = data['deviceid']
             errors = None
             try:
@@ -43,7 +44,6 @@ def insert_location_batch(request):
             except Exception as e:
                 print(e)
                 errors = {
-                    'id': data['id'],
                     'errors':{
                         'deviceid':f"El dispositivo {data['deviceid']} no existe"
                     }
@@ -272,6 +272,7 @@ def insert_history_location_batch(request):
     for data in data_list:
         serializer = InsertLocationSerializer2(data=data)
         if serializer.is_valid():
+            data = serializer.validated_data
             deviceid = data['deviceid']
             errors = None
             try:
@@ -279,7 +280,6 @@ def insert_history_location_batch(request):
             except Exception as e:
                 print(e)
                 errors = {
-                    'id': data['id'],
                     'errors':{
                         'deviceid':f"El dispositivo {data['deviceid']} no existe"
                     }
