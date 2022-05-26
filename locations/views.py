@@ -36,7 +36,7 @@ def insert_location_batch(request):
     for data in data_list:
         serializer = InsertLocationSerializer2(data=data)
         if serializer.is_valid():
-            data = serializer.validated_data
+            #data = serializer.validated_data
             deviceid = data['deviceid']
             errors = None
             try:
@@ -272,7 +272,7 @@ def insert_history_location_batch(request):
     for data in data_list:
         serializer = InsertLocationSerializer2(data=data)
         if serializer.is_valid():
-            data = serializer.validated_data
+            #data = serializer.validated_data
             deviceid = data['deviceid']
             errors = None
             try:
