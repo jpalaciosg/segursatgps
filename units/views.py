@@ -20,7 +20,7 @@ from common.privilege import Privilege
 gmt_conversor = GMTConversor() #conversor zona horaria
 privilege = Privilege()
 
-# Create your views here.  
+# Create your views here.
 @login_required
 def units_view(request):
     # verificar privilegios
@@ -121,6 +121,8 @@ def update_unit(request,id):
         unit.name = data['unit_name']
         unit.description = data['description']
         unit.odometer = data['odometer']
+        unit.show_unit_name_in_map = data['show_unit_name_in_map']
+        unit.show_unit_description_in_map = data['show_unit_description_in_map']
         try:
             unit.save()
         except Exception as e:
