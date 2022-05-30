@@ -1,4 +1,4 @@
-from units.models import Device 
+from units.models import Device
 
 class Privilege:
 
@@ -10,7 +10,7 @@ class Privilege:
         else:
             units = profile.units.all()
         return units
-    
+
     def view_detailed_report(self,profile):
         if profile.is_admin == False:
             if profile.view_detailed_report == False:
@@ -32,6 +32,12 @@ class Privilege:
     def view_trip_report(self,profile):
         if profile.is_admin == False:
             if profile.view_trip_report == False:
+                return False
+        return True
+
+    def view_day_trip_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_day_trip_report == False:
                 return False
         return True
 
@@ -128,5 +134,17 @@ class Privilege:
     def view_alert_history(self,profile):
         if profile.is_admin == False:
             if profile.view_alert_history == False:
+                return False
+        return True
+
+    def view_hours_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_hours_report == False:
+                return False
+        return True
+
+    def view_temperature_report(self,profile):
+        if profile.is_admin == False:
+            if profile.view_temperature_report == False:
                 return False
         return True

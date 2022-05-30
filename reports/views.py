@@ -55,7 +55,7 @@ def dashboard_view(request):
             units_in_motion.append(unit)
         else:
             units_stopped.append(unit)
-    
+
     return render(request,'reports/dashboard.html',{
         'units_transmitting': units_transmitting,
         'units_not_transmitted': units_not_transmitted,
@@ -264,7 +264,7 @@ def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
             data[i]['distance'] = round(distance,3)
             accumulated_distance += distance
             data[i]['accumulated_distance'] = round(accumulated_distance,3)
-    
+
     path = f'static/tmp/{unit.name}from{initial_datetime.replace(" ","T")}to{final_datetime.replace(" ","T")}.xlsx'
     report = {
         'unit_name': [],
@@ -281,7 +281,7 @@ def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
         'address': [],
     }
     for item in data:
-        report['unit_name'].append(unit.name) 
+        report['unit_name'].append(unit.name)
         report['unit_description'].append(unit.description)
         report['datetime'].append(item['datetime'])
         report['latitude'].append(item['latitude'])
@@ -671,7 +671,7 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    
+
     locations = Location.objects.using('history_db_replica').filter(
         unitid=unit.id,
         timestamp__gte=initial_timestamp,
@@ -736,7 +736,7 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
     final_report = {
         'harsh_driving_report':harsh_driving_report,
         'summarization':summarization,
-    }    
+    }
     return Response(final_report,status=status.HTTP_200_OK)
 
 def driving_style_report_view(request):
@@ -859,10 +859,10 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    
+
     trip_report = []
     summarization = []
-    
+
     if unit_name.upper() == 'ALL':
         units = privilege.get_units(request.user.profile)
         for unit in units:
@@ -928,7 +928,7 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
                 tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                 total_stop_duration += stop_duration
                 tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
-            
+
             if len(unit_trip_report) != 0:
                 driving_duration = duration - total_stop_duration
                 summarization.append({
@@ -942,7 +942,7 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
                     "time": str(timedelta(seconds=duration)),
                     "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
                     "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration))
-                })            
+                })
 
     else:
         locations_qs = Location.objects.using('history_db_replica').filter(
@@ -976,7 +976,7 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
         number_of_trips = 0
         distance = 0.0
         duration = 0
-        
+
         for tr in trip_report:
             number_of_trips += 1
             distance += tr['distance']
@@ -1023,7 +1023,7 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
                 "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
                 "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration))
             })
-    
+
     # CALCULAR GEOCERCAS
     if geofence_option:
         geofences = Geofence.objects.filter(account=request.user.profile.account)
@@ -1172,7 +1172,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                     total_stop_duration += stop_duration
                     tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
                     trip_report.append(tr)
-                
+
                 if len(unit_trip_report) != 0:
                     driving_duration = duration - total_stop_duration
                     summarization.append({
@@ -1190,7 +1190,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                         "percentage_driving_time_in_trip": str(round(driving_duration*100/86400,2))+' %',
                         "percentage_stopped_time_in_trip": str(round(total_stop_duration*100/86400,2))+' %',
                         "percentage_stopped_time": str(round((86400-duration)*100/86400,2))+' %',
-                    })     
+                    })
     else:
         initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
         initial_datetime_obj = initial_datetime_obj.replace(hour=0,minute=0,second=0)
@@ -1226,7 +1226,7 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
                 })
             device_reader = DeviceReader(unit.uniqueid)
             unit_trip_report = device_reader.generate_trip_report(locations)
-           
+
             total_stop_duration = 0
             number_of_trips = 0
             distance = 0.0
@@ -1415,7 +1415,7 @@ def trip_report_view(request):
                     total_stop_duration = 0
                     number_of_trips = 0
                     distance = 0.0
-                    duration = 0 
+                    duration = 0
 
                     for tr in unit_trip_report:
                         number_of_trips += 1
@@ -1448,7 +1448,7 @@ def trip_report_view(request):
                         tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                         total_stop_duration += stop_duration
                         tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
-                    
+
                     if len(unit_trip_report) != 0:
                         driving_duration = duration - total_stop_duration
                         summarization.append({
@@ -1538,7 +1538,7 @@ def trip_report_view(request):
                     tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                     total_stop_duration += stop_duration
                     tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
-                
+
                 driving_duration = duration - total_stop_duration
                 summarization.append({
                     "unit_name" : unit.name,
@@ -1591,7 +1591,7 @@ def trip_report_view(request):
                 'units':units,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-                })      
+                })
         return render(request,'reports/trip-report.html',{
             'units':units,
             'form':form,
@@ -1606,7 +1606,7 @@ def trip_report_view(request):
 @login_required
 def trip_report2_view(request):
     # verificar privilegios
-    if privilege.view_trip_report(request.user.profile) == False:
+    if privilege.view_day_trip_report(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request.user.profile)
@@ -1662,7 +1662,7 @@ def group_trip_report_view(request):
                     'groups':groups,
                     'form':form,
                 })
-            
+
             group_trip_report = []
             summarization = []
 
@@ -1694,7 +1694,7 @@ def group_trip_report_view(request):
                 total_stop_duration = 0
                 number_of_trips = 0
                 distance = 0.0
-                duration = 0 
+                duration = 0
 
                 for tr in unit_trip_report:
                     number_of_trips += 1
@@ -1727,7 +1727,7 @@ def group_trip_report_view(request):
                     tr['stopped_time'] = str(timedelta(seconds=stop_duration))
                     total_stop_duration += stop_duration
                     tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
-                
+
                 if len(unit_trip_report) != 0:
                     driving_duration = duration - total_stop_duration
                     summarization.append({
@@ -1740,7 +1740,7 @@ def group_trip_report_view(request):
                         "driving_time": str(timedelta(seconds=driving_duration)),
                         "stopped_time": str(timedelta(seconds=total_stop_duration))
                     })
-            
+
             # CALCULAR GEOCERCAS
             geofences = Geofence.objects.filter(account=request.user.profile.account)
             for tr in group_trip_report:
@@ -1827,7 +1827,7 @@ def get_stop_report(request,unit_name,initial_datetime,final_datetime,discard_ti
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    
+
     # tiempo para descartar
     seconds = int(discard_time) * 60
     # fin - tiempo para descartar
@@ -1995,7 +1995,7 @@ def stop_report_view(request):
                 'units':units,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-            })      
+            })
         return render(request,'reports/stop-report.html',{
             'units':units,
             'form':form,
@@ -2058,7 +2058,7 @@ def group_stop_report_view(request):
                     'groups':groups,
                     'form':form,
                 })
-            
+
             group_stop_report = []
             summarization = []
 
@@ -2126,7 +2126,7 @@ def group_stop_report_view(request):
                 'groups':groups,
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-            })     
+            })
 
         return render(request,'reports/group-stop-report.html',{
             'groups':groups,
@@ -2170,7 +2170,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
             'error':str(e)
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    
+
     # Aqui va la logica del resultado
     speed_report = []
     summarization = []
@@ -2257,7 +2257,7 @@ def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_lim
         'speed_report': speed_report,
         'summarization': summarization
     }
-    
+
     return Response(data,status=status.HTTP_200_OK)
 
 # REPORTE DE VELOCIDAD
@@ -2336,7 +2336,7 @@ def speed_report_view(request):
                     for item in unit_speed_report:
                         item['unit_name'] = unit.name
                         item['unit_description'] = unit.description
-                        speed_report.append(item) 
+                        speed_report.append(item)
             else:
                 locations_qs = Location.objects.using('history_db_replica').filter(
                     unitid=unit.id,
@@ -2441,7 +2441,7 @@ def group_speed_report_view(request):
                     'groups':groups,
                     'form':form,
                 })
-            
+
             # Aqui va la logica del resultado
             group_speed_report = []
             for unit in group.units.all():
@@ -2467,7 +2467,7 @@ def group_speed_report_view(request):
                 speed_limit = int(data['speed_limit'])
                 speed_report = device_reader.generate_speed_report(locations,speed_limit)
                 for item in speed_report:
-                    item['unit_name'] = unit.name 
+                    item['unit_name'] = unit.name
                     group_speed_report.append(item)
 
             return render(request,'reports/group-speed-report.html',{
@@ -2630,7 +2630,7 @@ def get_mileage_report(request,unit_name,initial_datetime,final_datetime):
         'mileage_by_date':result2
     }
     return Response(response,status=status.HTTP_200_OK)
-    
+
 # MILEAGE REPORT
 @login_required
 def mileage_report_view(request):
@@ -2820,7 +2820,7 @@ def group_mileage_report_view(request):
                     'groups':groups,
                     'form':form,
                 })
-            
+
             # Aqui va la logica del resultado
             group_mileage_report = []
             for unit in group.units.all():
@@ -2842,7 +2842,7 @@ def group_mileage_report_view(request):
                         'address':location_qs.address,
                         'attributes':json.loads(location_qs.attributes),
                     })
-                
+
                 device_reader = DeviceReader(unit.uniqueid)
                 distance_sum = device_reader.generate_mileage_report(locations)
                 group_mileage_report.append(
@@ -2854,7 +2854,7 @@ def group_mileage_report_view(request):
                         "odometer":round(unit.odometer,2),
                     }
                 )
-            
+
             return render(request,'reports/group-mileage-report.html',{
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
@@ -2864,7 +2864,7 @@ def group_mileage_report_view(request):
                 'form':form,
                 #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
             })
-                
+
 
     # GET
     groups = Group.objects.filter(account=request.user.profile.account)
@@ -3073,7 +3073,7 @@ def get_geofence_report(request):
                 'detail': 'Report time range exceeded.'
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        
+
         geofence_report = []
         if data['unit_name'].upper() == 'ALL':
             units = privilege.get_units(request.user.profile)
@@ -3135,7 +3135,7 @@ def get_geofence_report(request):
                 except:
                     pass
             unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
-            
+
             for item in unit_geofence_report:
                 item['unit_name'] = unit.name
                 item['unit_description'] = unit.description
@@ -3439,7 +3439,7 @@ def get_telemetry_report(request):
                 'detail': 'Report time range exceeded.'
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        
+
         locations = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
@@ -3542,9 +3542,9 @@ def get_telemetry_report(request):
                     item['fuel_level'] = 'N/D'
             except Exception as e:
                 item['fuel_level'] = 'N/D'
-            
+
             telemetry_report.append(item)
-            
+
         if len(telemetry_report) > 0:
             summarization.append({
                 'unit_name': unit.name,
@@ -3560,11 +3560,11 @@ def get_telemetry_report(request):
                 'max_fuel_level': max(fuel_level_list),
                 'min_fuel_level': min(fuel_level_list),
                 'mileage': round(max(odometer_list)-min(odometer_list),2),
-            })  
+            })
         final_report = {
             'telemetry_report':telemetry_report,
             'summarization':summarization,
-        }    
+        }
         return Response(final_report,status=status.HTTP_200_OK)
     else:
         error = {
@@ -3575,7 +3575,7 @@ def get_telemetry_report(request):
 @login_required
 def temperature_report_view(request):
     #GET
-    units = privilege.get_units(request.user.profile)
+    units = privilege.view_telemetry_report(request.user.profile)
     return render(request,'reports/temperature-report.html',{
         'units':units,
     })
@@ -3613,7 +3613,7 @@ def get_temperature_report(request):
                 'detail': 'Report time range exceeded.'
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        
+
         locations = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
@@ -3655,7 +3655,7 @@ def get_temperature_report(request):
                     temp_list.append(round(temp*0.001,2))
             except Exception as e:
                 pass
-            
+
         if len(temp_list) > 0:
             summarization.append({
                 'unit_name': unit.name,
@@ -3666,11 +3666,11 @@ def get_temperature_report(request):
                 'min_temp': min(temp_list),
                 'avg1_temp': round(mean(temp_list),2),
                 'avg2_temp': round(median(temp_list),2)
-            })  
+            })
         final_report = {
             'temperature_report':temperature_report,
             'summarization':summarization,
-        }    
+        }
         return Response(final_report,status=status.HTTP_200_OK)
     else:
         error = {
@@ -3681,7 +3681,7 @@ def get_temperature_report(request):
 @login_required
 def hours_report_view(request):
     #GET
-    units = privilege.get_units(request.user.profile)
+    units = privilege.view_hours_report(request.user.profile)
     return render(request,'reports/hours-report.html',{
         'units':units,
     })
@@ -3719,7 +3719,7 @@ def get_hours_report(request):
                 'detail': 'Report time range exceeded.'
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        
+
         locations = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
             timestamp__gte=initial_timestamp,
@@ -3774,7 +3774,7 @@ def get_hours_report(request):
         final_report = {
             'hours_report':hours_report,
             'summarization':summarization,
-        } 
+        }
         return Response(final_report,status=status.HTTP_200_OK)
     else:
         error = {
