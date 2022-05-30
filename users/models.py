@@ -34,6 +34,7 @@ class Profile(models.Model):
     view_speed_report = models.BooleanField(default=False)
     view_stop_report = models.BooleanField(default=False)
     view_trip_report = models.BooleanField(default=False)
+    view_day_trip_report = models.BooleanField(default=False)
     view_mileage_report = models.BooleanField(default=False)
     view_geofence_report = models.BooleanField(default=False)
     view_driving_style_report = models.BooleanField(default=False)
@@ -50,6 +51,8 @@ class Profile(models.Model):
     view_users = models.BooleanField(default=False)
     view_latest_alerts = models.BooleanField(default=False)
     view_alert_history = models.BooleanField(default=False)
+    view_hours_report = models.BooleanField(default=False)
+    view_temperature_report = models.BooleanField(default=False)
     # fin - privileges
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
