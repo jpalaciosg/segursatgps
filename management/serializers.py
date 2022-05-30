@@ -6,7 +6,7 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ('__all__')
- 
+
 class DeviceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account = Account.objects.get(id=validated_data['account'])
@@ -15,7 +15,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
         fields = ('__all__')
- 
+
 class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account = Account.objects.get(id=validated_data['account'])
@@ -34,8 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class EditUserSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
-    description = serializers.CharField(max_length=100)
-    email = serializers.EmailField()
+    description = serializers.CharField(max_length=100, allow_blank=True)
+    email = serializers.EmailField(max_length=150, allow_blank=True)
     is_active = serializers.BooleanField()
 
 class InsertLocationSerializer2(serializers.Serializer):
