@@ -3575,7 +3575,11 @@ def get_telemetry_report(request):
 @login_required
 def temperature_report_view(request):
     #GET
-    units = privilege.view_telemetry_report(request.user.profile)
+    # verificar privilegios
+    if privilege.view_temperature_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
+    # fin - verificar privilegios
+    units = privilege.get_units(request.user.profile)
     return render(request,'reports/temperature-report.html',{
         'units':units,
     })
@@ -3681,7 +3685,11 @@ def get_temperature_report(request):
 @login_required
 def hours_report_view(request):
     #GET
-    units = privilege.view_hours_report(request.user.profile)
+    # verificar privilegios
+    if privilege.view_hours_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
+    # fin - verificar privilegios
+    units = privilege.get_units(request.user.profile)
     return render(request,'reports/hours-report.html',{
         'units':units,
     })
