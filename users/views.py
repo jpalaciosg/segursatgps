@@ -308,8 +308,10 @@ def update_profile(request,id):
         profile.view_latest_alerts = data['view_latest_alerts']
         profile.view_alert_history = data['view_alert_history']
         profile.view_units = data['view_units']
-        profile.view_triggers = data['view_triggers']
         profile.view_geofences = data['view_geofences']
+        profile.view_unit_triggers = data['view_unit_triggers']
+        profile.view_fleet_triggers = data['view_fleet_triggers']
+        profile.view_mail_lists = data['view_mail_lists']
         profile.view_users = data['view_users']
         profile.units.clear()
         for id in data['units']:

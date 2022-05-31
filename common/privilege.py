@@ -107,9 +107,21 @@ class Privilege:
                 return False
         return True
 
-    def view_triggers(self,profile):
+    def view_unit_triggers(self,profile):
         if profile.is_admin == False:
-            if profile.view_triggers == False:
+            if profile.view_unit_triggers == False:
+                return False
+        return True
+
+    def view_fleet_triggers(self,profile):
+        if profile.is_admin == False:
+            if profile.view_fleet_triggers == False:
+                return False
+        return True
+
+    def view_mail_lists(self,profile):
+        if profile.is_admin == False:
+            if profile.view_mail_lists == False:
                 return False
         return True
 

@@ -24,7 +24,7 @@ privilege = Privilege()
 @login_required
 def fleet_trigger_view(request):
     # verificar privilegios
-    if privilege.view_triggers(request.user.profile) == False:
+    if privilege.view_fleet_triggers(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     triggers = FleetTrigger.objects.filter(account=request.user.profile.account)
@@ -824,7 +824,7 @@ def update_1012_fleet_trigger(request,id):
 @login_required
 def unit_trigger_view(request):
     # verificar privilegios
-    if privilege.view_triggers(request.user.profile) == False:
+    if privilege.view_unit_triggers(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     triggers = UnitTrigger.objects.filter(account=request.user.profile.account)

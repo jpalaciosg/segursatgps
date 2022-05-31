@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
@@ -17,12 +18,10 @@ privilege = Privilege()
 # Create your views here.
 @login_required
 def mail_list_view(request):
-    """
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_mail_lists(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    """
     mail_lists = MailList.objects.filter(account=request.user.profile.account)
     for mail_list in mail_lists:
         try:
@@ -81,7 +80,7 @@ def create_mail_list(request):
         error = {
             'detail': 'Account does not exist.'
         }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST) 
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
     serializer = MailListSerializer(data=data)
     if serializer.is_valid():
         serializer.create(data)
