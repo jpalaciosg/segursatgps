@@ -116,6 +116,7 @@ urlpatterns = [
     path('web/api/reports/temperature-report/', reports_views.get_temperature_report),
     path('web/api/reports/geofence-report/', reports_views.get_geofence_report),
     path('web/api/reports/hours-report/', reports_views.get_hours_report),
+    path('web/api/reports/telemetry-trip-report/', reports_views.telemetry_trip_report_view),
     path('web/api/management/get-accounts/', management_views.get_accounts),
     path('web/api/management/get-account/<int:id>/', management_views.get_account),
     path('web/api/management/create-account/', management_views.create_account),

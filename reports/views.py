@@ -3789,3 +3789,15 @@ def get_hours_report(request):
             'errors':serializer.errors
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@login_required
+def telemetry_trip_report_view(request):
+    #GET
+    # verificar privilegios
+    if privilege.view_hours_report(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
+    # fin - verificar privilegios
+    units = privilege.get_units(request.user.profile)
+    return render(request,'reports/telemetry-trip-report.html',{
+        'units':units,
+    })
