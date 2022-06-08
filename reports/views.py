@@ -3340,6 +3340,7 @@ def get_telemetry_report(request):
                 'unit_name': unit.name,
                 'unit_description': unit.description,
                 'datetime': dt.strftime("%d/%m/%Y %H:%M:%S"),
+                'timestamp': locations[i].timestamp,
                 'latitude': locations[i].latitude,
                 'longitude': locations[i].longitude,
                 'speed': locations[i].speed,
