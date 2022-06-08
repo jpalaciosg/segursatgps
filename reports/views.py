@@ -3546,20 +3546,56 @@ def get_telemetry_report(request):
             telemetry_report.append(item)
 
         if len(telemetry_report) > 0:
+            try:
+                max_rpm = max(rpm_list)
+            except:
+                max_rpm = "N/A"
+            try:
+                max_engine_coolant_temp = max(engine_coolant_temp_list)
+            except:
+                max_engine_coolant_temp = "N/A"
+            try:
+                max_ambient_air_temp = max(ambient_air_temp_list)
+            except:
+                max_ambient_air_temp = "N/A"
+            try:
+                max_acceleration_pedal_position = max(acceleration_pedal_position_list)
+            except:
+                max_acceleration_pedal_position = "N/A"
+            try:
+                max_engine_current_load = max(engine_current_load_list)
+            except:
+                max_engine_current_load = "N/A"
+            try:
+                fuel_used = max(engine_total_fuel_used_list) - min(engine_total_fuel_used_list)
+            except:
+                fuel_used = "N/A"
+            try:
+                max_fuel_level = max(fuel_level_list)
+            except:
+                max_fuel_level = "N/A"
+            try:
+                min_fuel_level = min(fuel_level_list)
+            except:
+                min_fuel_level = "N/A"
+            try:
+                mileage = round(max(odometer_list)-min(odometer_list),2)
+            except:
+                mileage = "N/A"
             summarization.append({
                 'unit_name': unit.name,
                 'unit_description': unit.description,
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
-                'max_rpm': max(rpm_list),
-                'max_engine_coolant_temp': max(engine_coolant_temp_list),
-                'max_ambient_air_temp': max(ambient_air_temp_list),
-                'max_acceleration_pedal_position': max(acceleration_pedal_position_list),
-                'max_engine_current_load': max(engine_current_load_list),
-                'fuel_used': max(engine_total_fuel_used_list) - min(engine_total_fuel_used_list),
-                'max_fuel_level': max(fuel_level_list),
-                'min_fuel_level': min(fuel_level_list),
-                'mileage': round(max(odometer_list)-min(odometer_list),2),
+                'max_rpm': max_rpm,
+                'max_engine_coolant_temp': max_engine_coolant_temp,
+                'max_ambient_air_temp': max_ambient_air_temp,
+                'max_acceleration_pedal_position': max_acceleration_pedal_position,
+                'max_engine_current_load': max_engine_current_load,
+                'fuel_used': fuel_used,
+                'max_fuel_level': max_fuel_level,
+                'min_fuel_level': min_fuel_level,
+                'mileage': mileage,
             })
         final_report = {
             'telemetry_report':telemetry_report,
