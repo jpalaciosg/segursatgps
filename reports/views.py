@@ -3454,6 +3454,10 @@ def get_telemetry_report(request):
                 mileage = round(max(odometer_list)-min(odometer_list),2)
             except:
                 mileage = "N/A"
+            try:
+                fuel_economy = round(fuel_used/mileage,2)
+            except:
+                fuel_economy = "N/A"
             summarization.append({
                 'unit_name': unit.name,
                 'unit_description': unit.description,
