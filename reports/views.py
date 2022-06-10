@@ -3330,11 +3330,24 @@ def get_telemetry_report(request):
         engine_total_fuel_used_list = []
         fuel_level_list = []
         odometer_list = []
+        accumulated_distance = 0.0
 
         device_reader = DeviceReader(unit.uniqueid)
         for i in range(len(locations)):
             dt = datetime.utcfromtimestamp(locations[i].timestamp)
             dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
+            if i > 0:
+                distance = great_circle(
+                    (
+                        locations[i-1].latitude,
+                        locations[i-1].longitude
+                    ),
+                    (
+                        locations[i].latitude,
+                        locations[i].longitude
+                    ),
+                ).km
+                accumulated_distance += distance
             attributes = json.loads(locations[i].attributes)
             item = {
                 'unit_name': unit.name,
@@ -3347,6 +3360,7 @@ def get_telemetry_report(request):
                 'ignition': device_reader.detect_ignition_event({
                     'attributes':json.loads(locations[i].attributes)
                 }),
+                'accumulated_distance': accumulated_distance,
                 'address': locations[i].address,
             }
             try:
