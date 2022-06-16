@@ -3330,6 +3330,7 @@ def get_telemetry_report(request):
         engine_total_fuel_used_list = []
         fuel_level_list = []
         odometer_list = []
+        speed_list = []
         accumulated_distance = 0.0
 
         device_reader = DeviceReader(unit.uniqueid)
@@ -3428,7 +3429,11 @@ def get_telemetry_report(request):
                     item['fuel_level'] = 'N/D'
             except Exception as e:
                 item['fuel_level'] = 'N/D'
-
+            try:
+                if locations[i].protocol == 'teltonika640':
+                    speed_list.append(item['speed'])
+            except Exception as e:
+                pass
             telemetry_report.append(item)
 
         if len(telemetry_report) > 0:
@@ -3469,6 +3474,22 @@ def get_telemetry_report(request):
             except:
                 mileage = "N/A"
             try:
+                initial_mileage = round(odometer_list[0],2)
+            except:
+                initial_mileage = "N/A"
+            try:
+                final_mileage = round(odometer_list[-1],2)
+            except:
+                final_mileage = "N/A"
+            try:
+                max_speed = round(max(speed_list),2)
+            except:
+                max_speed = "N/A"
+            try:
+                speed_avg = round(mean(speed_list),2)
+            except:
+                speed_avg = "N/A"
+            try:
                 fuel_economy = round(fuel_used/mileage,2)
             except:
                 fuel_economy = "N/A"
@@ -3486,6 +3507,11 @@ def get_telemetry_report(request):
                 'max_fuel_level': max_fuel_level,
                 'min_fuel_level': min_fuel_level,
                 'mileage': mileage,
+                'initial_mileage': initial_mileage,
+                'final_mileage': final_mileage,
+                'max_speed': max_speed,
+                'speed_avg': speed_avg,
+                'fuel_economy': fuel_economy,
             })
         final_report = {
             'telemetry_report':telemetry_report,
