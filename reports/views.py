@@ -3358,6 +3358,7 @@ def get_telemetry_report(request):
                 'latitude': locations[i].latitude,
                 'longitude': locations[i].longitude,
                 'speed': locations[i].speed,
+                'angle': locations[i].angle,
                 'ignition': device_reader.detect_ignition_event({
                     'attributes':json.loads(locations[i].attributes)
                 }),
@@ -3442,7 +3443,7 @@ def get_telemetry_report(request):
             except:
                 max_rpm = "N/A"
             try:
-                rpm_avg = mean([x for x in rpm_list if x != 0])
+                rpm_avg = round(mean([x for x in rpm_list if x != 0]),2)
             except:
                 rpm_avg = "N/A"
             try:
