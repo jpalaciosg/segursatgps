@@ -3442,6 +3442,10 @@ def get_telemetry_report(request):
             except:
                 max_rpm = "N/A"
             try:
+                rpm_avg = mean([x for x in rpm_list if x != 0])
+            except:
+                rpm_avg = "N/A"
+            try:
                 max_engine_coolant_temp = max(engine_coolant_temp_list)
             except:
                 max_engine_coolant_temp = "N/A"
