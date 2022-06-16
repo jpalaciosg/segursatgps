@@ -3503,6 +3503,7 @@ def get_telemetry_report(request):
                 'initial_datetime':data['initial_datetime'],
                 'final_datetime':data['final_datetime'],
                 'max_rpm': max_rpm,
+                'rpm_avg': rpm_avg,
                 'max_engine_coolant_temp': max_engine_coolant_temp,
                 'max_ambient_air_temp': max_ambient_air_temp,
                 'max_acceleration_pedal_position': max_acceleration_pedal_position,
