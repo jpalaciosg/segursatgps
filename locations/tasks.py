@@ -141,6 +141,7 @@ def process_alerts_for_the_alert_center(data):
     panic_event = device_reader.detect_panic_event(data['current_location'])
     battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
     geofence_exit_event = False
+    """
     if data['current_location']['account'] == 'hng_inversiones':
         try:
             account = Account.objects.get(name='hng_inversiones')
@@ -153,6 +154,7 @@ def process_alerts_for_the_alert_center(data):
                 geofence_exit_event = True
         except Exception as e:
             pass
+    """
     if battery_event:
         print('ALERTA BATERIA')
         device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
