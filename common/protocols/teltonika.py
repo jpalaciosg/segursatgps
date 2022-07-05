@@ -66,7 +66,7 @@ class Teltonika:
         try:
             previous_power = float(previous_location['attributes']['power'])
             current_power = float(current_location['attributes']['power'])
-            if previous_power >= 1 and current_power < 1:
+            if previous_power > 1 and current_power < 1:
                 return True
             return False
         except Exception as e:
