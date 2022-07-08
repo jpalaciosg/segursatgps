@@ -328,3 +328,12 @@ def update_profile(request,id):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_basic_current_user_information(request,id):
+    data = {
+        'username': request.user.username,
+        'description': request.user.profile.description,
+        'account': request.user.profile.username,
+    }
+    return Response(data,status=status.HTTP_200_OK)
