@@ -270,7 +270,8 @@ def delete_user(request,id):
             'detail': 'User does not exist.'
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    #profile.delete()
+    profile.user.delete()
+    profile.delete()
     response = {
         'status': 'OK',
         'description': 'User has been deleted.',
