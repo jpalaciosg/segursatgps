@@ -87,6 +87,7 @@ urlpatterns = [
     path('web/api/users/update-password/<int:id>/', users_views.update_password),
     path('web/api/users/update-profile/<int:id>/', users_views.update_profile),
     path('web/api/users/delete-user/<int:id>/', users_views.delete_user),
+    path('web/api/users/get_basic_current_user_information/', users_views.get_basic_current_user_information),
     path('web/api/units/get-units/', units_views.get_units),
     path('web/api/units/get-unit/<str:name>/', units_views.get_unit),
     path('web/api/units/get-unit-status/<str:name>/', units_views.get_unit_status),
