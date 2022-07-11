@@ -334,7 +334,8 @@ def update_profile(request,id):
 def get_basic_current_user_information(request):
     data = {
         'username': request.user.username,
-        'description': request.user.profile.description,
-        'account': request.user.profile.username,
+        'description': request.user.description,
+        'account_name': request.user.profile.account.username,
+        'account_description': request.user.profile.account.description,
     }
     return Response(data,status=status.HTTP_200_OK)
