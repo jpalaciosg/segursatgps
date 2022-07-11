@@ -331,7 +331,7 @@ def update_profile(request,id):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-def get_basic_current_user_information(request,id):
+def get_basic_current_user_information(request):
     data = {
         'username': request.user.username,
         'description': request.user.profile.description,
