@@ -335,7 +335,7 @@ def get_basic_current_user_information(request):
     data = {
         'username': request.user.username,
         'description': request.user.description,
-        'account_name': request.user.profile.account.username,
+        'account_name': request.user.profile.account.name,
         'account_description': request.user.profile.account.description,
     }
     return Response(data,status=status.HTTP_200_OK)
