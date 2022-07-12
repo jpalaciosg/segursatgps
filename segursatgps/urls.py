@@ -40,6 +40,7 @@ urlpatterns = [
     path('drivers/', drivers_views.drivers_view, name='drivers'),
     path('drivers/delete-driver/<int:id>/', drivers_views.delete_driver, name='delete-driver'),
     path('geofences/', geofences_views.geofences_view, name='geofences'),
+    path('geofence/groups/', geofences_views.geofence_group_view, name='geofence-group'),
     path('geofences/delete-geofence/<int:id>/', geofences_views.delete_geofence, name='delete-geofence'),
     path('dashboard/', reports_views.dashboard_view, name='dashboard'),
     path('reports/fleet-status/', reports_views.fleet_status_view, name='fleet-status'),

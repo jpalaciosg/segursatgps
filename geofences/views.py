@@ -25,44 +25,6 @@ def geofences_view(request):
     if privilege.view_geofences(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>",status=403)
     # fin - verificar privilegios
-    if request.method == 'POST':
-        geofences = Geofence.objects.filter(account=request.user.profile.account)
-        form = GeofenceCreateForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            try:
-                geofence = Geofence.objects.get(
-                    name = data['name'],
-                    account = request.user.profile.account,
-                )
-            except Geofence.DoesNotExist:
-                geofence = None
-            if geofence:
-                form.add_error('name', 'La geocerca ya existe.')
-                form.add_error('geojson', 'La geocerca ya existe.')
-            else:
-                try:
-                    geojson = json.loads(data['geojson'])
-                except:
-                    geojson = None
-                    form.add_error('geojson', 'Formato incorrecto.')
-                if geojson:
-                    geofence = Geofence.objects.create(
-                        name = data['name'],
-                        description = data['description'],
-                        geojson = data['geojson'],
-                        account = request.user.profile.account
-                    )
-                    return render(request,'geofences/geofences.html',{
-                        'geofences':geofences,
-                        'form':form,
-                        'success':'Geocerca creada exitosamente.'
-                    })
-        return render(request,'geofences/geofences.html',{
-            'geofences':geofences,
-            'form':form
-        })
-    # GET
     geofences = Geofence.objects.filter(account=request.user.profile.account)
     for geofence in geofences:
         try:
@@ -70,10 +32,35 @@ def geofences_view(request):
             geofence.modified = gmt_conversor.convert_localtimetoutc(geofence.modified)
         except Exception as e:
             print(e)
-    form = GeofenceCreateForm
     return render(request,'geofences/geofences.html',{
         'geofences':geofences,
-        'form':form
+    })
+
+@login_required
+def geofences_view(request):
+    # verificar privilegios
+    if privilege.view_geofences(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>",status=403)
+    # fin - verificar privilegios
+    geofences = Geofence.objects.filter(account=request.user.profile.account)
+    for geofence in geofences:
+        try:
+            geofence.created = gmt_conversor.convert_localtimetoutc(geofence.created)
+            geofence.modified = gmt_conversor.convert_localtimetoutc(geofence.modified)
+        except Exception as e:
+            print(e)
+    return render(request,'geofences/geofences.html',{
+        'geofences':geofences,
+    })
+
+@login_required
+def geofence_group_view(request):
+    # verificar privilegios
+    if privilege.view_geofences(request.user.profile) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>",status=403)
+    # fin - verificar privilegios
+    return render(request,'geofences/geofence-group.html',{
+        #'geofences':geofences,
     })
 
 @api_view(['GET'])
