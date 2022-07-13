@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 
 import json
 
-from .models import Geofence
+from .models import Geofence, GeofenceGroup
 from .serializers import GeofenceSerializer,UpdateGeofenceSerializer
 from .forms import GeofenceCreateForm
 
@@ -37,30 +37,20 @@ def geofences_view(request):
     })
 
 @login_required
-def geofences_view(request):
-    # verificar privilegios
-    if privilege.view_geofences(request.user.profile) == False:
-        return HttpResponse("<h1>Acceso restringido</h1>",status=403)
-    # fin - verificar privilegios
-    geofences = Geofence.objects.filter(account=request.user.profile.account)
-    for geofence in geofences:
-        try:
-            geofence.created = gmt_conversor.convert_localtimetoutc(geofence.created)
-            geofence.modified = gmt_conversor.convert_localtimetoutc(geofence.modified)
-        except Exception as e:
-            print(e)
-    return render(request,'geofences/geofences.html',{
-        'geofences':geofences,
-    })
-
-@login_required
 def geofence_group_view(request):
     # verificar privilegios
     if privilege.view_geofences(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>",status=403)
     # fin - verificar privilegios
+    geofence_groups = GeofenceGroup.objects.filter(account=request.user.profile.account)
+    for gg in geofence_groups:
+        try:
+            gg.created = gmt_conversor.convert_localtimetoutc(gg.created)
+            gg.modified = gmt_conversor.convert_localtimetoutc(gg.modified)
+        except Exception as e:
+            print(e)
     return render(request,'geofences/geofence-group.html',{
-        #'geofences':geofences,
+        'geofence_groups':geofence_groups,
     })
 
 @api_view(['GET'])
