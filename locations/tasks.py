@@ -1,17 +1,13 @@
-from geofences.models import Geofence
-from locations.models import Location,PanderoLocation,SutranLocation,OsinergminLocation
-from units.models import Device
+from locations.models import Location,SutranLocation,OsinergminLocation
 from segursatgps.celery import celery_app
 
 from datetime import datetime
-from shapely.geometry import Point,shape
 import json
 import redis
 
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
 from common.gmt_conversor import GMTConversor
-from users.models import Account
 
 gmt_conversor = GMTConversor() #conversor zona horaria
 

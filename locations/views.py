@@ -1,17 +1,9 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
-
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-import websocket
 import json
 import channels.layers
-import requests
-import redis
-from time import sleep
 from datetime import datetime,timedelta
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
@@ -21,7 +13,6 @@ from units.models import Device
 from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2,InsertSutranLocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
-from common.alert_reader import AlertReader
 from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alerts_for_the_alert_center
 
 # Create your views here.
@@ -98,7 +89,7 @@ def insert_location_batch(request):
                             ),
                         ).km
                         unit.odometer += distance
-                unit.previous_location = json.dumps(previous_location)
+                unit.previous_location = json.dumps(previous_location,ensure_ascii=False)
                 # FIN CALCULAR UBICACION PREVIA
                 # CALCULAR LAST_HOURS
                 device_reader = DeviceReader(unit.uniqueid)
