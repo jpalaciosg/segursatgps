@@ -18,9 +18,11 @@ class Repository:
             'reference': data['unit_name']
         }
         payload = json.dumps(payload,ensure_ascii=False)
+        payload = payload+'\n'
+        payload = ' '.join(format(x,'b') for x in bytearray(payload,'utf-8'))
         date_str = datetime.utcfromtimestamp(data['timestamp']).strftime("%Y%m%d")
         path = Path(f"/repository/{date_str}/{data['unit_id']}")
         path.parent.mkdir(exist_ok=True, parents=True)
-        f = path.open("a+")
-        f.write(f'{payload}\n')
+        f = path.open("ab")
+        f.write(payload.encode())
         f.close()
