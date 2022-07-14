@@ -23,13 +23,17 @@ def thread_function(item):
     now = gmt_conversor.convert_utctolocaltime(datetime.utcnow())
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
+    alert_datetime = datetime.utcfromtimestamp(item.alert_timestamp)
+    alert_datetime = gmt_conversor.convert_localtimetoutc(alert_datetime)
+    alert_datetime = alert_datetime.strftime("%d/%m/%Y %H:%M:%S")
+
     msg_content = f'''
     Estimados señores:
 
     Se notifica {item.alert_description}.
 
     - Unidad: {item.unit_name}/{item.unit_description}
-    - Fecha y Hora: {item.alert_timestamp}
+    - Fecha y Hora: {alert_datetime}
     - Coordenadas: {item.alert_latitude}/{item.alert_longitude}
     - Velocidad: {item.alert_speed}
     - Direccion: {item.alert_address}
