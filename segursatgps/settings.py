@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'locations',
     'maintenances',
     'mails',
+    'checkpoint',
 ]
 
 REST_FRAMEWORK = {

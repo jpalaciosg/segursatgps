@@ -29,6 +29,7 @@ import generic.views as generic_views
 import management.views as management_views
 import mails.views as mails_views
 import triggers.views as triggers_views
+import checkpoint.views as checkpoint_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -179,4 +180,5 @@ urlpatterns = [
     path('web/api/triggers/update-1007-unit-trigger/<int:id>/', triggers_views.update_1007_unit_trigger),
     path('web/api/triggers/update-1008-unit-trigger/<int:id>/', triggers_views.update_1008_unit_trigger),
     path('web/api/triggers/delete-unit-trigger/<int:id>/', triggers_views.delete_unit_trigger),
+    path('web/api/checkpoint/get-control-sets/', checkpoint_views.get_control_sets),
 ]
