@@ -8,12 +8,20 @@ import redis
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
 from common.gmt_conversor import GMTConversor
+from common.repository import Repository
 
 gmt_conversor = GMTConversor() #conversor zona horaria
+repository = Repository()
 
 @celery_app.task
 def insert_location_in_history(data):
     # INTRODUCIR UBICACION EN EL HISTORICO
+    """
+    try:
+        repository.write(data)
+    except Exception as e:
+        print(e)
+    """
     try:
         location = Location.objects.create(
             unitid = data['unit_id'],
