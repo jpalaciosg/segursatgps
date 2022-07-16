@@ -24,7 +24,7 @@ def thread_function(item):
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
     alert_datetime = datetime.utcfromtimestamp(item.alert_timestamp)
-    alert_datetime = gmt_conversor.convert_localtimetoutc(alert_datetime)
+    alert_datetime = gmt_conversor.convert_utctolocaltime(alert_datetime)
     alert_datetime = alert_datetime.strftime("%d/%m/%Y %H:%M:%S")
 
     msg_content = f'''
