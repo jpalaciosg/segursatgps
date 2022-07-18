@@ -12,12 +12,32 @@ def get_control_sets(request):
             {
                 'id':1,
                 'name':'CONTROL GRIFOS',
-                'description':'CONTROL DE ABASTECIMIENTO EN GRIFOS'
+                'description':'CONTROL DE ABASTECIMIENTO EN GRIFOS',
+                'pictures':[
+                    {
+                        'name': 'Selfie',
+                        'description': 'El coductor debe tomarse una foto'
+                    },
+                    {
+                        'name': 'Placa',
+                        'description': 'Placa del vehiculo'
+                    }
+                ]
             },
             {
                 'id':2,
                 'name':'CONTROL PERNOCTE',
-                'description':'CONTROL EN ZONAS DE PERNOCTE'
+                'description':'CONTROL EN ZONAS DE PERNOCTE',
+                'pictures':[
+                    {
+                        'name': 'Selfie',
+                        'description': 'El coductor debe tomarse una foto'
+                    },
+                    {
+                        'name': 'Placa',
+                        'description': 'Placa del vehiculo'
+                    }
+                ]
             },
         ]
         return Response(data,status=status.HTTP_200_OK)
