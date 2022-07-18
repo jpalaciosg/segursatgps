@@ -13,6 +13,15 @@ def get_control_sets(request):
                 'id':1,
                 'name':'CONTROL GRIFOS',
                 'description':'CONTROL DE ABASTECIMIENTO EN GRIFOS',
+                'questions':[{
+                    'question': 'Eres gay?',
+                    'options': [
+                        'Si soy',
+                        'No lo se',
+                        'Me declaro cabro',
+                        'No'
+                    ]
+                }],
                 'pictures':[
                     {
                         'name': 'Selfie',
@@ -28,6 +37,15 @@ def get_control_sets(request):
                 'id':2,
                 'name':'CONTROL PERNOCTE',
                 'description':'CONTROL EN ZONAS DE PERNOCTE',
+                'questions':[{
+                    'question': 'Eres gay?',
+                    'options': [
+                        'Si soy',
+                        'No lo se',
+                        'Me declaro cabro',
+                        'No'
+                    ]
+                }],
                 'pictures':[
                     {
                         'name': 'Selfie',
@@ -54,6 +72,15 @@ def get_control_set(request,id):
                 'id':1,
                 'name':'CONTROL GRIFOS',
                 'description':'CONTROL DE ABASTECIMIENTO EN GRIFOS',
+                'questions':[{
+                    'question': 'Eres gay?',
+                    'options': [
+                        'Si soy',
+                        'No lo se',
+                        'Me declaro cabro',
+                        'No'
+                    ]
+                }],
                 'pictures':[
                     {
                         'name': 'Selfie',
@@ -69,6 +96,15 @@ def get_control_set(request,id):
                 'id':2,
                 'name':'CONTROL PERNOCTE',
                 'description':'CONTROL EN ZONAS DE PERNOCTE',
+                'questions':[{
+                    'question': 'Eres gay?',
+                    'options': [
+                        'Si soy',
+                        'No lo se',
+                        'Me declaro cabro',
+                        'No'
+                    ]
+                }],
                 'pictures':[
                     {
                         'name': 'Selfie',
