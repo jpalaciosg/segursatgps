@@ -644,7 +644,7 @@ def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
         try:
             unit = Device.objects.get(
                 name=unit_name,
-                #account=request.user.profile.account
+                account=request.user.profile.account
             )
         except Exception as e:
             error = {
