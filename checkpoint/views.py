@@ -72,15 +72,24 @@ def get_control_set(request,id):
                 'id':1,
                 'name':'CONTROL GRIFOS',
                 'description':'CONTROL DE ABASTECIMIENTO EN GRIFOS',
-                'questions':[{
-                    'question': 'Eres gay?',
-                    'options': [
-                        'Si soy',
-                        'No lo se',
-                        'Me declaro cabro',
-                        'No'
-                    ]
-                }],
+                'questions':[
+                    {
+                        'question': 'Has bebido alcohol?',
+                        'options': [
+                            'Si he bebido',
+                            'No se ni como me llamo',
+                            'No'
+                        ]
+                    },
+                    {
+                        'question': 'Tienes un problema mecanico?',
+                        'options': [
+                            'S',
+                            'No estoy seguro',
+                            'No'
+                        ]
+                    },
+                ],
                 'pictures':[
                     {
                         'name': 'Selfie',
