@@ -182,4 +182,5 @@ urlpatterns = [
     path('web/api/triggers/delete-unit-trigger/<int:id>/', triggers_views.delete_unit_trigger),
     path('web/api/checkpoint/get-control-sets/', checkpoint_views.get_control_sets),
     path('web/api/checkpoint/get-control-set/<int:id>/', checkpoint_views.get_control_set),
+    path('web/api/checkpoint/validate-position/<str:lat>/<str:lon>/', checkpoint_views.validate_position),
 ]

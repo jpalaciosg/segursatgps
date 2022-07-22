@@ -121,3 +121,11 @@ def get_control_set(request,id):
     except Exception as e:
         error = {'detail':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def validate_position(request,lat,lon):
+    data = {
+        "status": True,
+        "description": "El usuario esta dentro."
+    }
+    return Response(data,status=status.HTTP_200_OK)
