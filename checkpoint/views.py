@@ -135,6 +135,7 @@ def get_control_set(request,id):
 def validate_position(request,lat,lon):
     data = {
         "status": True,
-        "description": "El usuario esta dentro."
+        "description": "El usuario esta dentro.",
+        "geofence_name": "ZONA DE CONTROL"
     }
     return Response(data,status=status.HTTP_200_OK)
