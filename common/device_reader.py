@@ -63,6 +63,14 @@ class DeviceReader:
             data['last_hours'] = f"{hours} h {minutes} m"
         except Exception as e:
             data['last_hours'] = 'N/D'
+        try:
+            temp = float(data['last_attributes']['temp1'])/0.1
+            if int(temp) == 3000:
+                data['temp'] = int(temp)
+            else:
+                data['temp'] = round(temp*0.001,2)
+        except Exception as e:
+            data['temp'] = 'N/D'
         data['last_report'] = gmt_conversor.convert_utctolocaltime(
             datetime.fromtimestamp(unit.last_timestamp)
         )
