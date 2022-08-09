@@ -8,12 +8,12 @@ from datetime import datetime,timedelta
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
 
-from .models import Location,SutranLocation,PanderoLocation
+from .models import Location,SutranLocation
 from units.models import Device
-from .serializers import InsertLocationSerializer,LocationSerializer,InsertLocationSerializer2,InsertSutranLocationSerializer
+from .serializers import InsertLocationSerializer,LocationSerializer,InsertSutranLocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
-from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alerts_for_the_alert_center
+from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alerts_for_the_alert_center,process_location_in_background
 
 # Create your views here.
 
@@ -25,7 +25,7 @@ def insert_location_batch(request):
     error_list = []
     units = Device.objects.all()
     for data in data_list:
-        serializer = InsertLocationSerializer2(data=data)
+        serializer = InsertLocationSerializer(data=data)
         if serializer.is_valid():
             #data = serializer.validated_data
             deviceid = data['deviceid']
@@ -118,7 +118,6 @@ def insert_location_batch(request):
                 # FIN - ALERTAS
 
                 # ALERTAS CENTRAL
-                #data['attributes'] = json.loads(data['attributes'])
                 process_alerts_for_the_alert_center.delay({
                     'uniqueid': unit.uniqueid,
                     'current_location': data,                      
@@ -221,47 +220,13 @@ def get_location(request,id):
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def get_pandero_location_history(request,initial_datetime,final_datetime):
-    initial_timestamp = None
-    final_timestamp = None
-    try:
-        initial_datetime_str = f"{initial_datetime}:00"
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f"{final_datetime}:00"
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = PanderoLocation.objects.filter(timestamp__gte=initial_timestamp,timestamp__lte=final_timestamp).order_by('timestamp')
-    serializer = LocationSerializer(locations,many=True)
-    data = serializer.data
-    data1 = []
-    for i in range(len(data)):
-        data[i]['attributes'] = json.loads(data[i]['attributes'])
-        if data[i]['latitude'] != 0.0 and data[i]['longitude'] != 0.0:
-            data1.append(data[i])
-        data[i]['unit_name'] = data[i]['reference']
-    return Response(data1,status=status.HTTP_200_OK)
-
 @api_view(['POST'])
 def insert_history_location_batch(request):
     data_list = request.data
     error_list = []
     units = Device.objects.all()
     for data in data_list:
-        serializer = InsertLocationSerializer2(data=data)
+        serializer = InsertLocationSerializer(data=data)
         if serializer.is_valid():
             #data = serializer.validated_data
             deviceid = data['deviceid']
@@ -325,3 +290,22 @@ def insert_sutran_location(request):
             'errors':serializer.errors
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def insert_async_location_batch(request):
+    data_list = request.data
+    error_counter = 0
+    if len(data_list) == 0:
+        response = {'detail':'Payload is empty'}
+        return Response(response,status=status.HTTP_400_BAD_REQUEST)
+    for data in data_list:
+        serializer = InsertLocationSerializer(data=data)
+        if serializer.is_valid():
+            #data = serializer.validated_data
+            process_location_in_background.delay(data)
+        else:
+            error_counter += 1
+    response = {
+        'detail':f'Registered ({len(data_list)-error_counter}/{len(data_list)})'
+    }
+    return Response(response)
