@@ -138,7 +138,7 @@ def update_unit(request,id):
 @api_view(['POST'])
 def create_group(request):
     data = request.data
-    serializer = DeviceSerializer(data=data)
+    serializer = GroupSerializer(data=data)
     if serializer.is_valid():
         serializer.create(data)
         response = {

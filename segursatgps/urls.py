@@ -97,6 +97,7 @@ urlpatterns = [
     path('web/api/units/update-unit/<int:id>/', units_views.update_unit),
     path('web/api/units/get-groups/', units_views.get_groups),
     path('web/api/units/get-group/<int:id>/', units_views.get_group),
+    path('web/api/units/create-group/', units_views.create_group),
     path('web/api/drivers/get-drivers/', drivers_views.get_drivers),
     path('web/api/drivers/get-driver/<int:id>/', drivers_views.get_driver),
     path('web/api/geofences/get-geofences/', geofences_views.get_geofences),
