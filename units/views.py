@@ -161,3 +161,23 @@ def get_groups(request):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_group(request,id):
+    try:
+        group = Group.objects.get(id=id,account=request.user.profile.account)
+        serializer = GroupSerializer(group,many=False)
+        data = serializer.data
+        for item in data:
+            c_units = item['units']
+            item['units'] = []
+            for index in c_units:
+                try:
+                    unit = Device.objects.get(id=index)
+                    item['units'].append(unit.name)
+                except:
+                    pass
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        error = {'error':str(e)}
+        return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
