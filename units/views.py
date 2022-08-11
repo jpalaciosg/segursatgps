@@ -179,18 +179,17 @@ def get_group(request,id):
         group = Group.objects.get(id=id,account=request.user.profile.account)
         serializer = GroupSerializer(group,many=False)
         data = serializer.data
-        for item in data:
-            c_units = item['units']
-            item['units'] = []
-            for index in c_units:
-                try:
-                    unit = Device.objects.get(id=index)
-                    item['units'].append({
-                        'id':index,
-                        'name':unit.name
-                    })
-                except:
-                    pass
+        c_units = data['units']
+        data['units'] = []
+        for index in c_units:
+            try:
+                unit = Device.objects.get(id=index)
+                data['units'].append({
+                    'id':index,
+                    'name':unit.name
+                })
+            except:
+                pass
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         error = {'error':str(e)}
