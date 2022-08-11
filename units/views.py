@@ -137,10 +137,18 @@ def update_unit(request,id):
 
 @api_view(['POST'])
 def create_group(request):
-    response = {
-        'status': 'OK',
-    }
-    return Response(response,status=status.HTTP_200_OK)
+    data = request.data
+    serializer = DeviceSerializer(data=data)
+    if serializer.is_valid():
+        serializer.create(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 def get_groups(request):
@@ -154,7 +162,10 @@ def get_groups(request):
             for index in c_units:
                 try:
                     unit = Device.objects.get(id=index)
-                    item['units'].append(unit.name)
+                    item['units'].append({
+                        'id':index,
+                        'name':unit.name
+                    })
                 except:
                     pass
         return Response(data,status=status.HTTP_200_OK)
@@ -174,7 +185,10 @@ def get_group(request,id):
             for index in c_units:
                 try:
                     unit = Device.objects.get(id=index)
-                    item['units'].append(unit.name)
+                    item['units'].append({
+                        'id':index,
+                        'name':unit.name
+                    })
                 except:
                     pass
         return Response(data,status=status.HTTP_200_OK)
