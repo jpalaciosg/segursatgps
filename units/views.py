@@ -138,6 +138,7 @@ def update_unit(request,id):
 @api_view(['POST'])
 def create_group(request):
     data = request.data
+    data['account'] = request.user.profile.account.id
     serializer = GroupSerializer(data=data)
     if serializer.is_valid():
         serializer.create(data)
