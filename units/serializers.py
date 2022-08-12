@@ -18,7 +18,14 @@ class GroupSerializer(serializers.ModelSerializer):
         validated_data['account'] = account
         units = validated_data['units']
         del validated_data['units']
-        return Group.objects.create(**validated_data)
+        group = Group.objects.create(**validated_data)
+        for id in units:
+            try:
+                device = Device.objects.get(id=id,account=account)
+                group.units.add(device)
+            except:
+                pass
+        return group
     class Meta:
         model = Group
         fields = ('__all__')
