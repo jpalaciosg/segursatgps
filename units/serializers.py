@@ -16,7 +16,7 @@ class GroupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account = Account.objects.get(id=validated_data['account'])
         validated_data['account'] = account
-        return Device.objects.create(**validated_data)
+        return Group.objects.create(**validated_data)
     class Meta:
         model = Group
         fields = ('__all__')
