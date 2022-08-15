@@ -221,3 +221,19 @@ def update_group(request,id):
     else:
         error = {'errors':serializer.errors}
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_group(request,id):
+    try:
+        group = Group.objects.get(id=id,account=request.user.profile.account)
+    except Exception as e:
+        error = {'errors':{
+            'id': str(e)
+        }}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    group.delete()
+    response = {
+        'status': 'OK',
+        'description': 'Group was deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
