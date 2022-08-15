@@ -30,4 +30,10 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ('__all__')
 
+class UpdateGroupSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    description = serializers.CharField(max_length=100)
+    units = serializers.ListField(
+        child=serializers.IntegerField()
+    )
 

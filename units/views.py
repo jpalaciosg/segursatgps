@@ -12,7 +12,7 @@ from datetime import datetime
 from pytz import timezone
 
 from .models import Device,Group
-from .serializers import DeviceSerializer,UpdateDeviceSerializer,GroupSerializer
+from .serializers import DeviceSerializer,UpdateDeviceSerializer,GroupSerializer,UpdateGroupSerializer
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -195,3 +195,29 @@ def get_group(request,id):
     except Exception as e:
         error = {'error':str(e)}
         return Response(error,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PUT'])
+def update_group(request,id):
+    data = request.data
+    try:
+        group = Group.objects.get(id=id)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = UpdateGroupSerializer(data=data)
+    if serializer.is_valid():
+        group.name = data['name']
+        group.description = data['description']
+        for id in data['units']:
+            try:
+                device = Device.objects.get(id=id,account=request.user.profile.account)
+                group.units.add(device)
+            except:
+                pass
+        group.save()
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)

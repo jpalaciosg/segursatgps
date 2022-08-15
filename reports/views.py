@@ -194,6 +194,44 @@ def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
     return Response(data,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+def get_detailed_report2(request,id,initial_datetime,final_datetime):
+    initial_timestamp = None
+    final_timestamp = None
+    try:
+        unit = Device.objects.get(id=id,account=request.user.profile.account)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    try:
+        initial_datetime_str = f"{initial_datetime}:00"
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = f"{final_datetime}:00"
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+    except Exception as e:
+        error = {
+            'error':str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    
+    print(initial_datetime_obj)
+    print(final_datetime_obj)
+
+    data = []
+
+    return Response(data,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
 def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
     initial_timestamp = None
     final_timestamp = None
@@ -3750,12 +3788,122 @@ def get_hours_report(request):
 
 @login_required
 def telemetry_trip_report_view(request):
-    #GET
-    # verificar privilegios
-    if privilege.view_hours_report(request.user.profile) == False:
-        return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
-    # fin - verificar privilegios
     units = privilege.get_units(request.user.profile)
     return render(request,'reports/telemetry-trip-report.html',{
         'units':units,
     })
+
+@login_required
+def target_telemetry_report_view(request):
+    units = privilege.get_units(request.user.profile)
+    return render(request,'reports/target-telemetry-report.html',{
+        'units':units,
+    })
+
+@api_view(['POST'])
+def get_target_telemetry_report(request):
+    data = request.data
+    serializer = GeofenceReportSerializer(data=data)
+    if serializer.is_valid():
+        if data['unit_name'].upper() != 'ALL':
+            try:
+                unit = Device.objects.get(name=data['unit_name'],account=request.user.profile.account)
+            except Exception as e:
+                error = {
+                    'error':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        #
+        initial_datetime_str = data['initial_datetime']
+        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
+        # --
+        initial_timestamp = datetime.timestamp(initial_datetime_obj)
+        #
+        final_datetime_str = data['final_datetime']
+        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
+        # convertir a zona horaria
+        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
+        # --
+        final_timestamp = datetime.timestamp(final_datetime_obj)
+        #
+        if final_timestamp - initial_timestamp > 259200:
+            error = {
+                'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+        geofence_report = []
+        if data['unit_name'].upper() == 'ALL':
+            units = privilege.get_units(request.user.profile)
+            for unit in units:
+                locations_qs = Location.objects.using('history_db_replica').filter(
+                    unitid=unit.id,
+                    timestamp__gte=initial_timestamp,
+                    timestamp__lt=final_timestamp
+                ).order_by('timestamp')
+                locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
+                locations = []
+                for location_qs in locations_qs:
+                    locations.append({
+                        'latitude':location_qs.latitude,
+                        'longitude':location_qs.longitude,
+                        'timestamp':location_qs.timestamp,
+                        'angle':location_qs.angle,
+                        'speed':location_qs.speed,
+                        'address':location_qs.address,
+                        'attributes':json.loads(location_qs.attributes),
+                    })
+                device_reader = DeviceReader(unit.uniqueid)
+                geofences_qs = []
+                for gqs in data['geofences']:
+                    try:
+                        geofence = Geofence.objects.get(id=gqs,account=request.user.profile.account)
+                        geofences_qs.append(geofence)
+                    except:
+                        pass
+                unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
+                for item in unit_geofence_report:
+                    item['unit_name'] = unit.name
+                    item['unit_description'] = unit.description
+                    geofence_report.append(item)
+        else:
+            locations_qs = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=initial_timestamp,
+                timestamp__lt=final_timestamp
+            ).order_by('id')
+            locations_qs = locations_qs.order_by('timestamp')
+            locations = []
+            for location_qs in locations_qs:
+                locations.append({
+                    'latitude':location_qs.latitude,
+                    'longitude':location_qs.longitude,
+                    'timestamp':location_qs.timestamp,
+                    'angle':location_qs.angle,
+                    'speed':location_qs.speed,
+                    'address':location_qs.address,
+                    'attributes':json.loads(location_qs.attributes),
+                })
+            device_reader = DeviceReader(unit.uniqueid)
+            geofences_qs = []
+            for gqs in data['geofences']:
+                try:
+                    geofence = Geofence.objects.get(id=gqs,account=request.user.profile.account)
+                    geofences_qs.append(geofence)
+                except:
+                    pass
+            unit_geofence_report = device_reader.generate_geofence_report(locations,geofences_qs,initial_timestamp,final_timestamp)
+
+            for item in unit_geofence_report:
+                item['unit_name'] = unit.name
+                item['unit_description'] = unit.description
+                geofence_report.append(item)
+
+        return Response(geofence_report,status=status.HTTP_200_OK)
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
