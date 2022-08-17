@@ -210,6 +210,7 @@ def update_group(request,id):
     if serializer.is_valid():
         group.name = data['name']
         group.description = data['description']
+        group.units.clear()
         for id in data['units']:
             try:
                 device = Device.objects.get(id=id,account=request.user.profile.account)
