@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -139,3 +141,21 @@ def validate_position(request,lat,lon):
         "geofence_name": "ZONA DE CONTROL"
     }
     return Response(data,status=status.HTTP_200_OK)
+
+@csrf_exempt
+def add_event(request):
+    if request.method == 'POST':
+        data = request.POST
+        print(data)
+        print(request.FILES)
+        response = {
+            'status':'OK',
+            'description':'Information was uploaded successfully.',
+        }
+        return JsonResponse(response)
+    
+    response = {
+        'status':'error',
+        'description':'Get method is not allowed.',
+    }
+    return JsonResponse(response)

@@ -80,6 +80,7 @@ urlpatterns = [
     path('management/users/', management_views.users_view, name='management-users'),
     path('management/units/', management_views.units_view, name='management-units'),
     path('mails/mail-lists/', mails_views.mail_list_view, name='mail-lists'),
+    path('checkpoint/add-event/', checkpoint_views.add_event),
     path('main/', generic_views.main_view, name='main'),
     # REST FRAMEWORK
     path('web/api/users/get-users/', users_views.get_users),
