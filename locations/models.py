@@ -26,7 +26,7 @@ class Location(models.Model):
         ]
         unique_together = (
             ('unitid','timestamp',),
-            ('reference','timestamp')
+            #('reference','timestamp')
         )
 
 class PanderoLocation(models.Model):
