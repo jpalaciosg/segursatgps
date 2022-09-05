@@ -302,7 +302,8 @@ def insert_async_location_batch(request):
         serializer = InsertLocationSerializer(data=data)
         if serializer.is_valid():
             #data = serializer.validated_data
-            process_location_in_background.delay(data)
+            if data['speed'] < 254:
+                process_location_in_background.delay(data)
         else:
             error_counter += 1
     response = {
