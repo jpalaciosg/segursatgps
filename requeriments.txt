@@ -27,6 +27,7 @@ django-extensions==3.1.5
 django-filter==2.4.0
 django-widget-tweaks==1.4.8
 djangorestframework==3.12.2
+djangorestframework-simplejwt==4.4.0
 et-xmlfile==1.1.0
 geographiclib==1.50
 geopy==2.1.0
@@ -51,6 +52,7 @@ pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.20
 PyHamcrest==2.0.2
+PyJWT==2.4.0
 pylint==2.6.0
 pyOpenSSL==20.0.1
 python-dateutil==2.8.2
