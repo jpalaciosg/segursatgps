@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'channels',
     'widget_tweaks',
+    'rest_framework_simplejwt',
     #'django_extensions',
     'users',
     'units',
@@ -63,6 +64,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 

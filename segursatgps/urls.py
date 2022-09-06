@@ -15,6 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+
+from rest_framework_simplejwt import views as jwt_views
+
 import users.views as users_views
 import units.views as units_views
 import drivers.views as drivers_views
@@ -84,6 +87,8 @@ urlpatterns = [
     path('checkpoint/add-event/', checkpoint_views.add_event),
     path('main/', generic_views.main_view, name='main'),
     # REST FRAMEWORK
+    path('web/api/token/obtain/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('web/api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     path('web/api/users/get-users/', users_views.get_users),
     path('web/api/users/get-user/<int:id>/', users_views.get_user),
     path('web/api/users/create-user/', users_views.create_user),
