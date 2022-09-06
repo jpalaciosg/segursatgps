@@ -34,6 +34,7 @@ import checkpoint.views as checkpoint_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', users_views.login_view, name='login'),
+    path('salogin/', users_views.superadmin_login_view, name='salogin'),
     path('logout/', users_views.logout_view, name='logout'),
     path('users/', users_views.users_view, name='users'),
     path('units/', units_views.units_view, name='units'),

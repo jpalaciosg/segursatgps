@@ -59,6 +59,24 @@ def login_view(request):
 
     return render(request,'users/login.html')
 
+def superadmin_login_view(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request,username=username,password=password)
+        if user:
+            login(request,user)
+            if request.user.profile.is_superadmin:
+                return redirect('management-dashboard')
+            logout(request)
+            return render(request,'users/salogin.html',{
+                'error':'No cuenta con los privilegios necesarios.',
+            })
+        else:
+            return render(request,'users/salogin.html',{'error':'Usuario y/o contraseña invalidos'})
+    
+    return render(request,'users/salogin.html')
+
 @login_required
 def logout_view(request):
     logout(request)
