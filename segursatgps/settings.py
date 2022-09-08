@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'channels',
     'widget_tweaks',
     'rest_framework_simplejwt',
+    'corsheaders',
     #'django_extensions',
     'users',
     'units',
@@ -77,6 +78,7 @@ SIMPLE_JWT = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -205,6 +207,12 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
+
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    "https://desarrollo.segursat.com",
+    "http://desarrollo.segursat.com",
+]
 
 # IFRAME
 X_FRAME_OPTIONS = 'SAMEORIGIN'
