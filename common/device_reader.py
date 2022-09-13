@@ -131,28 +131,34 @@ class DeviceReader:
         geofence_event_report = []
         geofence_report = []
         for i in range(len(locations)):
+            point = Point(locations[i]['longitude'],locations[i]['latitude'])
+            locations[i]['geofence_name'] = None
+            for geofence in geofences:
+                feature = json.loads(geofence.geojson)['features'][0]
+                s = shape(feature['geometry'])
+                locations[i]['geofence_name'] = None
+                if s.contains(point):
+                    locations[i]['geofence_name'] = geofence.name
+                    locations[i]['geofence_id'] = geofence.id
+                    break
+        for i in range(len(locations)):
             if i != 0:
                 previous_location = locations[i-1]
                 current_location = locations[i]
-                previous_point = Point(previous_location['longitude'],previous_location['latitude'])
-                current_point = Point(current_location['longitude'],current_location['latitude'])
-                for geofence in geofences:
-                    feature = json.loads(geofence.geojson)['features'][0]
-                    s = shape(feature['geometry'])
-                    if s.contains(previous_point) == False and s.contains(current_point) == True:
-                        geofence_event_report.append({
-                            'name': geofence.name,
-                            'timestamp': locations[i]['timestamp'],
-                            'speed': locations[i]['speed'],
-                            'event': 'INPUT'
-                        })
-                    elif s.contains(previous_point) == True and s.contains(current_point) == False:
-                        geofence_event_report.append({
-                            'name': geofence.name,
-                            'timestamp': locations[i]['timestamp'],
-                            'speed': locations[i]['speed'],
-                            'event': 'OUTPUT'
-                        })
+                if previous_location['geofence_name'] == None and current_location['geofence_name'] != None:
+                    geofence_event_report.append({
+                        'name': locations[i]['geofence_name'],
+                        'timestamp': locations[i]['timestamp'],
+                        'speed': locations[i]['speed'],
+                        'event': 'INPUT'
+                    })
+                if previous_location['geofence_name'] != None and current_location['geofence_name'] == None:
+                    geofence_event_report.append({
+                        'name': locations[i-1]['geofence_name'],
+                        'timestamp': locations[i]['timestamp'],
+                        'speed': locations[i]['speed'],
+                        'event': 'OUTPUT'
+                    })
         for i in range(len(geofence_event_report)):
             if i == 0:
                 if geofence_event_report[i]['event'] == 'OUTPUT':
