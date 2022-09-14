@@ -20,6 +20,7 @@ from geofences.models import Geofence
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
+from common.report import Report
 
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
 from .serializers import ReportSerializer,GeofenceReportSerializer
@@ -31,6 +32,7 @@ from locations.serializers import LocationSerializer
 gmt_conversor = GMTConversor() #conversor zona horaria
 time_conversor = TimeConversor()
 privilege = Privilege()
+report = Report()
 
 @login_required
 def dashboard_view(request):
@@ -119,254 +121,42 @@ def fleet_status_view(request):
         'units_stopped': units_stopped,
     })
 
-@api_view(['GET'])
-def get_detailed_report(request,unit_name,initial_datetime,final_datetime):
-    initial_timestamp = None
-    final_timestamp = None
-    try:
-        unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
-    except Exception as e:
+@api_view(['POST'])
+def get_detailed_report(request):
+    data = request.data
+    serializer = ReportSerializer(data=data)
+    if serializer.is_valid():
+        units = privilege.get_units(request.user.profile)
+        try:
+            unit = units.get(name=data['unit_name'])
+        except:
+            return Response([],status=status.HTTP_200_OK)
+        try:
+            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
+            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        if final_timestamp - initial_timestamp > 604800:
+            error = {
+                'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            report.generate_detailed_report(
+                unit,
+                initial_timestamp,
+                final_timestamp,
+            ),
+            status=status.HTTP_200_OK
+        )
+    else:
         error = {
-            'error':str(e)
+            'errors':serializer.errors
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    try:
-        initial_datetime_str = f"{initial_datetime}:00"
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f"{final_datetime}:00"
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = Location.objects.using('history_db_replica').filter(
-        unitid=unit.id,
-        timestamp__gte=initial_timestamp,
-        timestamp__lt=final_timestamp
-    ).order_by('timestamp').exclude(
-        latitude=0.0,
-        longitude=0.0
-    )
-    serializer = LocationSerializer(locations,many=True)
-    device_reader = DeviceReader(unit.uniqueid)
-    data = serializer.data
-    accumulated_distance = 0.0
-    for i in range(len(data)):
-        data[i]['unit_name'] = unit.name
-        data[i]['unit_description'] = unit.description
-        data[i]['attributes'] = json.loads(data[i]['attributes'])
-        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
-        data[i]['datetime'] = last_report.strftime("%d/%m/%Y %H:%M:%S")
-        data[i]['ignition'] = device_reader.detect_ignition_event({
-            'attributes':json.loads(locations[i].attributes)
-        })
-        data[i]['odometer'] = device_reader.get_odometer({
-            'attributes':json.loads(locations[i].attributes)
-        })
-        if i == 0:
-            data[i]['distance'] = 0.0
-            data[i]['accumulated_distance'] = 0.0
-        else:
-            distance = great_circle(
-                (
-                    data[i-1]['latitude'],
-                    data[i-1]['longitude']
-                ),
-                (
-                    data[i]['latitude'],
-                    data[i]['longitude']
-                ),
-            ).km
-            data[i]['distance'] = round(distance,3)
-            accumulated_distance += distance
-            data[i]['accumulated_distance'] = round(accumulated_distance,3)
-
-    return Response(data,status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def get_detailed_report2(request,id,initial_datetime,final_datetime):
-    initial_timestamp = None
-    final_timestamp = None
-    try:
-        unit = Device.objects.get(id=id,account=request.user.profile.account)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    try:
-        initial_datetime_str = f"{initial_datetime}:00"
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f"{final_datetime}:00"
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    
-    print(initial_datetime_obj)
-    print(final_datetime_obj)
-
-    data = []
-
-    return Response(data,status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-def export_detailed_report(request,unit_name,initial_datetime,final_datetime):
-    initial_timestamp = None
-    final_timestamp = None
-    try:
-        unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    try:
-        initial_datetime_str = f"{initial_datetime}:00"
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f"{final_datetime}:00"
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    locations = Location.objects.using('history_db_replica').filter(
-        unitid=unit.id,
-        timestamp__gte=initial_timestamp,
-        timestamp__lt=final_timestamp
-    ).order_by('timestamp').exclude(
-        latitude=0.0,
-        longitude=0.0
-    )
-    serializer = LocationSerializer(locations,many=True)
-    device_reader = DeviceReader(unit.uniqueid)
-    data = serializer.data
-    accumulated_distance = 0.0
-    for i in range(len(data)):
-        data[i]['unit_name'] = unit.name
-        data[i]['unit_description'] = unit.description
-        data[i]['attributes'] = json.loads(data[i]['attributes'])
-        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data[i]['timestamp']))
-        data[i]['datetime'] = last_report.strftime("%d/%m/%Y %H:%M:%S")
-        data[i]['ignition'] = device_reader.detect_ignition_event({
-            'attributes':json.loads(locations[i].attributes)
-        })
-        data[i]['odometer'] = device_reader.get_odometer({
-            'attributes':json.loads(locations[i].attributes)
-        })
-        if i == 0:
-            data[i]['distance'] = 0.0
-            data[i]['accumulated_distance'] = 0.0
-        else:
-            distance = great_circle(
-                (
-                    data[i-1]['latitude'],
-                    data[i-1]['longitude']
-                ),
-                (
-                    data[i]['latitude'],
-                    data[i]['longitude']
-                ),
-            ).km
-            data[i]['distance'] = round(distance,3)
-            accumulated_distance += distance
-            data[i]['accumulated_distance'] = round(accumulated_distance,3)
-
-    path = f'static/tmp/{unit.name}from{initial_datetime.replace(" ","T")}to{final_datetime.replace(" ","T")}.xlsx'
-    report = {
-        'unit_name': [],
-        'unit_description': [],
-        'datetime': [],
-        'latitude': [],
-        'longitude': [],
-        'altitude': [],
-        'speed': [],
-        'distance': [],
-        'accumulated_distance': [],
-        'odometer': [],
-        'ignition': [],
-        'address': [],
-    }
-    for item in data:
-        report['unit_name'].append(unit.name)
-        report['unit_description'].append(unit.description)
-        report['datetime'].append(item['datetime'])
-        report['latitude'].append(item['latitude'])
-        report['longitude'].append(item['longitude'])
-        report['altitude'].append(item['altitude'])
-        report['speed'].append(item['speed'])
-        report['distance'].append(item['distance'])
-        report['accumulated_distance'].append(item['distance'])
-        report['odometer'].append(item['odometer'])
-        report['ignition'].append(item['ignition'])
-        report['address'].append(item['address'])
-    df = pd.DataFrame(report, columns = [
-        'unit_name',
-        'unit_description',
-        'datetime',
-        'latitude',
-        'longitude',
-        'altitude',
-        'speed',
-        'distance',
-        'accumulated_distance',
-        'odometer',
-        'ignition',
-        'address',
-    ])
-    df.rename(columns={
-        'unit_name': 'UNIDAD',
-        'unit_description': 'DESCRIPCION',
-        'datetime': 'FECHA/HORA',
-        'latitude': 'LATITUD',
-        'longitude': 'LONGITUD',
-        'altitude': 'ALTITUD',
-        'speed': 'VELOCIDAD',
-        'distance': 'DISTANCIA RECORRIDA',
-        'accumulated_distance': 'DISTANCIA ACUMULADA',
-        'odometer': 'ODOMETRO',
-        'ignition': 'IGNICION',
-        'address': 'DIRECCION',
-    }, inplace = True)
-    df.to_excel (f'templates/{path}', index = False, header=True)
-
-    response = {
-        'status': 'OK',
-        'path': path,
-    }
-
-    return Response(response,status=status.HTTP_200_OK)
 
 @login_required
 def detailed_report_view(request):
@@ -374,204 +164,8 @@ def detailed_report_view(request):
     if privilege.view_detailed_report(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    if request.method == 'POST':
-        data = request.POST
-        units = privilege.get_units(request.user.profile)
-        initial_timestamp = None
-        final_timestamp = None
-        form = ReportForm(data)
-        if form.is_valid():
-            try:
-                unit = Device.objects.get(name=data['unit_name'])
-            except Exception as e:
-                form.add_error('unit_name', e)
-            #
-            try:
-                #initial_datetime_str = f"{data['initial_date']} 00:00:00"
-                initial_datetime_str = f"{data['initial_datetime']}:00"
-                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-                # --
-                initial_timestamp = datetime.timestamp(initial_datetime_obj)
-            except Exception as e:
-                print(e)
-                form.add_error('initial_date', e)
-            #
-            try:
-                #final_datetime_str = f"{data['final_date']} 00:00:00"
-                final_datetime_str = f"{data['final_datetime']}:00"
-                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-                # --
-                final_timestamp = datetime.timestamp(final_datetime_obj)
-            except Exception as e:
-                form.add_error('final_date', e)
-
-            if len(form.errors) != 0:
-                return render(request,'reports/detailed-report.html',{
-                    'units':units,
-                    'form':form,
-                })
-            locations = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lt=final_timestamp
-            ).order_by('timestamp').exclude(
-                latitude=0.0,
-                longitude=0.0
-            )
-            if len(locations) == 0:
-                return render(request,'reports/detailed-report.html',{
-                    'initial_datetime':data['initial_datetime'],
-                    'final_datetime':data['final_datetime'],
-                    'units':units,
-                    'form':form,
-                    'error':'No existe un recorrido para analizar.'
-                })
-            accumulated_distance = 0.0
-            device_reader = DeviceReader(unit.uniqueid)
-            for i in range(len(locations)):
-                dt = datetime.utcfromtimestamp(locations[i].timestamp)
-                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-                locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
-                locations[i].ignition = device_reader.detect_ignition_event({
-                    'attributes':json.loads(locations[i].attributes)
-                })
-                locations[i].odometer = device_reader.get_odometer({
-                    'attributes':json.loads(locations[i].attributes)
-                })
-                if i == 0:
-                    locations[i].distance = 0.0
-                    locations[i].accumulated_distance = 0.0
-                else:
-                    distance = great_circle(
-                        (
-                            locations[i-1].latitude,
-                            locations[i-1].longitude
-                        ),
-                        (
-                            locations[i].latitude,
-                            locations[i].longitude
-                        ),
-                    ).km
-                    locations[i].distance = round(distance,3)
-                    accumulated_distance += distance
-                    locations[i].accumulated_distance = round(accumulated_distance,3)
-            return render(request,'reports/detailed-report.html',{
-                'initial_datetime':data['initial_datetime'],
-                'final_datetime':data['final_datetime'],
-                'selected_unit':unit,
-                'units':units,
-                'locations':locations,
-            })
-        return render(request,'reports/detailed-report.html',{
-            'units':units,
-            'form':form,
-        })
-    #GET
     units = privilege.get_units(request.user.profile)
     return render(request,'reports/detailed-report.html',{
-        'units':units,
-    })
-
-@login_required
-def detailed_mileage_report_view(request):
-    if request.method == 'POST':
-        data = request.POST
-        units = privilege.get_units(request.user.profile)
-        initial_timestamp = None
-        final_timestamp = None
-        form = DetailedMileageReportForm(data)
-        if form.is_valid():
-            try:
-                unit = Device.objects.get(name=data['unit_name'])
-            except Exception as e:
-                form.add_error('unit_name', e)
-            #
-            try:
-                #initial_datetime_str = f"{data['initial_date']} 00:00:00"
-                initial_datetime_str = f"{data['initial_datetime']}:00"
-                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-                # --
-                initial_timestamp = datetime.timestamp(initial_datetime_obj)
-            except Exception as e:
-                print(e)
-                form.add_error('initial_date', e)
-            #
-            try:
-                #final_datetime_str = f"{data['final_date']} 00:00:00"
-                final_datetime_str = f"{data['final_datetime']}:00"
-                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-                # --
-                final_timestamp = datetime.timestamp(final_datetime_obj)
-            except Exception as e:
-                form.add_error('final_date', e)
-
-            try:
-                mileage = float(data['mileage'])
-            except Exception as e:
-                form.add_error('mileage', e)
-
-            if len(form.errors) != 0:
-                return render(request,'reports/detailed-mileage-report.html',{
-                    'units':units,
-                    'form':form,
-                })
-            locations = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lt=final_timestamp
-            ).order_by('timestamp').exclude(
-                latitude=0.0,
-                longitude=0.0
-            )
-            accumulated_distance = mileage
-            for i in range(len(locations)):
-                dt = datetime.utcfromtimestamp(locations[i].timestamp)
-                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-                locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
-                # ignicion
-                device_reader = DeviceReader(unit.uniqueid)
-                locations[i].ignition = device_reader.detect_ignition_event({
-                    'attributes':json.loads(locations[i].attributes)
-                })
-                if i == 0:
-                    locations[i].distance = 0.0
-                    locations[i].accumulated_distance = float(data['mileage'])
-                else:
-                    distance = great_circle(
-                        (
-                            locations[i-1].latitude,
-                            locations[i-1].longitude
-                        ),
-                        (
-                            locations[i].latitude,
-                            locations[i].longitude
-                        ),
-                    ).km
-                    locations[i].distance = round(distance,3)
-                    accumulated_distance += distance
-                    locations[i].accumulated_distance = round(accumulated_distance,3)
-            return render(request,'reports/detailed-mileage-report.html',{
-                'initial_datetime':data['initial_datetime'],
-                'final_datetime':data['final_datetime'],
-                'selected_unit':unit,
-                'units':units,
-                'locations':locations,
-            })
-        return render(request,'reports/detailed-mileage-report.html',{
-            'units':units,
-            'form':form,
-        })
-    #GET
-    units = privilege.get_units(request.user.profile)
-    return render(request,'reports/detailed-mileage-report.html',{
         'units':units,
     })
 
@@ -581,100 +175,50 @@ def detailed_report_with_attributes_view(request):
     if privilege.view_detailed_report_with_attributes(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    if request.method == 'POST':
-        data = request.POST
-        units = privilege.get_units(request.user.profile)
-        initial_timestamp = None
-        final_timestamp = None
-        form = ReportForm(data)
-        if form.is_valid():
-            try:
-                unit = Device.objects.get(name=data['unit_name'])
-            except Exception as e:
-                form.add_error('unit_name', e)
-            #
-            try:
-                #initial_datetime_str = f"{data['initial_date']} 00:00:00"
-                initial_datetime_str = f"{data['initial_datetime']}:00"
-                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-                # --
-                initial_timestamp = datetime.timestamp(initial_datetime_obj)
-            except Exception as e:
-                print(e)
-                form.add_error('initial_date', e)
-            #
-            try:
-                #final_datetime_str = f"{data['final_date']} 00:00:00"
-                final_datetime_str = f"{data['final_datetime']}:00"
-                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-                # --
-                final_timestamp = datetime.timestamp(final_datetime_obj)
-            except Exception as e:
-                form.add_error('final_date', e)
-
-            if len(form.errors) != 0:
-                return render(request,'reports/detailed-report-with-attributes.html',{
-                    'units':units,
-                    'form':form,
-                })
-            locations = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lt=final_timestamp
-            ).order_by('timestamp').exclude(
-                latitude=0.0,
-                longitude=0.0
-            )
-            accumulated_distance = 0.0
-            for i in range(len(locations)):
-                dt = datetime.utcfromtimestamp(locations[i].timestamp)
-                dt = gmt_conversor.convert_utctolocaltime(dt) # convertir a zona horaria
-                locations[i].datetime = dt.strftime("%d/%m/%Y %H:%M:%S")
-                # ignicion
-                device_reader = DeviceReader(unit.uniqueid)
-                locations[i].ignition = device_reader.detect_ignition_event({
-                    'attributes':json.loads(locations[i].attributes)
-                })
-                if i == 0:
-                    locations[i].distance = 0.0
-                    locations[i].accumulated_distance = 0.0
-                else:
-                    distance = great_circle(
-                        (
-                            locations[i-1].latitude,
-                            locations[i-1].longitude
-                        ),
-                        (
-                            locations[i].latitude,
-                            locations[i].longitude
-                        ),
-                    ).km
-                    locations[i].distance = round(distance,2)
-                    accumulated_distance += distance
-                    locations[i].accumulated_distance = round(accumulated_distance,2)
-            return render(request,'reports/detailed-report-with-attributes.html',{
-                'initial_datetime':data['initial_datetime'],
-                'final_datetime':data['final_datetime'],
-                'selected_unit':unit,
-                'units':units,
-                'locations':locations,
-            })
-        return render(request,'reports/detailed-report-with-attributes.html',{
-            'units':units,
-            'form':form,
-        })
-    #GET
     units = privilege.get_units(request.user.profile)
     return render(request,'reports/detailed-report-with-attributes.html',{
         'units':units,
     })
 
+@api_view(['POST'])
+def get_driving_style_report(request):
+    data = request.data
+    serializer = ReportSerializer(data=data)
+    if serializer.is_valid():
+        units = privilege.get_units(request.user.profile)
+        try:
+            unit = units.get(name=data['unit_name'])
+        except:
+            return Response([],status=status.HTTP_200_OK)
+        try:
+            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
+            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        if final_timestamp - initial_timestamp > 604800:
+            error = {
+                'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            report.generate_driving_style_report(
+                unit,
+                initial_timestamp,
+                final_timestamp,
+            ),
+            status=status.HTTP_200_OK
+        )
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
-def get_driving_style_report(request,unit_name,initial_datetime,final_datetime):
+def get_driving_style_report_old(request,unit_name,initial_datetime,final_datetime):
     initial_timestamp = None
     final_timestamp = None
     unit = None
