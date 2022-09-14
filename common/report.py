@@ -95,6 +95,7 @@ class Report:
                 attributes = json.loads(data[i]['attributes'])
             except:
                 attributes = []
+            data[i]['attributes'] = attributes
             data[i]['ignition'] = device_reader.detect_ignition_event({
                 'attributes':attributes
             })
