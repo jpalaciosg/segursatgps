@@ -18,6 +18,12 @@ class Report:
         timestamp = datetime.timestamp(datetime_obj)
         return timestamp
 
+    def convert_timestamp_to_datetimestr(self,timestamp):
+        datetime_obj = datetime.fromtimestamp(timestamp)
+        datetime_obj = gmt_conversor.convert_utctolocaltime(datetime_obj)
+        datetimestr = datetime_obj.strftime('%Y-%m-%d %H:%M:%S')
+        return datetimestr
+
     def generate_detailed_report(self,unit,initial_timestamp,final_timestamp):
         locations = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
@@ -72,5 +78,64 @@ class Report:
             longitude=0.0
         )
         serializer = locations_serializers.LocationSerializer(locations,many=True)
-        device_reader = DeviceReader(unit.uniqueid)
         data = serializer.data
+        
+        harsh_driving_report = []
+        harsh_braking = 0
+        harsh_acceleration = 0
+        harsh_cornering = 0
+        device_reader = DeviceReader(unit.uniqueid)
+        for i in range(len(data)):
+            data[i]['unit_name'] = unit.name
+            data[i]['unit_description'] = unit.description
+            dt = datetime.utcfromtimestamp(data[i]['timestamp'])
+            dt = gmt_conversor.convert_utctolocaltime(dt)
+            data[i]['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+            try:
+                attributes = json.loads(data[i]['attributes'])
+            except:
+                attributes = []
+            data[i]['ignition'] = device_reader.detect_ignition_event({
+                'attributes':attributes
+            })
+            try:
+                driving_incident = attributes['alarm']
+                data[i]['driving'] = driving_incident
+                data[i]['intensity'] = attributes['io254']
+                if driving_incident == 'hardBraking': harsh_braking += 1
+                if driving_incident == 'hardAcceleration': harsh_acceleration += 1
+                if driving_incident == 'hardCornering': harsh_cornering += 1
+                harsh_driving_report.append(data[i])
+            except Exception as e:
+                pass
+        summarization = [
+            {
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': self.convert_timestamp_to_datetimestr(initial_timestamp),
+            'final_datetime': self.convert_timestamp_to_datetimestr(final_timestamp),
+            'type': 'harshAcceleration',
+            'amount': harsh_acceleration
+            },
+            {
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': self.convert_timestamp_to_datetimestr(initial_timestamp),
+            'final_datetime': self.convert_timestamp_to_datetimestr(final_timestamp),
+            'type': 'harshBraking',
+            'amount': harsh_braking
+            },
+            {
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': self.convert_timestamp_to_datetimestr(initial_timestamp),
+            'final_datetime': self.convert_timestamp_to_datetimestr(final_timestamp),
+            'type': 'harshCornering',
+            'amount': harsh_cornering
+            },
+        ]
+        final_report = {
+            'harsh_driving_report':harsh_driving_report,
+            'summarization':summarization,
+        }
+        return final_report
