@@ -140,3 +140,5 @@ class Report:
             'summarization':summarization,
         }
         return final_report
+
+
