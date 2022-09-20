@@ -279,6 +279,7 @@ def process_location_in_background(data):
                 address = json.loads(response.content.decode('utf-8'))['display_name']
                 address = json.dumps(address,ensure_ascii=False)
             except Exception as e:
+                print(e)
                 address = ""
             data['address'] = address
         # FIN - CALCULAR DIRECCION
