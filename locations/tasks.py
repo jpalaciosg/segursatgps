@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from locations.models import Location,SutranLocation,OsinergminLocation
 from units.models import Device
 from segursatgps.celery import celery_app
@@ -13,6 +15,7 @@ from asgiref.sync import async_to_sync
 import channels.layers
 import json
 import redis
+import requests
 
 gmt_conversor = GMTConversor() #conversor zona horaria
 repository = Repository()
@@ -169,7 +172,7 @@ def process_location_in_background(data):
         deviceid = data['deviceid']
         unit = Device.objects.get(uniqueid=deviceid)
     except Exception as e:
-        print(e)
+       pass
     if unit:
         try:
             previous_attributes = json.loads(unit.last_attributes)
@@ -234,36 +237,14 @@ def process_location_in_background(data):
         unit.last_address = data['address']
         if data['timestamp'] > previous_location['timestamp']:
             unit.save()
-
-        # INSERTAR UBICACION EN EL HISTORICO
-        data['unit_id'] = unit.id
-        data['unit_name'] = unit.name
-        data['account'] = unit.account.name
-        data['sutran_process'] = unit.sutran_process
-        data['osinergmin_process'] = unit.osinergmin_process
-        insert_location_in_history.delay(data)
-        # FIN - INSERTAR UBICACION EN EL HISTORICO
-
-        # ALERTAS
-        process_alert.delay(data)
-        # FIN - ALERTAS
-
-        # ALERTAS CENTRAL
-        process_alerts_for_the_alert_center.delay({
-            'uniqueid': unit.uniqueid,
-            'current_location': data,                      
-            'previous_location': previous_location,
-        })
-        # FIN - ALERTAS CENTRAL
-
         # ACTUALIZAR UNIDAD EN EL MAPA
         if data['timestamp'] > previous_location['timestamp']:
-            account = unit.account.name
+            account_name = unit.account.name
             last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data['timestamp']))
             last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
             channel_layer = channels.layers.get_channel_layer()
             async_to_sync(channel_layer.group_send)(
-                f'chat_{account}',
+                f'chat_{account_name}',
                 {
                     'type': 'send_message',
                     'message': {
@@ -287,4 +268,42 @@ def process_location_in_background(data):
                 }
             )
         # FIN - ACTUALIZAR UNIDAD EN EL MAPA
+        # CALCULAR DIRECCION
+        if data['address'] == "":
+            try:
+                latitude = float(data['latitude'])
+                longitude = float(data['longitude'])
+                api_url = f'http://{settings.GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
+                headers = {'Content-Type': 'application/json'}
+                response = requests.get(api_url,headers=headers,timeout=settings.GEOCODING_TIMEOUT)
+                address = json.loads(response.content.decode('utf-8'))['display_name']
+                address = json.dumps(address,ensure_ascii=False)
+            except Exception as e:
+                address = ""
+            data['address'] = address
+        # FIN - CALCULAR DIRECCION
+        # INSERTAR UBICACION EN EL HISTORICO
+        data['unit_id'] = unit.id
+        data['unit_name'] = unit.name
+        try:
+            repository.write(data)
+        except Exception as e:
+            print(e)
+        try:
+            Location.objects.create(
+                unitid = data['unit_id'],
+                protocol= data['protocol'],
+                timestamp = data['timestamp'],
+                latitude = data['latitude'],
+                longitude = data['longitude'],
+                altitude = data['altitude'],
+                angle = data['angle'],
+                speed = data['speed'],
+                attributes = json.dumps(data['attributes']),
+                address = data['address'],
+                reference = data['unit_name']
+            )
+        except Exception as e:
+            print(e)
+        # FIN - INSERTAR UBICACION EN EL HISTORICO
     return True

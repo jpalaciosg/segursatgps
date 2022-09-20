@@ -143,7 +143,6 @@ class Teltonika:
             hours = location['attributes']['io449']
             return hours
         except Exception as e:
-            print(e)
             return 0
 
     def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
