@@ -234,6 +234,21 @@ def process_location_in_background(data):
         if hours > last_hours:
             unit.last_hours = hours
         # FIN - CALCULAR LAST_HOURS
+        # CALCULAR DIRECCION ULTIMA POSICION
+        if data['address'] == "":
+            try:
+                latitude = float(data['latitude'])
+                longitude = float(data['longitude'])
+                api_url = f'http://{settings.GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
+                headers = {'Content-Type': 'application/json'}
+                response = requests.get(api_url,headers=headers,timeout=settings.GEOCODING_TIMEOUT)
+                address = json.loads(response.content.decode('utf-8'))['display_name']
+                #address = json.dumps(address,ensure_ascii=False)
+            except Exception as e:
+                print(e)
+                address = ""
+            data['address'] = address
+        # FIN - CALCULAR DIRECCION ULTIMA POSICION
         unit.last_address = data['address']
         if data['timestamp'] > previous_location['timestamp']:
             unit.save()
@@ -268,21 +283,6 @@ def process_location_in_background(data):
                 }
             )
         # FIN - ACTUALIZAR UNIDAD EN EL MAPA
-        # CALCULAR DIRECCION
-        if data['address'] == "":
-            try:
-                latitude = float(data['latitude'])
-                longitude = float(data['longitude'])
-                api_url = f'http://{settings.GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
-                headers = {'Content-Type': 'application/json'}
-                response = requests.get(api_url,headers=headers,timeout=settings.GEOCODING_TIMEOUT)
-                address = json.loads(response.content.decode('utf-8'))['display_name']
-                address = json.dumps(address,ensure_ascii=False)
-            except Exception as e:
-                print(e)
-                address = ""
-            data['address'] = address
-        # FIN - CALCULAR DIRECCION
         # INSERTAR UBICACION EN EL HISTORICO
         data['unit_id'] = unit.id
         data['unit_name'] = unit.name
