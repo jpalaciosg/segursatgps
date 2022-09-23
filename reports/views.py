@@ -23,7 +23,7 @@ from common.privilege import Privilege
 from common.report import Report
 
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
-from .serializers import ReportSerializer,GeofenceReportSerializer
+from .serializers import ReportSerializer,SpeedReportSerializer,GeofenceReportSerializer
 from units.models import Device,Group
 from locations.serializers import LocationSerializer
 
@@ -126,11 +126,6 @@ def get_detailed_report(request):
     data = request.data
     serializer = ReportSerializer(data=data)
     if serializer.is_valid():
-        units = privilege.get_units(request.user.profile)
-        try:
-            unit = units.get(name=data['unit_name'])
-        except:
-            return Response([],status=status.HTTP_200_OK)
         try:
             initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
             final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
@@ -142,6 +137,14 @@ def get_detailed_report(request):
         if final_timestamp - initial_timestamp > 604800:
             error = {
                 'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        units = privilege.get_units(request.user.profile)
+        try:
+            unit = units.get(name=data['unit_name'])
+        except Exception as e:
+            error = {
+                'error':str(e)
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         return Response(
@@ -185,11 +188,6 @@ def get_driving_style_report(request):
     data = request.data
     serializer = ReportSerializer(data=data)
     if serializer.is_valid():
-        units = privilege.get_units(request.user.profile)
-        try:
-            unit = units.get(name=data['unit_name'])
-        except:
-            return Response([],status=status.HTTP_200_OK)
         try:
             initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
             final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
@@ -201,6 +199,14 @@ def get_driving_style_report(request):
         if final_timestamp - initial_timestamp > 604800:
             error = {
                 'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        units = privilege.get_units(request.user.profile)
+        try:
+            unit = units.get(name=data['unit_name'])
+        except:
+            error = {
+                'error':str(e)
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         return Response(
@@ -1545,256 +1551,74 @@ def group_stop_report_view(request):
         'groups':groups,
     })
 
-@api_view(['GET'])
-def get_speed_report(request,unit_name,initial_datetime,final_datetime,speed_limit):
-    initial_timestamp = None
-    final_timestamp = None
-    unit = None
-    if unit_name.upper() != 'ALL':
+# REPORTE DE VELOCIDAD
+@api_view(['POST'])
+def get_speed_report(request):
+    data = request.data
+    serializer = SpeedReportSerializer(data=data)
+    if serializer.is_valid():
         try:
-            unit = Device.objects.get(name=unit_name,account=request.user.profile.account)
+            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
+            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
         except Exception as e:
             error = {
                 'error':str(e)
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    try:
-        initial_datetime_str = f"{initial_datetime}:00"
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f"{final_datetime}:00"
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-    except Exception as e:
+        if final_timestamp - initial_timestamp > 604800:
+            error = {
+                'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        units = privilege.get_units(request.user.profile)
+        if data['unit_name'].upper() == 'ALL':
+            speed_report = []
+            summarization = []
+            for unit in units:
+                unit_speed_report = report.generate_speed_report(
+                    unit,
+                    initial_timestamp,
+                    final_timestamp,
+                    data['speed_limit']
+                )
+                for usr in unit_speed_report['speed_report']:
+                    speed_report.append(usr)
+                for usr in unit_speed_report['summarization']:
+                    summarization.append(usr)
+            response = {
+                'speed_report':speed_report,
+                'summarization':summarization,
+            }
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            try:
+                unit = units.get(name=data['unit_name'])
+            except Exception as e:
+                error = {
+                    'error':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                report.generate_speed_report(
+                    unit,
+                    initial_timestamp,
+                    final_timestamp,
+                    data['speed_limit']
+                ),
+                status=status.HTTP_200_OK
+            )
+    else:
         error = {
-            'error':str(e)
+            'errors':serializer.errors
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
-    # Aqui va la logica del resultado
-    speed_report = []
-    summarization = []
-
-    if unit_name.upper() == 'ALL':
-        units = privilege.get_units(request.user.profile)
-        for unit in units:
-            number_of_speeds = 0
-            locations_qs = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lt=final_timestamp
-            ).order_by('timestamp').exclude(
-                latitude=0.0,
-                longitude=0.0
-            )
-            locations = []
-            for location_qs in locations_qs:
-                locations.append({
-                    'latitude':location_qs.latitude,
-                    'longitude':location_qs.longitude,
-                    'timestamp':location_qs.timestamp,
-                    'altitude':location_qs.altitude,
-                    'angle':location_qs.angle,
-                    'speed':location_qs.speed,
-                    'address':location_qs.address,
-                    'attributes':json.loads(location_qs.attributes),
-                })
-            device_reader = DeviceReader(unit.uniqueid)
-            speed_limit = int(speed_limit)
-            unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
-            for item in unit_speed_report:
-                item['unit_name'] = unit.name
-                item['unit_description'] = unit.description
-                number_of_speeds += 1
-                speed_report.append(item)
-            if number_of_speeds > 0:
-                summarization.append({
-                    'unit_name': unit.name,
-                    'unit_description': unit.description,
-                    'initial_datetime':initial_datetime,
-                    'final_datetime':final_datetime,
-                    'number_of_speeds': number_of_speeds
-                })
-    else:
-        number_of_speeds = 0
-        locations_qs = Location.objects.using('history_db_replica').filter(
-            unitid=unit.id,
-            timestamp__gte=initial_timestamp,
-            timestamp__lt=final_timestamp
-        ).order_by('timestamp').exclude(
-            latitude=0.0,
-            longitude=0.0
-        )
-        locations = []
-        for location_qs in locations_qs:
-            locations.append({
-                'latitude':location_qs.latitude,
-                'longitude':location_qs.longitude,
-                'timestamp':location_qs.timestamp,
-                'altitude':location_qs.altitude,
-                'angle':location_qs.angle,
-                'speed':location_qs.speed,
-                'address':location_qs.address,
-                'attributes':json.loads(location_qs.attributes),
-            })
-        device_reader = DeviceReader(unit.uniqueid)
-        speed_limit = int(speed_limit)
-        unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
-        for item in unit_speed_report:
-            item['unit_name'] = unit.name
-            item['unit_description'] = unit.description
-            number_of_speeds += 1
-            speed_report.append(item)
-        summarization.append({
-            'unit_name': unit.name,
-            'unit_description': unit.description,
-            'initial_datetime':initial_datetime,
-            'final_datetime':final_datetime,
-            'number_of_speeds': number_of_speeds
-        })
-
-    data = {
-        'speed_report': speed_report,
-        'summarization': summarization
-    }
-
-    return Response(data,status=status.HTTP_200_OK)
-
-# REPORTE DE VELOCIDAD
 @login_required
 def speed_report_view(request):
     # verificar privilegios
     if privilege.view_speed_report(request.user.profile) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    if request.method == 'POST':
-        data = request.POST
-        units = privilege.get_units(request.user.profile)
-        initial_timestamp = None
-        final_timestamp = None
-        form = SpeedReportForm(data)
-        if form.is_valid():
-            unit = None
-            if data['unit_name'].upper() != 'ALL':
-                try:
-                    unit = Device.objects.get(name=data['unit_name'])
-                except Exception as e:
-                    print(e)
-                    form.add_error('unit_name', e)
-                #
-            try:
-                initial_datetime_str = f"{data['initial_datetime']}:00"
-                initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-                # --
-                initial_timestamp = datetime.timestamp(initial_datetime_obj)
-            except Exception as e:
-                print(e)
-                form.add_error('initial_datetime', e)
-            #
-            try:
-                final_datetime_str = f"{data['final_datetime']}:00"
-                final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-                # convertir a zona horaria
-                final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-                # --
-                final_timestamp = datetime.timestamp(final_datetime_obj)
-            except Exception as e:
-                print(e)
-                form.add_error('final_datetime', e)
-            if len(form.errors) != 0:
-                return render(request,'reports/speed-report.html',{
-                    'units':units,
-                    'form':form,
-                })
-            # Aqui va la logica del resultado
-            speed_report = []
-            if data['unit_name'].upper() == 'ALL':
-                for unit in units:
-                    locations_qs = Location.objects.using('history_db_replica').filter(
-                        unitid=unit.id,
-                        timestamp__gte=initial_timestamp,
-                        timestamp__lt=final_timestamp
-                    ).order_by('timestamp')
-                    locations_qs = locations_qs.exclude(latitude=0.0,longitude=0.0)
-                    locations = []
-                    for location_qs in locations_qs:
-                        locations.append({
-                            'latitude':location_qs.latitude,
-                            'longitude':location_qs.longitude,
-                            'timestamp':location_qs.timestamp,
-                            'angle':location_qs.angle,
-                            'altitude':location_qs.altitude,
-                            'speed':location_qs.speed,
-                            'address':location_qs.address,
-                            'attributes':json.loads(location_qs.attributes),
-                        })
-                    device_reader = DeviceReader(unit.uniqueid)
-                    speed_limit = int(data['speed_limit'])
-                    unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
-                    for item in unit_speed_report:
-                        item['unit_name'] = unit.name
-                        item['unit_description'] = unit.description
-                        speed_report.append(item)
-            else:
-                locations_qs = Location.objects.using('history_db_replica').filter(
-                    unitid=unit.id,
-                    timestamp__gte=initial_timestamp,
-                    timestamp__lt=final_timestamp
-                ).order_by('id')
-                locations_qs = locations_qs.order_by('timestamp')
-                locations = []
-                for location_qs in locations_qs:
-                    locations.append({
-                        'latitude':location_qs.latitude,
-                        'longitude':location_qs.longitude,
-                        'timestamp':location_qs.timestamp,
-                        'angle':location_qs.angle,
-                        'altitude':location_qs.altitude,
-                        'speed':location_qs.speed,
-                        'address':location_qs.address,
-                        'attributes':json.loads(location_qs.attributes),
-                    })
-                device_reader = DeviceReader(unit.uniqueid)
-                speed_limit = int(data['speed_limit'])
-                unit_speed_report = device_reader.generate_speed_report(locations,speed_limit)
-                for item in unit_speed_report:
-                    item['unit_name'] = unit.name
-                    item['unit_description'] = unit.description
-                    speed_report.append(item)
-            if len(speed_report) == 0:
-                return render(request,'reports/speed-report.html',{
-                    'initial_datetime':data['initial_datetime'],
-                    'final_datetime':data['final_datetime'],
-                    'speed_limit':data['speed_limit'],
-                    'selected_unit':unit,
-                    'units':units,
-                    'form':form,
-                    'error':'No existen datos para mostrar.',
-                })
-            return render(request,'reports/speed-report.html',{
-                'initial_datetime':data['initial_datetime'],
-                'final_datetime':data['final_datetime'],
-                'speed_limit':data['speed_limit'],
-                'selected_unit':unit,
-                'speed_report':speed_report,
-                'units':units,
-                'form':form,
-                #'error':'The request was denied due to the limitation of the request. Please wait for Amazon AWS DynamoDB to implement the processing logic.'
-            })
-        return render(request,'reports/speed-report.html',{
-            'units':units,
-            'form':form,
-        })
-    # GET
     units = privilege.get_units(request.user.profile)
     return render(request,'reports/speed-report.html',{
         'units':units,

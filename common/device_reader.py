@@ -90,24 +90,6 @@ class DeviceReader:
         return reader.generate_driving_style_report(locations)
     """
 
-    def generate_speed_report(self,locations,speed_limit):
-        speed_report = []
-        for location in locations:
-            if int(location['speed']) > speed_limit:
-                speed_report.append({
-                    'latitude':location['latitude'],
-	                'longitude':location['longitude'],
-	                'timestamp':location['timestamp'],
-                    'altitude':location['altitude'],
-                    'angle':location['angle'],
-	                'speed':location['speed'],
-	                'address':location['address'],
-            })
-        for sr in speed_report:
-            sr['datetime'] = datetime.fromtimestamp(sr['timestamp'])
-            sr['datetime'] = gmt_conversor.convert_utctolocaltime(sr['datetime']).strftime("%d/%m/%Y %H:%M:%S")
-        return speed_report
-
     def generate_mileage_report(self,locations):
         distance_sum = 0.0
         for i in range(len(locations)):

@@ -79,7 +79,7 @@ class Report:
         )
         serializer = locations_serializers.LocationSerializer(locations,many=True)
         data = serializer.data
-        
+
         harsh_driving_report = []
         harsh_braking = 0
         harsh_acceleration = 0
@@ -135,10 +135,52 @@ class Report:
             'amount': harsh_cornering
             },
         ]
-        final_report = {
-            'harsh_driving_report':harsh_driving_report,
-            'summarization':summarization,
-        }
-        return final_report
+        if len(harsh_driving_report) == 0:
+            return {
+                'harsh_driving_report':[],
+                'summarization':[],
+            }
+        else:
+            return {
+                'harsh_driving_report':harsh_driving_report,
+                'summarization':summarization,
+            }
 
+    def generate_speed_report(self,unit,initial_timestamp,final_timestamp,speed_limit):
+        speed_report = []
+        summarization = []
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        serializer = locations_serializers.LocationSerializer(locations,many=True)
+        for item in serializer.data:
+            if item['speed'] > speed_limit:
+                item['unit_name'] = unit.name
+                item['unit_description'] = unit.description
+                dt = datetime.utcfromtimestamp(item['timestamp'])
+                dt = gmt_conversor.convert_utctolocaltime(dt)
+                item['datetime'] = dt.strftime("%d/%m/%Y %H:%M:%S")
+                speed_report.append(item)
+        if len(speed_report) == 0: 
+            return {
+                'speed_report': [],
+                'summarization': []
+            }
+        else:
+            summarization.append({
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'initial_datetime': self.convert_timestamp_to_datetimestr(initial_timestamp),
+                'final_datetime': self.convert_timestamp_to_datetimestr(final_timestamp),
+                'number_of_speeds': len(speed_report)
+            })
+            return {
+                'speed_report': speed_report,
+                'summarization': summarization
+            }
 
