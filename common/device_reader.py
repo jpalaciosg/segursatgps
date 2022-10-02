@@ -80,16 +80,6 @@ class DeviceReader:
         reader = Teltonika(self.deviceid)
         return reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
 
-    def generate_trip_report(self,locations):
-        reader = Teltonika(self.deviceid)
-        return reader.generate_trip_report(locations)
-
-    """
-    def generate_driving_style_report(self,locations):
-        reader = Teltonika(self.deviceid)
-        return reader.generate_driving_style_report(locations)
-    """
-
     def generate_mileage_report(self,locations):
         distance_sum = 0.0
         for i in range(len(locations)):

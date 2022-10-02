@@ -234,7 +234,7 @@ def driving_style_report_view(request):
     })
 
 @api_view(['GET'])
-def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_option):
+def get_trip_report1_old(request,unit_name,initial_datetime,final_datetime,geofence_option):
     initial_timestamp = None
     final_timestamp = None
     unit = None
@@ -478,6 +478,58 @@ def get_trip_report1(request,unit_name,initial_datetime,final_datetime,geofence_
     }
 
     return Response(data,status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def get_trip_report1(request):
+    data = request.data
+    serializer = ReportSerializer(data=data)
+    if serializer.is_valid():
+        try:
+            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
+            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
+        except Exception as e:
+            error = {
+                'error':str(e)
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        if final_timestamp - initial_timestamp > 604800:
+            error = {
+                'detail': 'Report time range exceeded.'
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        units = privilege.get_units(request.user.profile)
+        if data['unit_name'].upper() == 'ALL':
+            speed_report = []
+            summarization = []
+            for unit in units:
+                pass
+            response = {
+                'speed_report':speed_report,
+                'summarization':summarization,
+            }
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            try:
+                unit = units.get(name=data['unit_name'])
+            except Exception as e:
+                error = {
+                    'error':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                report.generate_trip_report1(
+                    unit,
+                    initial_timestamp,
+                    final_timestamp,
+                    True
+                ),
+                status=status.HTTP_200_OK
+            )
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_option):
