@@ -13,10 +13,10 @@ import pandas as pd
 from statistics import mean,median
 from geopy.distance import great_circle
 from shapely.geometry import Point,shape
-from common.protocols.time_conversor import TimeConversor
 
 from locations.models import Location
 from geofences.models import Geofence
+from common.time_conversor import TimeConversor
 from common.device_reader import DeviceReader
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -24,6 +24,7 @@ from common.report import Report
 
 from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
 from .serializers import ReportSerializer,SpeedReportSerializer,GeofenceReportSerializer
+from .render_report import RenderReport
 from units.models import Device,Group
 from locations.serializers import LocationSerializer
 
@@ -33,6 +34,7 @@ gmt_conversor = GMTConversor() #conversor zona horaria
 time_conversor = TimeConversor()
 privilege = Privilege()
 report = Report()
+render_report = RenderReport()
 
 @login_required
 def dashboard_view(request):
@@ -123,43 +125,7 @@ def fleet_status_view(request):
 
 @api_view(['POST'])
 def get_detailed_report(request):
-    data = request.data
-    serializer = ReportSerializer(data=data)
-    if serializer.is_valid():
-        try:
-            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
-            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        if final_timestamp - initial_timestamp > 604800:
-            error = {
-                'detail': 'Report time range exceeded.'
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        units = privilege.get_units(request.user.profile)
-        try:
-            unit = units.get(name=data['unit_name'])
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            report.generate_detailed_report(
-                unit,
-                initial_timestamp,
-                final_timestamp,
-            ),
-            status=status.HTTP_200_OK
-        )
-    else:
-        error = {
-            'errors':serializer.errors
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    return render_report.render_detailed_report(request)
 
 @login_required
 def detailed_report_view(request):
@@ -185,43 +151,7 @@ def detailed_report_with_attributes_view(request):
 
 @api_view(['POST'])
 def get_driving_style_report(request):
-    data = request.data
-    serializer = ReportSerializer(data=data)
-    if serializer.is_valid():
-        try:
-            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
-            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        if final_timestamp - initial_timestamp > 604800:
-            error = {
-                'detail': 'Report time range exceeded.'
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        units = privilege.get_units(request.user.profile)
-        try:
-            unit = units.get(name=data['unit_name'])
-        except:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            report.generate_driving_style_report(
-                unit,
-                initial_timestamp,
-                final_timestamp,
-            ),
-            status=status.HTTP_200_OK
-        )
-    else:
-        error = {
-            'errors':serializer.errors
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    return render_report.render_driving_style_report(request)
 
 def driving_style_report_view(request):
     # verificar privilegios
@@ -233,306 +163,12 @@ def driving_style_report_view(request):
         'units':units,
     })
 
-@api_view(['GET'])
-def get_trip_report1_old(request,unit_name,initial_datetime,final_datetime,geofence_option):
-    initial_timestamp = None
-    final_timestamp = None
-    unit = None
-    if unit_name.upper() != 'ALL':
-        try:
-            unit = Device.objects.get(
-                name=unit_name,
-                account=request.user.profile.account
-            )
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    #
-    try:
-        initial_datetime_str = f"{initial_datetime}:00"
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f"{final_datetime}:00"
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-        # validar geofence option
-        geofence_option = bool(geofence_option)
-        # --
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
-
-    trip_report = []
-    summarization = []
-
-    if unit_name.upper() == 'ALL':
-        units = privilege.get_units(request.user.profile)
-        for unit in units:
-            locations_qs = Location.objects.using('history_db_replica').filter(
-                unitid=unit.id,
-                timestamp__gte=initial_timestamp,
-                timestamp__lte=final_timestamp
-            ).order_by('timestamp').exclude(
-                latitude=0.0,
-                longitude=0.0
-            )
-            locations = []
-            for location_qs in locations_qs:
-                locations.append({
-                    'latitude':location_qs.latitude,
-                    'longitude':location_qs.longitude,
-                    'timestamp':location_qs.timestamp,
-                    'angle':location_qs.angle,
-                    'speed':location_qs.speed,
-                    'address':location_qs.address,
-                    'attributes':json.loads(location_qs.attributes),
-                })
-            device_reader = DeviceReader(unit.uniqueid)
-            unit_trip_report = device_reader.generate_trip_report(locations)
-            for item in unit_trip_report:
-                item['unit_name'] = unit.name
-                item['unit_description'] = unit.description
-                trip_report.append(item)
-
-            total_stop_duration = 0
-            number_of_trips = 0
-            distance = 0.0
-            duration = 0
-
-            for tr in unit_trip_report:
-                number_of_trips += 1
-                distance += tr['distance']
-                duration += tr['duration']
-                qs = locations_qs.filter(
-                    timestamp__gte=tr['initial_timestamp'],
-                    timestamp__lte=tr['final_timestamp']
-                )
-                locations = []
-                for item in qs:
-                    locations.append({
-                        'latitude':item.latitude,
-                        'longitude':item.longitude,
-                        'timestamp':item.timestamp,
-                        'angle':item.angle,
-                        'speed':item.speed,
-                        'address':item.address,
-                        'attributes':json.loads(item.attributes),
-                    })
-                stop_report = device_reader.generate_stop_report(
-                    locations,
-                    tr['initial_timestamp'],
-                    tr['final_timestamp'],
-                    0
-                )
-                stop_duration = 0
-                for sr in stop_report:
-                    stop_duration += sr['duration']
-                tr['stopped_time'] = str(timedelta(seconds=stop_duration))
-                total_stop_duration += stop_duration
-                tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
-
-            if len(unit_trip_report) != 0:
-                driving_duration = duration - total_stop_duration
-                summarization.append({
-                    "unit_name" : unit.name,
-                    "unit_description": unit.description,
-                    "initial_datetime": initial_datetime,
-                    "final_datetime" : final_datetime,
-                    "number_of_trips": number_of_trips,
-                    "distance": round(distance,2),
-                    "duration": duration,
-                    "time": str(timedelta(seconds=duration)),
-                    "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
-                    "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration))
-                })
-
-    else:
-        locations_qs = Location.objects.using('history_db_replica').filter(
-            unitid=unit.id,
-            timestamp__gte=initial_timestamp,
-            timestamp__lte=final_timestamp
-        ).order_by('timestamp').exclude(
-            latitude=0.0,
-            longitude=0.0
-        )
-        locations = []
-        for location in locations_qs:
-            locations.append({
-                'latitude':location.latitude,
-                'longitude':location.longitude,
-                'timestamp':location.timestamp,
-                'angle':location.angle,
-                'speed':location.speed,
-                'address':location.address,
-                'attributes':json.loads(location.attributes),
-            })
-
-        device_reader = DeviceReader(unit.uniqueid)
-        unit_trip_report = device_reader.generate_trip_report(locations)
-        for item in unit_trip_report:
-            item['unit_name'] = unit.name
-            item['unit_description'] = unit.description
-            trip_report.append(item)
-
-        total_stop_duration = 0
-        number_of_trips = 0
-        distance = 0.0
-        duration = 0
-
-        for tr in trip_report:
-            number_of_trips += 1
-            distance += tr['distance']
-            duration += tr['duration']
-            qs = locations_qs.filter(
-                timestamp__gte=tr['initial_timestamp'],
-                timestamp__lte=tr['final_timestamp']
-            )
-            locations = []
-            for item in qs:
-                locations.append({
-                    'latitude':item.latitude,
-                    'longitude':item.longitude,
-                    'timestamp':item.timestamp,
-                    'angle':item.angle,
-                    'speed':item.speed,
-                    'address':item.address,
-                    'attributes':json.loads(item.attributes),
-                })
-            stop_report = device_reader.generate_stop_report(
-                locations,
-                tr['initial_timestamp'],
-                tr['final_timestamp'],
-                0
-            )
-            stop_duration = 0
-            for sr in stop_report:
-                stop_duration += sr['duration']
-            tr['stopped_time'] = str(timedelta(seconds=stop_duration))
-            total_stop_duration += stop_duration
-            tr['driving_time'] = str(timedelta(seconds=(tr['duration']-stop_duration)))
-
-        if len(unit_trip_report) != 0:
-            driving_duration = duration - total_stop_duration
-            summarization.append({
-                "unit_name" : unit.name,
-                "unit_description": unit.description,
-                "initial_datetime": initial_datetime,
-                "final_datetime" : final_datetime,
-                "number_of_trips": number_of_trips,
-                "distance": round(distance,2),
-                "duration": duration,
-                "time": str(timedelta(seconds=duration)),
-                "driving_time_in_trip": str(timedelta(seconds=driving_duration)),
-                "stopped_time_in_trip": str(timedelta(seconds=total_stop_duration))
-            })
-
-    # CALCULAR GEOCERCAS
-    if geofence_option:
-        geofences = Geofence.objects.filter(account=request.user.profile.account)
-        for tr in trip_report:
-            matching_initial_geofences = []
-            matching_final_geofences = []
-            for geofence in geofences:
-                feature = json.loads(geofence.geojson)['features'][0]
-                s = shape(feature['geometry'])
-                point = Point(tr['initial_longitude'],tr['initial_latitude'])
-                if s.contains(point):
-                    matching_initial_geofences.append(geofence.name)
-                point = Point(tr['final_longitude'],tr['final_latitude'])
-                if s.contains(point):
-                    matching_final_geofences.append(geofence.name)
-            s_str = ""
-            for i in range(len(matching_initial_geofences)):
-                if i==0:
-                    s_str += matching_initial_geofences[i]
-                else:
-                    s_str += f', {matching_initial_geofences[i]}'
-            tr['initial_geofences'] = s_str
-            d_str = ""
-            for i in range(len(matching_final_geofences)):
-                if i==0:
-                    d_str += matching_final_geofences[i]
-                else:
-                    d_str += f', {matching_final_geofences[i]}'
-            tr['final_geofences'] = d_str
-    else:
-        for tr in trip_report:
-            tr['initial_geofences'] = 'N/D'
-            tr['final_geofences'] = 'N/D'
-    # FIN - CALCULAR GEOCERCAS
-
-    data = {
-        'trip_report': trip_report,
-        'summarization': summarization
-    }
-
-    return Response(data,status=status.HTTP_200_OK)
-
 @api_view(['POST'])
 def get_trip_report1(request):
-    data = request.data
-    serializer = ReportSerializer(data=data)
-    if serializer.is_valid():
-        try:
-            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
-            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        if final_timestamp - initial_timestamp > 604800:
-            error = {
-                'detail': 'Report time range exceeded.'
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        units = privilege.get_units(request.user.profile)
-        if data['unit_name'].upper() == 'ALL':
-            speed_report = []
-            summarization = []
-            for unit in units:
-                pass
-            response = {
-                'speed_report':speed_report,
-                'summarization':summarization,
-            }
-            return Response(response,status=status.HTTP_200_OK)
-        else:
-            try:
-                unit = units.get(name=data['unit_name'])
-            except Exception as e:
-                error = {
-                    'error':str(e)
-                }
-                return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            return Response(
-                report.generate_trip_report1(
-                    unit,
-                    initial_timestamp,
-                    final_timestamp,
-                    True
-                ),
-                status=status.HTTP_200_OK
-            )
-    else:
-        error = {
-            'errors':serializer.errors
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    return render_report.render_trip_report1(request)
 
 @api_view(['GET'])
-def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_option):
+def get_trip_report2_old(request,unit_name,initial_datetime,final_datetime,geofence_option):
     unit = None
     if unit_name.upper() != 'ALL':
         try:
@@ -791,7 +427,10 @@ def get_trip_report2(request,unit_name,initial_datetime,final_datetime,geofence_
     }
     return Response(data,status=status.HTTP_200_OK)
 
-# TRIP REPORT
+@api_view(['POST'])
+def get_trip_report2(request):
+    return render_report.render_trip_report2(request)
+
 @login_required
 def trip_report_view(request):
     # verificar privilegios
@@ -1067,7 +706,6 @@ def trip_report_view(request):
         'units':units,
     })
 
-# TRIP REPORT
 @login_required
 def trip_report2_view(request):
     # verificar privilegios
@@ -1079,7 +717,6 @@ def trip_report2_view(request):
         'units':units,
     })
 
-# GROUP TRIP REPORT
 @login_required
 def group_trip_report_view(request):
     # verificar privilegios
@@ -1606,64 +1243,7 @@ def group_stop_report_view(request):
 # REPORTE DE VELOCIDAD
 @api_view(['POST'])
 def get_speed_report(request):
-    data = request.data
-    serializer = SpeedReportSerializer(data=data)
-    if serializer.is_valid():
-        try:
-            initial_timestamp = report.convert_datetimestr_to_timestamp(data['initial_datetime'])
-            final_timestamp = report.convert_datetimestr_to_timestamp(data['final_datetime'])
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        if final_timestamp - initial_timestamp > 604800:
-            error = {
-                'detail': 'Report time range exceeded.'
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-        units = privilege.get_units(request.user.profile)
-        if data['unit_name'].upper() == 'ALL':
-            speed_report = []
-            summarization = []
-            for unit in units:
-                unit_speed_report = report.generate_speed_report(
-                    unit,
-                    initial_timestamp,
-                    final_timestamp,
-                    data['speed_limit']
-                )
-                for usr in unit_speed_report['speed_report']:
-                    speed_report.append(usr)
-                for usr in unit_speed_report['summarization']:
-                    summarization.append(usr)
-            response = {
-                'speed_report':speed_report,
-                'summarization':summarization,
-            }
-            return Response(response,status=status.HTTP_200_OK)
-        else:
-            try:
-                unit = units.get(name=data['unit_name'])
-            except Exception as e:
-                error = {
-                    'error':str(e)
-                }
-                return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            return Response(
-                report.generate_speed_report(
-                    unit,
-                    initial_timestamp,
-                    final_timestamp,
-                    data['speed_limit']
-                ),
-                status=status.HTTP_200_OK
-            )
-    else:
-        error = {
-            'errors':serializer.errors
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    return render_report.render_speed_report(request)
 
 @login_required
 def speed_report_view(request):
