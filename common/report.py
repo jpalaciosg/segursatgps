@@ -8,9 +8,11 @@ from locations.models import Location
 from geofences.models import Geofence
 from locations import serializers as locations_serializers
 
+from common.gmt_conversor import GMTConversor
 from common.time_conversor import TimeConversor
 from common.device_reader import DeviceReader
 
+gmt_conversor = GMTConversor()
 time_conversor = TimeConversor()
 
 class Report:
@@ -384,6 +386,7 @@ class Report:
                 tr['stop_time'] = str(timedelta(seconds=stop_duration))
                 tr['driving_duration'] = tr['trip_duration'] - stop_duration
                 tr['driving_time'] = str(timedelta(seconds=tr['driving_duration']))
+        # CALCULAR GEOCERCAS
         if geofence_option:
             geofences = Geofence.objects.filter(account=unit.account)
             for tr in trip_report:
@@ -418,6 +421,7 @@ class Report:
             for tr in trip_report:
                 tr['initial_geofences'] = 'N/D'
                 tr['final_geofences'] = 'N/D'
+        # FIN - CALCULAR GEOCERCAS
         # CALCULAR RESUMEN
         number_of_trips = 0
         distance_summarization = 0.0
@@ -458,3 +462,121 @@ class Report:
                 'trip_report': trip_report,
                 'summarization': summarization,
             }
+
+    def generate_trip_report2(self,unit,initial_timestamp,final_timestamp,geofence_option):
+        trip_report = []
+        summarization = []
+        initial_datetime_obj = datetime.utcfromtimestamp(initial_timestamp)
+        initial_datetime_obj = gmt_conversor.convert_utctolocaltime(initial_datetime_obj)
+        final_datetime_obj = datetime.utcfromtimestamp(final_timestamp)
+        final_datetime_obj = gmt_conversor.convert_utctolocaltime(final_datetime_obj)
+        datetime_ranges = []
+        datetime_counter = initial_datetime_obj.replace(
+            hour=0,minute=0,second=0)
+        while datetime_counter < final_datetime_obj:
+            datetime_ranges.append([
+                datetime_counter,
+                datetime_counter+timedelta(days=1)
+            ])
+            datetime_counter = datetime_counter+timedelta(days=1)
+        datetime_ranges[0][0] = initial_datetime_obj
+        datetime_ranges[len(datetime_ranges)-1][1] = final_datetime_obj
+        for dr in datetime_ranges:
+            timestamp1 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[0])))
+            timestamp2 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[1])))
+            locations = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=timestamp1,
+                timestamp__lt=timestamp2
+            ).order_by('timestamp').exclude(latitude=0.0,longitude=0.0)
+            ignition_events = self.calculate_unit_ignition_events(unit,locations)
+            for i in range(len(ignition_events)):
+                if i == 0:
+                    if ignition_events[i]['event'] == 'OFF':
+                        trip_duration = ignition_events[i]['timestamp'] - timestamp1
+                        trip_report.append({
+                            'unit_name':unit.name,
+                            'unit_description':unit.description,
+                            'initial_latitude':'N/D',
+                            'initial_longitude':'N/D',
+                            'initial_timestamp':timestamp1,
+                            'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                                timestamp1,"%d/%m/%Y %H:%M:%S"),
+                            'initial_address':'N/D',
+                            'final_latitude':ignition_events[i]['latitude'],
+                            'final_longitude':ignition_events[i]['longitude'],
+                            'final_timestamp':ignition_events[i]['timestamp'],
+                            'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                                ignition_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                            'final_address':ignition_events[i]['address'],
+                            'trip_duration':trip_duration,
+                            'trip_time':str(timedelta(seconds=trip_duration)),
+                        })
+                    elif i == len(ignition_events)-1 and ignition_events[i]['event'] == 'ON':
+                        trip_report.append({
+                            'unit_name':unit.name,
+                            'unit_description':unit.description,
+                            'initial_latitude':ignition_events[i]['latitude'],
+                            'initial_longitude':ignition_events[i]['longitude'],
+                            'initial_timestamp':ignition_events[i]['timestamp'],
+                            'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                                ignition_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                            'initial_address':ignition_events[i]['address'],
+                            'final_latitude':'N/D',
+                            'final_longitude':'N/D',
+                            'final_timestamp':timestamp2,
+                            'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                                timestamp2,"%d/%m/%Y %H:%M:%S"),
+                            'trip_duration':'N/D',
+                            'trip_time':'N/D',
+                        })
+                else:
+                    if i == len(ignition_events)-1 and ignition_events[i]['event'] == 'ON':
+                        trip_report.append({
+                            'unit_name':unit.name,
+                            'unit_description':unit.description,
+                            'initial_latitude':ignition_events[i]['latitude'],
+                            'initial_longitude':ignition_events[i]['longitude'],
+                            'initial_timestamp':ignition_events[i]['timestamp'],
+                            'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                                ignition_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                            'initial_address':ignition_events[i]['address'],
+                            'final_latitude':'N/D',
+                            'final_longitude':'N/D',
+                            'final_timestamp':timestamp2,
+                            'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                                timestamp2,"%d/%m/%Y %H:%M:%S"),
+                            'trip_duration':'N/D',
+                            'trip_time':'N/D',
+                        })
+                    elif ignition_events[i-1]['event'] == 'ON' and ignition_events[i]['event'] == 'OFF':
+                        initial_datetime = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            ignition_events[i-1]['timestamp'],"%d/%m/%Y %H:%M:%S")
+                        final_datetime = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            ignition_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S")
+                        trip_duration = ignition_events[i]['timestamp'] - ignition_events[i-1]['timestamp']
+                        trip_report.append({
+                            'unit_name':unit.name,
+                            'unit_description':unit.description,
+                            'initial_latitude':ignition_events[i-1]['latitude'],
+                            'initial_longitude':ignition_events[i-1]['longitude'],
+                            'initial_timestamp':ignition_events[i-1]['timestamp'],
+                            'initial_datetime':initial_datetime,
+                            'initial_address':ignition_events[i-1]['address'],
+                            'final_latitude':ignition_events[i]['latitude'],
+                            'final_longitude':ignition_events[i]['longitude'],
+                            'final_timestamp':ignition_events[i]['timestamp'],
+                            'final_datetime':final_datetime,
+                            'final_address':ignition_events[i]['address'],
+                            'trip_duration':trip_duration,
+                            'trip_time':str(timedelta(seconds=trip_duration))
+                        })
+        data = {
+            'trip_report': trip_report,
+            'summarization': summarization
+        }
+        return {
+                'trip_report': trip_report,
+                'summarization': summarization,
+            }
+

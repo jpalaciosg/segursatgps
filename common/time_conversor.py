@@ -22,7 +22,7 @@ class TimeConversor:
         datetime_obj = datetime.strptime(datetimestr,format_code)
         datetime_obj = gmt_conversor.convert_localtimetoutc(datetime_obj)
         timestamp = datetime.timestamp(datetime_obj)
-        return timestamp
+        return int(timestamp)
 
     def convert_utc_timestamp_to_local_datetimestr(self,timestamp,format_code):
         datetime_obj = datetime.fromtimestamp(timestamp)
