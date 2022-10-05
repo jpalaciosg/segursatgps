@@ -80,25 +80,6 @@ class DeviceReader:
         reader = Teltonika(self.deviceid)
         return reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
 
-    def generate_mileage_report(self,locations):
-        distance_sum = 0.0
-        for i in range(len(locations)):
-            if i != 0:
-                if locations[i-1]['latitude'] != 0.0 and locations[i-1]['longitude'] != 0.0:
-                    if locations[i]['latitude'] != 0.0 and locations[i]['longitude'] != 0.0:
-                        distance = great_circle(
-                            (
-                                locations[i-1]['latitude'],
-                                locations[i-1]['longitude']
-                            ),
-                            (
-                                locations[i]['latitude'],
-                                locations[i]['longitude']
-                            ),
-                        ).km
-                        distance_sum += distance
-        return distance_sum
-
     def generate_geofence_report(self,locations,geofences,initial_timestamp,final_timestamp):
         geofence_event_report = []
         geofence_report = []

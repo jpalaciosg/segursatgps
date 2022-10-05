@@ -580,3 +580,66 @@ class Report:
                 'summarization': summarization,
             }
 
+    def generate_mileage_report(self,unit,initial_timestamp,final_timestamp):
+        day_mileage_report = []
+        total_mileage_report = []
+        initial_datetime_obj = datetime.utcfromtimestamp(initial_timestamp)
+        initial_datetime_obj = gmt_conversor.convert_utctolocaltime(initial_datetime_obj)
+        final_datetime_obj = datetime.utcfromtimestamp(final_timestamp)
+        final_datetime_obj = gmt_conversor.convert_utctolocaltime(final_datetime_obj)
+        datetime_ranges = []
+        datetime_counter = initial_datetime_obj.replace(
+            hour=0,minute=0,second=0)
+        while datetime_counter < final_datetime_obj:
+            datetime_ranges.append([
+                datetime_counter,
+                datetime_counter+timedelta(days=1)
+            ])
+            datetime_counter = datetime_counter+timedelta(days=1)
+        datetime_ranges[0][0] = initial_datetime_obj
+        datetime_ranges[len(datetime_ranges)-1][1] = final_datetime_obj
+        total_distance_sum = 0.0
+        for dr in datetime_ranges:
+            timestamp1 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[0])))
+            timestamp2 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[1])))
+            locations = Location.objects.using('history_db_replica').filter(
+                unitid=unit.id,
+                timestamp__gte=timestamp1,
+                timestamp__lt=timestamp2
+            ).order_by('timestamp').exclude(latitude=0.0,longitude=0.0)
+            distance_sum = 0.0
+            for i in range(len(locations)):
+                if i != 0:
+                    distance = great_circle(
+                        (
+                            locations[i-1].latitude,
+                            locations[i-1].longitude,
+                        ),
+                        (
+                            locations[i].latitude,
+                            locations[i].longitude,
+                        ),
+                    ).km
+                    distance_sum += distance
+            total_distance_sum += distance_sum
+            day_mileage_report.append({
+                'unit_name':unit.name,
+                'unit_description':unit.description,
+                'initial_datetime':dr[0].strftime("%d/%m/%Y %H:%M:%S"),
+                'final_datetime':dr[1].strftime("%d/%m/%Y %H:%M:%S"),
+                'distance':round(distance_sum,2)
+            })
+        total_mileage_report.append({
+            "unit_name":unit.name,
+            "unit_description":unit.description,
+            "initial_datetime":time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+            "final_datetime":time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                final_timestamp,"%d/%m/%Y %H:%M:%S"),
+            "distance":round(total_distance_sum,2),
+            "odometer":round(unit.odometer,2),
+        })
+        return {
+            'total_mileage':total_mileage_report,
+            'mileage_by_date':day_mileage_report,
+        }
