@@ -643,3 +643,11 @@ class Report:
             'total_mileage':total_mileage_report,
             'mileage_by_date':day_mileage_report,
         }
+
+    def generate_geofence_report(self,unit,initial_timestamp,final_timestamp,geofences):
+        geofence_report = []
+        summarization = []
+        return {
+            'geofence_report': geofence_report,
+            'summarization': summarization
+        }

@@ -75,7 +75,7 @@ class DeviceReader:
             datetime.fromtimestamp(unit.last_timestamp)
         )
         return data
-	
+
     def generate_stop_report(self,locations,initial_timestamp,final_timestamp,seconds):
         reader = Teltonika(self.deviceid)
         return reader.generate_stop_report(locations,initial_timestamp,final_timestamp,seconds)
