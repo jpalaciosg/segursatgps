@@ -646,8 +646,92 @@ class Report:
 
     def generate_geofence_report(self,unit,initial_timestamp,final_timestamp,geofences):
         geofence_report = []
-        summarization = []
-        return {
-            'geofence_report': geofence_report,
-            'summarization': summarization
-        }
+        geofence_event_report = []
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        serializer = locations_serializers.LocationSerializer(locations,many=True)
+        locations = serializer.data
+        # CALCULAR SI SE ENCUENTRA EN GEOCERCA
+        for i in range(len(locations)):
+            point = Point(locations[i]['longitude'],locations[i]['latitude'])
+            """locations[i]['unit_name'] = unit.name
+            locations[i]['unit_description'] = unit.description
+            locations[i]['datetime'] = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                locations[i]['timestamp'],"%d/%m/%Y %H:%M:%S")"""
+            locations[i]['geofence_name'] = None
+            locations[i]['geofence_id'] = None
+            for geofence in geofences:
+                feature = json.loads(geofence.geojson)['features'][0]
+                s = shape(feature['geometry'])
+                if s.contains(point):
+                    locations[i]['geofence_name'] = geofence.name
+                    locations[i]['geofence_id'] = geofence.id
+                    break
+        # FIN - CALCULAR SI SE ENCUENTRA EN GEOCERCA
+        # CALCULAR EVENTO DE E/S DE GEOCERCA
+        for i in range(len(locations)):
+            if i != 0:
+                previous_location = locations[i-1]
+                current_location = locations[i]
+                if previous_location['geofence_name'] == None and current_location['geofence_name'] != None:
+                    geofence_event_report.append({
+                        'name': locations[i]['geofence_name'],
+                        'timestamp': locations[i]['timestamp'],
+                        'speed': locations[i]['speed'],
+                        'event': 'INPUT'
+                    })
+                if previous_location['geofence_name'] != None and current_location['geofence_name'] == None:
+                    geofence_event_report.append({
+                        'name': locations[i-1]['geofence_name'],
+                        'timestamp': locations[i]['timestamp'],
+                        'speed': locations[i]['speed'],
+                        'event': 'OUTPUT'
+                    })
+        # FIN - CALCULAR EVENTO DE E/S DE GEOCERCA
+        for i in range(len(geofence_event_report)):
+            if i == 0:
+                if geofence_event_report[i]['event'] == 'OUTPUT':
+                    geofence_report.append({
+                        'name': geofence_event_report[i]['name'],
+                        'initial_timestamp': initial_timestamp,
+                        'initial_speed': 'N/D',
+                        'final_timestamp': geofence_event_report[i]['timestamp'],
+                        'final_speed': geofence_event_report[i]['speed'],
+                        'duration': geofence_event_report[i]['timestamp'] - initial_timestamp
+                    })
+                elif i == len(geofence_event_report)-1 and geofence_event_report[i]['event'] == 'INPUT':
+                    geofence_report.append({
+                        'name': geofence_event_report[i]['name'],
+                        'initial_timestamp': geofence_event_report[i]['timestamp'],
+                        'initial_speed': geofence_event_report[i]['speed'],
+                        'final_timestamp': final_timestamp,
+                        'final_speed': 'N/D',
+                        'duration': final_timestamp - geofence_event_report[i]['timestamp']
+                    })
+            else:
+                if i == len(geofence_event_report)-1 and geofence_event_report[i]['event'] == 'INPUT':
+                    geofence_report.append({
+                        'name': geofence_event_report[i]['name'],
+                        'initial_timestamp': geofence_event_report[i]['timestamp'],
+                        'initial_speed': geofence_event_report[i]['speed'],
+                        'final_timestamp': final_timestamp,
+                        'final_speed': 'N/D',
+                        'duration': final_timestamp - geofence_event_report[i]['timestamp']
+                    })
+                else:
+                    if geofence_event_report[i-1]['event'] == 'INPUT' and  geofence_event_report[i]['event'] == 'OUTPUT':
+                        geofence_report.append({
+                            'name': geofence_event_report[i]['name'],
+                            'initial_timestamp': geofence_event_report[i-1]['timestamp'],
+                            'initial_speed': geofence_event_report[i-1]['speed'],
+                            'final_timestamp': geofence_event_report[i]['timestamp'],
+                            'final_speed': geofence_event_report[i]['speed'],
+                            'duration': geofence_event_report[i]['timestamp'] - geofence_event_report[i-1]['timestamp']
+                        })
+        return geofence_report

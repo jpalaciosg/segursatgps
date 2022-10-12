@@ -5,7 +5,8 @@ from common.time_conversor import TimeConversor
 from common.privilege import Privilege
 from common.report import Report
 
-from .serializers import ReportSerializer,SpeedReportSerializer,TripReportSerializer
+from .serializers import ReportSerializer,SpeedReportSerializer,TripReportSerializer,GeofenceReportSerializer
+from geofences.models import Geofence
 
 time_conversor = TimeConversor()
 privilege = Privilege()
@@ -356,15 +357,25 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            geofences = []
+            for i in range(len(data['geofences'])):
+                try:
+                    geofence = Geofence.objects.get(
+                        id = data['geofences'][i],
+                        account = request.user.profile.account, 
+                    )
+                    geofences.append(geofence)
+                except Exception as e:
+                    pass
+            if len(geofences) == 0:
+                error = {
+                    'detail': 'There are no geofences'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
             if data['unit_name'].upper() == 'ALL':
                 geofence_report = []
-                summarization = []
-                response = {
-                    'geofence_report':geofence_report,
-                    'summarization':summarization,
-                }
-                return Response(response,status=status.HTTP_200_OK)
+                return Response(geofence_report,status=status.HTTP_200_OK)
             else:
                 try:
                     unit = units.get(name=data['unit_name'])
@@ -378,7 +389,7 @@ class RenderReport:
                         unit,
                         initial_timestamp,
                         final_timestamp,
-                        data['geofences'],
+                        geofences,
                     ),
                     status=status.HTTP_200_OK
                 )
