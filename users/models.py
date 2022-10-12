@@ -46,10 +46,16 @@ class Profile(models.Model):
     view_group_stop_report = models.BooleanField(default=False)
     view_group_geofence_report = models.BooleanField(default=False)
     view_units = models.BooleanField(default=False)
+    #Eslim
+    view_units_group = models.BooleanField(default=False)
+    #Eslim
     view_unit_triggers = models.BooleanField(default=False)
     view_fleet_triggers = models.BooleanField(default=False)
     view_mail_lists = models.BooleanField(default=False)
     view_geofences = models.BooleanField(default=False)
+    #Eslim
+    view_geofences_group = models.BooleanField(default=False)
+    #Eslim
     view_users = models.BooleanField(default=False)
     view_latest_alerts = models.BooleanField(default=False)
     view_alert_history = models.BooleanField(default=False)

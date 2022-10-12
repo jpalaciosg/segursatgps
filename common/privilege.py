@@ -107,6 +107,14 @@ class Privilege:
                 return False
         return True
 
+    #Eslim
+    def view_units_group(self,profile):
+        if profile.is_admin == False:
+            if profile.view_units_group == False:
+                return False
+        return True
+    #Eslim
+
     def view_unit_triggers(self,profile):
         if profile.is_admin == False:
             if profile.view_unit_triggers == False:
@@ -130,6 +138,14 @@ class Privilege:
             if profile.view_geofences == False:
                 return False
         return True
+
+    #Eslim
+    def view_geofences_group(self,profile):
+        if profile.is_admin == False:
+            if profile.view_geofences_group == False:
+                return False
+        return True
+    #Eslim
 
     def view_users(self,profile):
         if profile.is_admin == False:
