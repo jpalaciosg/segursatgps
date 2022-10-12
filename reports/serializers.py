@@ -22,5 +22,15 @@ class GeofenceReportSerializer(serializers.Serializer):
     initial_datetime = serializers.DateTimeField()
     final_datetime = serializers.DateTimeField()
     geofences = serializers.ListField(
-        child=serializers.IntegerField()
+        child = serializers.IntegerField()
+    )
+
+class StopReportSerializer(serializers.Serializer):
+    unit_name = serializers.CharField(max_length=50)
+    initial_datetime = serializers.DateTimeField()
+    final_datetime = serializers.DateTimeField()
+    geofence_option = serializers.BooleanField()
+    discard_time = serializers.IntegerField(
+        min_value=0,
+        max_value=10,
     )

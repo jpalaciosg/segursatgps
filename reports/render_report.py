@@ -5,7 +5,7 @@ from common.time_conversor import TimeConversor
 from common.privilege import Privilege
 from common.report import Report
 
-from .serializers import ReportSerializer,SpeedReportSerializer,TripReportSerializer,GeofenceReportSerializer
+from .serializers import ReportSerializer,SpeedReportSerializer,TripReportSerializer,GeofenceReportSerializer,StopReportSerializer
 from geofences.models import Geofence
 
 time_conversor = TimeConversor()
@@ -390,6 +390,62 @@ class RenderReport:
                         initial_timestamp,
                         final_timestamp,
                         geofences,
+                    ),
+                    status=status.HTTP_200_OK
+                )
+        else:
+            error = {
+                'errors':serializer.errors
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+    def render_stop_report(self,request):
+        data = request.data
+        serializer = StopReportSerializer(data=data)
+        if serializer.is_valid():
+            try:
+                initial_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['initial_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+                final_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['final_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            except Exception as e:
+                error = {
+                    'error':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            if final_timestamp - initial_timestamp > 604800:
+                error = {
+                    'detail': 'Report time range exceeded.'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            units = privilege.get_units(request.user.profile)
+            if data['unit_name'].upper() == 'ALL':
+                stop_report = []
+                summarization = []
+                response = {
+                    'stop_report':stop_report,
+                    'summarization':summarization,
+                }
+                return Response(response,status=status.HTTP_200_OK)
+            else:
+                try:
+                    unit = units.get(name=data['unit_name'])
+                except Exception as e:
+                    error = {
+                        'error':str(e)
+                    }
+                    return Response(error,status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    report.generate_stop_report(
+                        unit,
+                        initial_timestamp,
+                        final_timestamp,
+                        data['geofence_option'],
+                        data['discard_time'],
                     ),
                     status=status.HTTP_200_OK
                 )

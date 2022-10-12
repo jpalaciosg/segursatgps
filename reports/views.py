@@ -633,51 +633,10 @@ def group_trip_report_view(request):
         'groups':groups,
     })
 
-@api_view(['GET'])
-def get_stop_report(request,unit_name,initial_datetime,final_datetime,discard_time):
-    initial_timestamp = None
-    final_timestamp = None
-    unit = None
-    if unit_name.upper() != 'ALL':
-        try:
-            unit = Device.objects.get(
-                name=unit_name,
-                account=request.user.profile.account
-            )
-        except Exception as e:
-            error = {
-                'error':str(e)
-            }
-            return Response(error,status=status.HTTP_400_BAD_REQUEST)
-    #
-    try:
-        initial_datetime_str = f"{initial_datetime}:00"
-        initial_datetime_obj = datetime.strptime(initial_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        initial_datetime_obj = gmt_conversor.convert_localtimetoutc(initial_datetime_obj)
-        # --
-        initial_timestamp = datetime.timestamp(initial_datetime_obj)
-        #
-        final_datetime_str = f"{final_datetime}:00"
-        final_datetime_obj = datetime.strptime(final_datetime_str, '%Y-%m-%d %H:%M:%S')
-        # convertir a zona horaria
-        final_datetime_obj = gmt_conversor.convert_localtimetoutc(final_datetime_obj)
-        # --
-        final_timestamp = datetime.timestamp(final_datetime_obj)
-    except Exception as e:
-        error = {
-            'error':str(e)
-        }
-        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+@api_view(['POST'])
+def get_stop_report(request):
+    return render_report.render_stop_report(request)
 
-    # tiempo para descartar
-    seconds = int(discard_time) * 60
-    # fin - tiempo para descartar
-
-    stop_report = []
-    summarization = []
-
-# STOP REPORT
 @login_required
 def stop_report_view(request):
     # verificar privilegios

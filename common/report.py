@@ -735,3 +735,91 @@ class Report:
                             'duration': geofence_event_report[i]['timestamp'] - geofence_event_report[i-1]['timestamp']
                         })
         return geofence_report
+
+    def generate_stop_report(self,unit,initial_timestamp,final_timestamp,geofence_option,discard_time):
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lte=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        stop_report = []
+        summarization = []
+        movement_events = self.calculate_unit_movement_events(unit,locations)
+        for i in range(len(movement_events)):
+            if i == 0:
+                if movement_events[i]['event'] == 'START':
+                    stop_duration = movement_events[i]['timestamp'] - initial_timestamp
+                    stop_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'latitude':movement_events[i]['latitude'],
+                        'longitude':movement_events[i]['longitude'],
+                        'initial_timestamp':initial_timestamp,
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                        'final_timestamp':movement_events[i]['timestamp'],
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'address':movement_events[i]['address'],
+                        'stop_duration':stop_duration,
+                        'stop_time':str(timedelta(seconds=stop_duration)),
+                    })
+                elif i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
+                    stop_duration =  final_timestamp - movement_events[i]['timestamp']
+                    stop_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'latitude':movement_events[i]['latitude'],
+                        'longitude':movement_events[i]['longitude'],
+                        'initial_timestamp':movement_events[i]['timestamp'],
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_timestamp':final_timestamp,
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                        'address':movement_events[i]['address'],
+                        'stop_duration':stop_duration,
+                        'stop_time':str(timedelta(seconds=stop_duration)),
+                    })
+            else:
+                if i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
+                    stop_duration =  final_timestamp - movement_events[i]['timestamp']
+                    stop_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'latitude':movement_events[i]['latitude'],
+                        'longitude':movement_events[i]['longitude'],
+                        'initial_timestamp':movement_events[i]['timestamp'],
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_timestamp':final_timestamp,
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                        'address':movement_events[i]['address'],
+                        'stop_duration':stop_duration,
+                        'stop_time':str(timedelta(seconds=stop_duration)),
+                    })
+                elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
+                    stop_duration = movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
+                    stop_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'latitude':movement_events[i]['latitude'],
+                        'longitude':movement_events[i]['longitude'],
+                        'initial_timestamp':movement_events[i-1]['timestamp'],
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i-1]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_timestamp':movement_events[i]['timestamp'],
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'address':movement_events[i]['address'],
+                        'stop_duration':stop_duration,
+                        'stop_time':str(timedelta(seconds=stop_duration))
+                    })
+        return {
+                'stop_report': stop_report,
+                'summarization': summarization,
+            }
