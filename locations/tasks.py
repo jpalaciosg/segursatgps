@@ -47,7 +47,7 @@ def insert_location_in_history(data):
         print(e)
     # FIN - INTRODUCIR UBICACION EN EL HISTORICO
     # INTRODUCIR UBICACION SUTRAN
-    if data['account'] == 'civa' or data['account'] == 'alcas' or data['account'] == 'miskymayo' or data['sutran_process']:
+    if data['sutran_process']:
         try:
             event = 'EN' if int(data['speed'] > 0) else 'PA'
             timestamp = data['timestamp']
@@ -307,4 +307,8 @@ def process_location_in_background(data):
         except Exception as e:
             print(e)
         # FIN - INSERTAR UBICACION EN EL HISTORICO
+        # DETECTAR ALERTAS
+        alert_reader = AlertReader(data['deviceid'])
+        alert_reader.run()
+        # FIN - DETECTAR ALERTAS
     return True
