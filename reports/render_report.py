@@ -29,7 +29,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -39,10 +39,10 @@ class RenderReport:
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
             try:
-                unit = units.get(name=data['unit_name'])
+                unit = units.get(id=int(data['unitid']))
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             return Response(
@@ -74,7 +74,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -84,10 +84,10 @@ class RenderReport:
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
             try:
-                unit = units.get(name=data['unit_name'])
+                unit = units.get(id=int(data['unitid']))
             except:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             return Response(
@@ -119,7 +119,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -128,7 +128,7 @@ class RenderReport:
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
-            if data['unit_name'].upper() == 'ALL':
+            if int(data['unitid']) == 0:
                 speed_report = []
                 summarization = []
                 for unit in units:
@@ -149,10 +149,10 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(name=data['unit_name'])
+                    unit = units.get(id=int(data['unitid']))
                 except Exception as e:
                     error = {
-                        'error':str(e)
+                        'detail':str(e)
                     }
                     return Response(error,status=status.HTTP_400_BAD_REQUEST)
                 return Response(
@@ -185,7 +185,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -194,9 +194,20 @@ class RenderReport:
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
-            if data['unit_name'].upper() == 'ALL':
+            if int(data['unitid']) == 0:
                 trip_report = []
                 summarization = []
+                for unit in units:
+                    unit_trip_report = report.generate_trip_report1(
+                        unit,
+                        initial_timestamp,
+                        final_timestamp,
+                        data['geofence_option'],
+                    )
+                    for utr in unit_trip_report['trip_report']:
+                        trip_report.append(utr)
+                    for utr in unit_trip_report['summarization']:
+                        summarization.append(utr)
                 response = {
                     'trip_report':trip_report,
                     'summarization':summarization,
@@ -204,10 +215,10 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(name=data['unit_name'])
+                    unit = units.get(id=int(data['unitid']))
                 except Exception as e:
                     error = {
-                        'error':str(e)
+                        'detail':str(e)
                     }
                     return Response(error,status=status.HTTP_400_BAD_REQUEST)
                 return Response(
@@ -240,7 +251,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -249,9 +260,20 @@ class RenderReport:
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
-            if data['unit_name'].upper() == 'ALL':
+            if int(data['unitid']) == 0:
                 trip_report = []
                 summarization = []
+                for unit in units:
+                    unit_trip_report = report.generate_trip_report2(
+                        unit,
+                        initial_timestamp,
+                        final_timestamp,
+                        data['geofence_option'],
+                    )
+                    for utr in unit_trip_report['trip_report']:
+                        trip_report.append(utr)
+                    for utr in unit_trip_report['summarization']:
+                        summarization.append(utr)
                 response = {
                     'trip':trip_report,
                     'summarization':summarization,
@@ -259,10 +281,10 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(name=data['unit_name'])
+                    unit = units.get(id=int(data['unitid']))
                 except Exception as e:
                     error = {
-                        'error':str(e)
+                        'detail':str(e)
                     }
                     return Response(error,status=status.HTTP_400_BAD_REQUEST)
                 return Response(
@@ -295,7 +317,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -304,9 +326,19 @@ class RenderReport:
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
-            if data['unit_name'].upper() == 'ALL':
+            if int(data['unitid']) == 0:
                 mileage_report = []
                 summarization = []
+                for unit in units:
+                    unit_mileage_report = report.generate_mileage_report(
+                        unit,
+                        initial_timestamp,
+                        final_timestamp,
+                    )
+                    for umr in unit_mileage_report['mileage_report']:
+                        mileage_report.append(umr)
+                    for umr in unit_mileage_report['summarization']:
+                        summarization.append(umr)
                 response = {
                     'mileage':mileage_report,
                     'summarization':summarization,
@@ -314,10 +346,10 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(name=data['unit_name'])
+                    unit = units.get(id=int(data['unitid']))
                 except Exception as e:
                     error = {
-                        'error':str(e)
+                        'detail':str(e)
                     }
                     return Response(error,status=status.HTTP_400_BAD_REQUEST)
                 return Response(
@@ -349,7 +381,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -362,7 +394,7 @@ class RenderReport:
                 try:
                     geofence = Geofence.objects.get(
                         id = data['geofences'][i],
-                        account = request.user.profile.account, 
+                        account = request.user.profile.account,
                     )
                     geofences.append(geofence)
                 except Exception as e:
@@ -373,15 +405,22 @@ class RenderReport:
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
-            if data['unit_name'].upper() == 'ALL':
+            if int(data['unitid']) == 0:
                 geofence_report = []
+                for unit in units:
+                    unit_geofence_report =report.generate_geofence_report(
+                        unit,
+                        initial_timestamp,
+                        final_timestamp,
+                        geofences,
+                    )
                 return Response(geofence_report,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(name=data['unit_name'])
+                    unit = units.get(id=int(data['unitid']))
                 except Exception as e:
                     error = {
-                        'error':str(e)
+                        'detail':str(e)
                     }
                     return Response(error,status=status.HTTP_400_BAD_REQUEST)
                 return Response(
@@ -414,7 +453,7 @@ class RenderReport:
                 )
             except Exception as e:
                 error = {
-                    'error':str(e)
+                    'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             if final_timestamp - initial_timestamp > 604800:
@@ -423,7 +462,7 @@ class RenderReport:
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request.user.profile)
-            if data['unit_name'].upper() == 'ALL':
+            if int(data['unitid']) == 0:
                 stop_report = []
                 summarization = []
                 response = {
@@ -433,10 +472,10 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(name=data['unit_name'])
+                    unit = units.get(id=int(data['unitid']))
                 except Exception as e:
                     error = {
-                        'error':str(e)
+                        'detail':str(e)
                     }
                     return Response(error,status=status.HTTP_400_BAD_REQUEST)
                 return Response(

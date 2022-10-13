@@ -94,9 +94,10 @@ class Report:
             data[i]['datetime'] = time_conversor.convert_utc_timestamp_to_local_datetimestr(
                 data[i]['timestamp'],"%d/%m/%Y %H:%M:%S")
             try:
-                item['attributes'] = json.loads(item['attributes'])
+                attributes = json.loads(data[i]['attributes'])
             except:
-                item['attributes'] = {}
+                attributes = {}
+            data[i]['attributes'] = attributes
             data[i]['ignition'] = device_reader.detect_ignition_event({
                 'attributes':attributes
             })
