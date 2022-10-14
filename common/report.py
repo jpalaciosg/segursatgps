@@ -503,6 +503,7 @@ class Report:
                             'trip_time':str(timedelta(seconds=trip_duration)),
                         })
                     elif i == len(ignition_events)-1 and ignition_events[i]['event'] == 'ON':
+                        trip_duration = timestamp2 - ignition_events[i]['timestamp']
                         trip_report.append({
                             'unit_name':unit.name,
                             'unit_description':unit.description,
@@ -517,11 +518,12 @@ class Report:
                             'final_timestamp':timestamp2,
                             'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
                                 timestamp2,"%d/%m/%Y %H:%M:%S"),
-                            'trip_duration':'N/D',
-                            'trip_time':'N/D',
+                            'trip_duration':trip_duration,
+                            'trip_time':str(timedelta(seconds=trip_duration)),
                         })
                 else:
                     if i == len(ignition_events)-1 and ignition_events[i]['event'] == 'ON':
+                        trip_duration = timestamp2 - ignition_events[i]['timestamp']
                         trip_report.append({
                             'unit_name':unit.name,
                             'unit_description':unit.description,
@@ -536,8 +538,8 @@ class Report:
                             'final_timestamp':timestamp2,
                             'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
                                 timestamp2,"%d/%m/%Y %H:%M:%S"),
-                            'trip_duration':'N/D',
-                            'trip_time':'N/D',
+                            'trip_duration':trip_duration,
+                            'trip_time':str(timedelta(seconds=trip_duration)),
                         })
                     elif ignition_events[i-1]['event'] == 'ON' and ignition_events[i]['event'] == 'OFF':
                         initial_datetime = time_conversor.convert_utc_timestamp_to_local_datetimestr(
