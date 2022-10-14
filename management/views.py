@@ -193,7 +193,10 @@ def users_view(request):
     if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    return render(request,'management/users.html')
+    accounts = Account.objects.all()
+    return render(request,'management/users.html',{
+        'accounts':accounts
+    })
 
 @api_view(['GET'])
 def get_users(request):
@@ -201,7 +204,17 @@ def get_users(request):
     if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    profiles = Profile.objects.all()
+    accountid = request.GET.get('accountid',None)
+    profiles = None
+    if accountid:
+        try:
+            accountid = int(accountid)
+            account = Account.objects.get(id=accountid)
+            profiles = Profile.objects.filter(account=account)
+        except:
+            profiles = []
+    else:
+        profiles = Profile.objects.all()
     serializer = ProfileSerializer(profiles,many=True)
     data = serializer.data
     for i in range(len(data)):
@@ -353,10 +366,16 @@ def update_profile(request,id):
         profile.view_latest_alerts = data['view_latest_alerts']
         profile.view_alert_history = data['view_alert_history']
         profile.view_units = data['view_units']
+        #Eslim
+        profile.view_units_group = data['view_units_group']
+        #Eslim
         profile.view_unit_triggers = data['view_unit_triggers']
         profile.view_fleet_triggers = data['view_fleet_triggers']
         profile.view_mail_lists = data['view_mail_lists']
         profile.view_geofences = data['view_geofences']
+        #Eslim
+        profile.view_geofences_group = data['view_geofences_group']
+        #Eslim
         profile.view_users = data['view_users']
         profile.units.clear()
         for id in data['units']:
@@ -413,7 +432,10 @@ def units_view(request):
     if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    return render(request,'management/units.html')
+    accounts = Account.objects.all()
+    return render(request,'management/units.html',{
+        'accounts':accounts
+    })
 
 @api_view(['GET'])
 def get_units(request):
@@ -421,7 +443,17 @@ def get_units(request):
     if request.user.profile.is_superadmin == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = Device.objects.all()
+    accountid = request.GET.get('accountid',None)
+    units = None
+    if accountid:
+        try:
+            accountid = int(accountid)
+            account = Account.objects.get(id=accountid)
+            units = Device.objects.filter(account=account)
+        except:
+            units = []
+    else:
+        units = Device.objects.all()
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
     serializer = DeviceSerializer(units,many=True)

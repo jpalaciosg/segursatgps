@@ -56,10 +56,16 @@ class UpdateProfileSerializer(serializers.Serializer):
     view_group_stop_report = serializers.BooleanField()
     view_group_geofence_report = serializers.BooleanField()
     view_units = serializers.BooleanField()
+    #Eslim
+    view_units_group = serializers.BooleanField()
+    #Eslim
     view_unit_triggers = serializers.BooleanField()
     view_fleet_triggers = serializers.BooleanField()
     view_mail_lists = serializers.BooleanField()
     view_geofences = serializers.BooleanField()
+    #Eslim
+    view_geofences_group = serializers.BooleanField()
+    #Eslim
     view_users = serializers.BooleanField()
     view_latest_alerts = serializers.BooleanField()
     view_alert_history = serializers.BooleanField()
