@@ -32,5 +32,4 @@ class StopReportSerializer(serializers.Serializer):
     geofence_option = serializers.BooleanField()
     discard_time = serializers.IntegerField(
         min_value=0,
-        max_value=10,
     )
