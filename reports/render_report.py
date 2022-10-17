@@ -37,7 +37,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             try:
                 unit = units.get(id=int(data['unitid']))
             except Exception as e:
@@ -82,7 +82,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             try:
                 unit = units.get(id=int(data['unitid']))
             except:
@@ -127,7 +127,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 speed_report = []
                 summarization = []
@@ -193,7 +193,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 trip_report = []
                 summarization = []
@@ -259,7 +259,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 trip_report = []
                 summarization = []
@@ -325,7 +325,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 total_mileage = []
                 mileage_by_date = []
@@ -404,7 +404,7 @@ class RenderReport:
                     'detail': 'There are no geofences'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 geofence_report = []
                 for unit in units:
@@ -463,7 +463,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 stop_report = []
                 summarization = []
@@ -531,7 +531,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 temperature_report = []
                 summarization = []
@@ -595,7 +595,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 hours_report = []
                 summarization = []
@@ -659,7 +659,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            units = privilege.get_units(request.user.profile)
+            units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 telemetry_report = []
                 summarization = []
