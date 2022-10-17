@@ -37,7 +37,7 @@ render_report = RenderReport()
 
 @login_required
 def dashboard_view(request):
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     units_transmitting = []
     units_not_transmitted = []
     units_in_motion = []
@@ -70,7 +70,7 @@ def dashboard_view(request):
 
 @login_required
 def fleet_status_view(request):
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
     units_not_transmitted = 0
@@ -129,10 +129,10 @@ def get_detailed_report(request):
 @login_required
 def detailed_report_view(request):
     # verificar privilegios
-    if privilege.view_detailed_report(request.user.profile) == False:
+    if privilege.view_detailed_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/detailed-report.html',{
         'units':units,
     })
@@ -140,10 +140,10 @@ def detailed_report_view(request):
 @login_required
 def detailed_report_with_attributes_view(request):
     # verificar privilegios
-    if privilege.view_detailed_report_with_attributes(request.user.profile) == False:
+    if privilege.view_detailed_report_with_attributes(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/detailed-report-with-attributes.html',{
         'units':units,
     })
@@ -154,10 +154,10 @@ def get_driving_style_report(request):
 
 def driving_style_report_view(request):
     # verificar privilegios
-    if privilege.view_driving_style_report(request.user.profile) == False:
+    if privilege.view_driving_style_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/driving-style-report.html',{
         'units':units,
     })
@@ -173,11 +173,11 @@ def get_trip_report2(request):
 @login_required
 def trip_report_view(request):
     # verificar privilegios
-    if privilege.view_trip_report(request.user.profile) == False:
+    if privilege.view_trip_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     # GET
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/trip-report.html',{
         'units':units,
     })
@@ -185,10 +185,10 @@ def trip_report_view(request):
 @login_required
 def trip_report2_view(request):
     # verificar privilegios
-    if privilege.view_day_trip_report(request.user.profile) == False:
+    if privilege.view_day_trip_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/trip-report2.html',{
         'units':units,
     })
@@ -196,7 +196,7 @@ def trip_report2_view(request):
 @login_required
 def group_trip_report_view(request):
     # verificar privilegios
-    if privilege.view_group_trip_report(request.user.profile) == False:
+    if privilege.view_group_trip_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     # GET
@@ -212,11 +212,11 @@ def get_stop_report(request):
 @login_required
 def stop_report_view(request):
     # verificar privilegios
-    if privilege.view_stop_report(request.user.profile) == False:
+    if privilege.view_stop_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     # GET
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/stop-report.html',{
         'units':units,
     })
@@ -225,7 +225,7 @@ def stop_report_view(request):
 @login_required
 def group_stop_report_view(request):
     # verificar privilegios
-    if privilege.view_group_stop_report(request.user.profile) == False:
+    if privilege.view_group_stop_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     # GET
@@ -242,10 +242,10 @@ def get_speed_report(request):
 @login_required
 def speed_report_view(request):
     # verificar privilegios
-    if privilege.view_speed_report(request.user.profile) == False:
+    if privilege.view_speed_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/speed-report.html',{
         'units':units,
     })
@@ -254,7 +254,7 @@ def speed_report_view(request):
 @login_required
 def group_speed_report_view(request):
     # verificar privilegios
-    if privilege.view_group_speed_report(request.user.profile) == False:
+    if privilege.view_group_speed_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     # GET
@@ -271,11 +271,11 @@ def get_mileage_report(request):
 @login_required
 def mileage_report_view(request):
     # verificar privilegios
-    if privilege.view_mileage_report(request.user.profile) == False:
+    if privilege.view_mileage_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     #GET
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     form = MileageReportForm()
     return render(request,'reports/mileage-report.html',{
         'units':units,
@@ -285,7 +285,7 @@ def mileage_report_view(request):
 # GROUP MILEAGE REPORT
 @login_required
 def group_mileage_report_view(request):
-    if privilege.view_group_mileage_report(request.user.profile) == False:
+    if privilege.view_group_mileage_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     # GET
@@ -298,12 +298,12 @@ def group_mileage_report_view(request):
 @login_required
 def geofence_report_view(request):
     # verificar privilegios
-    if privilege.view_geofence_report(request.user.profile) == False:
+    if privilege.view_geofence_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     #GET
     geofences = Geofence.objects.filter(account=request.user.profile.account)
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     form = ReportForm()
     return render(request,'reports/geofence-report.html',{
         'units':units,
@@ -319,7 +319,7 @@ def get_geofence_report(request):
 @login_required
 def group_geofence_report_view(request):
     # verificar privilegios
-    if privilege.view_geofence_report(request.user.profile) == False:
+    if privilege.view_geofence_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     # GET
@@ -333,10 +333,10 @@ def group_geofence_report_view(request):
 @login_required
 def telemetry_report_view(request):
     # verificar privilegios
-    if privilege.view_telemetry_report(request.user.profile) == False:
+    if privilege.view_telemetry_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/telemetry-report.html',{
         'units':units,
     })
@@ -348,10 +348,10 @@ def get_telemetry_report(request):
 @login_required
 def temperature_report_view(request):
     # verificar privilegios
-    if privilege.view_temperature_report(request.user.profile) == False:
+    if privilege.view_temperature_report(request) == False:
         return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/temperature-report.html',{
         'units':units,
     })
@@ -364,10 +364,10 @@ def get_temperature_report(request):
 def hours_report_view(request):
     #GET
     # verificar privilegios
-    if privilege.view_hours_report(request.user.profile) == False:
+    if privilege.view_hours_report(request) == False:
         return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/hours-report.html',{
         'units':units,
     })
@@ -378,14 +378,14 @@ def get_hours_report(request):
 
 @login_required
 def telemetry_trip_report_view(request):
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/telemetry-trip-report.html',{
         'units':units,
     })
 
 @login_required
 def target_telemetry_report_view(request):
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     return render(request,'reports/target-telemetry-report.html',{
         'units':units,
     })

@@ -83,7 +83,7 @@ def logout_view(request):
 @login_required
 def users_view(request):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_latest_alerts(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     if request.method == 'POST':

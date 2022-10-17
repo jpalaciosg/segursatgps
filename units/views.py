@@ -24,10 +24,10 @@ privilege = Privilege()
 @login_required
 def units_view(request):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_latest_alerts(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     """
     for unit in units:
         try:
@@ -46,7 +46,7 @@ def units_view(request):
 
 @login_required
 def unit_group_view(request):
-    units = privilege.get_units(request.user.profile)
+    units = privilege.get_units(request)
     groups = Group.objects.filter(account=request.user.profile.account)
     for group in groups:
         group.modified = gmt_conversor.convert_utctolocaltime(group.modified) # convertir a zona horaria
@@ -59,10 +59,13 @@ def unit_group_view(request):
 @api_view(['GET'])
 def get_units(request):
     try:
-        units = privilege.get_units(request.user.profile)
+        units = privilege.get_units(request)
         serializer = DeviceSerializer(units,many=True)
         data = serializer.data
         for i in range(len(data)):
+            last_report = gmt_conversor.convert_utctolocaltime(
+                datetime.utcfromtimestamp(data[i]['last_timestamp']))
+            data[i]['last_report'] = last_report.strftime("%d/%m/%Y, %H:%M:%S")
             data[i]['modified'] = gmt_conversor.convert_utctolocaltime(units[i].modified).strftime("%d/%m/%Y %H:%M:%S")
             data[i]['created'] = gmt_conversor.convert_utctolocaltime(units[i].created).strftime("%d/%m/%Y %H:%M:%S")
         return Response(data,status=status.HTTP_200_OK)
@@ -90,7 +93,7 @@ def get_unit(request,name):
             data['previous_location']['attributes'] = ''
         last_report = datetime.fromtimestamp(unit.last_timestamp)
         last_report = gmt_conversor.convert_utctolocaltime(last_report)
-        data['last_report'] = last_report.strftime("%d-%m-%Y %H:%M:%S")
+        data['last_report'] = last_report.strftime("%d-%m-%Y, %H:%M:%S")
         data['modified'] = gmt_conversor.convert_utctolocaltime(unit.modified).strftime("%d/%m/%Y %H:%M:%S")
         data['created'] = gmt_conversor.convert_utctolocaltime(unit.created).strftime("%d/%m/%Y %H:%M:%S")
         return Response(data,status=status.HTTP_200_OK)
@@ -100,8 +103,8 @@ def get_unit(request,name):
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-def get_unit_status(request,name):
-    unit = Device.objects.get(name=name,account=request.user.profile.account)
+def get_unit_status(request,id):
+    unit = Device.objects.get(id=id)
     device_reader = DeviceReader(unit.uniqueid)
     response = device_reader.get_unit_status(unit)
     return Response(response,status=status.HTTP_200_OK)

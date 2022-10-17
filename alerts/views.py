@@ -23,7 +23,7 @@ privilege = Privilege()
 @login_required
 def alerts_view(request):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_latest_alerts(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     if request.user.profile.account.name == 'civa':
@@ -34,7 +34,7 @@ def alerts_view(request):
 
 def alert_history_view(request):
     # verificar privilegios
-    if privilege.view_alert_history(request.user.profile) == False:
+    if privilege.view_alert_history(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     if request.method == 'POST':
@@ -160,7 +160,7 @@ def alert_history_view(request):
 @api_view(['GET'])
 def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_type):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_latest_alerts(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = Device.objects.filter(account=request.user.profile.account)
@@ -285,7 +285,7 @@ def get_alert_history(request,initial_datetime,final_datetime,unit_name,alert_ty
 @api_view(['GET'])
 def get_alert(request,id):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_latest_alerts(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     try:
