@@ -3,6 +3,7 @@ from triggers.models import FleetTrigger
 from units.models import Device
 from alerts.models import Alert
 from units.models import LastAlert
+from mails.models import AlertMailQueue
 
 
 from datetime import datetime
