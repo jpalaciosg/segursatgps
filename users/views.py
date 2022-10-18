@@ -72,7 +72,7 @@ def superadmin_login_view(request):
             })
         else:
             return render(request,'users/salogin.html',{'error':'Usuario y/o contraseña invalidos'})
-    
+
     return render(request,'users/salogin.html')
 
 @login_required
@@ -83,7 +83,7 @@ def logout_view(request):
 @login_required
 def users_view(request):
     # verificar privilegios
-    if privilege.view_latest_alerts(request.user.profile) == False:
+    if privilege.view_latest_alerts(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     if request.method == 'POST':
@@ -328,7 +328,13 @@ def update_profile(request,id):
         profile.view_latest_alerts = data['view_latest_alerts']
         profile.view_alert_history = data['view_alert_history']
         profile.view_units = data['view_units']
+        #Eslim
+        profile.view_units_group = data['view_units_group']
+        #Eslim
         profile.view_geofences = data['view_geofences']
+        #Eslim
+        profile.view_geofences_group = data['view_geofences_group']
+        #Eslim
         profile.view_unit_triggers = data['view_unit_triggers']
         profile.view_fleet_triggers = data['view_fleet_triggers']
         profile.view_mail_lists = data['view_mail_lists']

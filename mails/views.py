@@ -19,7 +19,7 @@ privilege = Privilege()
 @login_required
 def mail_list_view(request):
     # verificar privilegios
-    if privilege.view_mail_lists(request.user.profile) == False:
+    if privilege.view_mail_lists(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     mail_lists = MailList.objects.filter(account=request.user.profile.account)

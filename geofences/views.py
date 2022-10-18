@@ -22,7 +22,7 @@ privilege = Privilege()
 @login_required
 def geofences_view(request):
     # verificar privilegios
-    if privilege.view_geofences(request.user.profile) == False:
+    if privilege.view_geofences(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>",status=403)
     # fin - verificar privilegios
     geofences = Geofence.objects.filter(account=request.user.profile.account)
@@ -39,7 +39,7 @@ def geofences_view(request):
 @login_required
 def geofence_group_view(request):
     # verificar privilegios
-    if privilege.view_geofences(request.user.profile) == False:
+    if privilege.view_geofences(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>",status=403)
     # fin - verificar privilegios
     geofence_groups = GeofenceGroup.objects.filter(account=request.user.profile.account)
