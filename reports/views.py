@@ -7,13 +7,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from datetime import datetime,timedelta
-import time
 import json
-import pandas as pd
-from geopy.distance import great_circle
-from shapely.geometry import Point,shape
 
-from locations.models import Location
 from geofences.models import Geofence
 from common.time_conversor import TimeConversor
 from common.device_reader import DeviceReader
@@ -21,11 +16,9 @@ from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
 from common.report import Report
 
-from .forms import ReportForm,StopReportForm,SpeedReportForm,MileageReportForm,GeofenceReportForm,GroupReportForm,GroupSpeedReportForm,GroupStopReportForm,GroupGeofenceReportForm,DetailedMileageReportForm
-from .serializers import ReportSerializer,SpeedReportSerializer,GeofenceReportSerializer
+from .forms import ReportForm,MileageReportForm
 from .render_report import RenderReport
-from units.models import Device,Group
-from locations.serializers import LocationSerializer
+from units.models import Group
 
 # Create your views here.
 

@@ -98,7 +98,7 @@ urlpatterns = [
     path('web/api/users/get_basic_current_user_information/', users_views.get_basic_current_user_information),
     path('web/api/units/get-units/', units_views.get_units),
     path('web/api/units/get-unit/<str:name>/', units_views.get_unit),
-    path('web/api/units/get-unit-status/<str:name>/', units_views.get_unit_status),
+    path('web/api/units/get-unit-status/<int:id>/', units_views.get_unit_status),
     path('web/api/units/update-unit/<int:id>/', units_views.update_unit),
     path('web/api/units/get-groups/', units_views.get_groups),
     path('web/api/units/get-group/<int:id>/', units_views.get_group),
