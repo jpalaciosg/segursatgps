@@ -2,9 +2,9 @@ from datetime import datetime,timedelta
 from geopy.distance import great_circle
 from shapely.geometry import Point,shape
 from statistics import mean,median
+from functools import reduce
 import json
 
-from users.models import Device
 from locations.models import Location
 from geofences.models import Geofence
 from locations import serializers as locations_serializers
@@ -227,15 +227,16 @@ class Report:
                 except:
                     item['attributes'] = {}
                 speed_report.append(item)
-        summarization.append({
-            'unit_name': unit.name,
-            'unit_description': unit.description,
-            'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
-            'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                final_timestamp,"%d/%m/%Y %H:%M:%S"),
-            'number_of_speeds': len(speed_report)
-        })
+        if len(speed_report) > 0:
+            summarization.append({
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                'number_of_speeds': len(speed_report)
+            })
         return {
             'speed_report': speed_report,
             'summarization': summarization
@@ -421,34 +422,35 @@ class Report:
                 tr['final_geofences'] = 'N/D'
         # FIN - CALCULAR GEOCERCAS
         # CALCULAR RESUMEN
-        number_of_trips = 0
-        distance_summarization = 0.0
-        trip_duration_summarization = 0
-        stop_duration_summarization = 0
-        for tr in trip_report:
-            if tr['initial_timestamp'] != 'N/D':
-                if tr['final_timestamp'] != 'N/D':
-                    number_of_trips += 1
-                    distance_summarization += tr['distance']
-                    trip_duration_summarization += tr['trip_duration']
-                    stop_duration_summarization += tr['stop_duration']
-        driving_duration_summarization = trip_duration_summarization-stop_duration_summarization
-        summarization.append({
-            "unit_name" : unit.name,
-            "unit_description": unit.description,
-            "initial_datetime": time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
-            "final_datetime" : time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                final_timestamp,"%d/%m/%Y %H:%M:%S"),
-            "number_of_trips": number_of_trips,
-            "distance_summarization": round(distance_summarization,2),
-            "trip_duration_summarization": time_conversor.convert_seconds_in_hour_format(
-                trip_duration_summarization),
-            "stop_duration_summarization": time_conversor.convert_seconds_in_hour_format(
-                stop_duration_summarization),
-            "driving_duration_summarization": time_conversor.convert_seconds_in_hour_format(
-                driving_duration_summarization),
-        })
+        if len(trip_report) > 0:
+            number_of_trips = 0
+            distance_summarization = 0.0
+            trip_duration_summarization = 0
+            stop_duration_summarization = 0
+            for tr in trip_report:
+                if tr['initial_timestamp'] != 'N/D':
+                    if tr['final_timestamp'] != 'N/D':
+                        number_of_trips += 1
+                        distance_summarization += tr['distance']
+                        trip_duration_summarization += tr['trip_duration']
+                        stop_duration_summarization += tr['stop_duration']
+            driving_duration_summarization = trip_duration_summarization-stop_duration_summarization
+            summarization.append({
+                "unit_name" : unit.name,
+                "unit_description": unit.description,
+                "initial_datetime": time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "final_datetime" : time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "number_of_trips": number_of_trips,
+                "distance_summarization": round(distance_summarization,2),
+                "trip_duration_summarization": time_conversor.convert_seconds_in_hour_format(
+                    trip_duration_summarization),
+                "stop_duration_summarization": time_conversor.convert_seconds_in_hour_format(
+                    stop_duration_summarization),
+                "driving_duration_summarization": time_conversor.convert_seconds_in_hour_format(
+                    driving_duration_summarization),
+            })
         # FIN - CALCULAR RESUMEN
         return {
             'trip_report': trip_report,
@@ -654,39 +656,40 @@ class Report:
                 tr['final_geofences'] = 'N/D'
         # FIN - CALCULAR GEOCERCAS
         # CALCULAR RESUMEN
-        number_of_trips = 0
-        distance_summarization = 0.0
-        trip_duration_summarization = 0
-        stop_duration_summarization = 0
-        for tr in trip_report:
-            if tr['initial_timestamp'] != 'N/D':
-                if tr['final_timestamp'] != 'N/D':
-                    number_of_trips += 1
-                    distance_summarization += tr['distance']
-                    trip_duration_summarization += tr['trip_duration']
-                    stop_duration_summarization += tr['stop_duration']
-        driving_duration_summarization = trip_duration_summarization-stop_duration_summarization
-        stop_percentage_summarization = stop_duration_summarization*100/trip_duration_summarization
-        driving_percentage_summarization = 100 - stop_percentage_summarization
-        summarization.append({
-            "unit_name" : unit.name,
-            "unit_description": unit.description,
-            "initial_datetime": time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
-            "final_datetime" : time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                final_timestamp,"%d/%m/%Y %H:%M:%S"),
-            "number_of_trips": number_of_trips,
-            "distance_summarization": round(distance_summarization,2),
-            "trip_duration_summarization": time_conversor.convert_seconds_in_hour_format(
-                trip_duration_summarization),
-            "stop_duration_summarization": time_conversor.convert_seconds_in_hour_format(
-                stop_duration_summarization),
-            "driving_duration_summarization": time_conversor.convert_seconds_in_hour_format(
-                driving_duration_summarization),
-            "trip_percentage_summarization": 100,
-            "stop_percentage_summarization": stop_percentage_summarization,
-            "driving_percentage_summarization": driving_percentage_summarization,
-        })
+        if len(trip_report) > 0:
+            number_of_trips = 0
+            distance_summarization = 0.0
+            trip_duration_summarization = 0
+            stop_duration_summarization = 0
+            for tr in trip_report:
+                if tr['initial_timestamp'] != 'N/D':
+                    if tr['final_timestamp'] != 'N/D':
+                        number_of_trips += 1
+                        distance_summarization += tr['distance']
+                        trip_duration_summarization += tr['trip_duration']
+                        stop_duration_summarization += tr['stop_duration']
+            driving_duration_summarization = trip_duration_summarization-stop_duration_summarization
+            stop_percentage_summarization = stop_duration_summarization*100/trip_duration_summarization
+            driving_percentage_summarization = 100 - stop_percentage_summarization
+            summarization.append({
+                "unit_name" : unit.name,
+                "unit_description": unit.description,
+                "initial_datetime": time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "final_datetime" : time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "number_of_trips": number_of_trips,
+                "distance_summarization": round(distance_summarization,2),
+                "trip_duration_summarization": time_conversor.convert_seconds_in_hour_format(
+                    trip_duration_summarization),
+                "stop_duration_summarization": time_conversor.convert_seconds_in_hour_format(
+                    stop_duration_summarization),
+                "driving_duration_summarization": time_conversor.convert_seconds_in_hour_format(
+                    driving_duration_summarization),
+                "trip_percentage_summarization": 100,
+                "stop_percentage_summarization": stop_percentage_summarization,
+                "driving_percentage_summarization": driving_percentage_summarization,
+            })
         # FIN - CALCULAR RESUMEN
         return {
                 'trip_report': trip_report,
@@ -742,16 +745,17 @@ class Report:
                 'final_datetime':dr[1].strftime("%d/%m/%Y %H:%M:%S"),
                 'distance':round(distance_sum,2)
             })
-        total_mileage_report.append({
-            "unit_name":unit.name,
-            "unit_description":unit.description,
-            "initial_datetime":time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
-            "final_datetime":time_conversor.convert_utc_timestamp_to_local_datetimestr(
-                final_timestamp,"%d/%m/%Y %H:%M:%S"),
-            "distance":round(total_distance_sum,2),
-            "odometer":round(unit.odometer,2),
-        })
+        if len(day_mileage_report) > 0:
+            total_mileage_report.append({
+                "unit_name":unit.name,
+                "unit_description":unit.description,
+                "initial_datetime":time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "final_datetime":time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "distance":round(total_distance_sum,2),
+                "odometer":round(unit.odometer,2),
+            })
         return {
             'total_mileage':total_mileage_report,
             'mileage_by_date':day_mileage_report,
@@ -960,6 +964,44 @@ class Report:
                         'stop_duration':stop_duration,
                         'stop_time':str(timedelta(seconds=stop_duration))
                     })
+        stop_report = list(filter(lambda x : x['stop_duration'] > discard_time, stop_report))
+        # CALCULAR GEOCERCAS
+        if geofence_option:
+            geofences = Geofence.objects.filter(account=unit.account)
+            for sr in stop_report:
+                matching_geofences = []
+                for geofence in geofences:
+                    feature = json.loads(geofence.geojson)['features'][0]
+                    s = shape(feature['geometry'])
+                    point = Point(sr['ongitude'],sr['latitude'])
+                    if s.contains(point):
+                        matching_geofences.append(geofence.name)
+                geofence_str = ""
+                for i in range(len(matching_geofences)):
+                    if i==0:
+                        geofence_str += matching_geofences[i]
+                    else:
+                        geofence_str += f', {matching_geofences[i]}'
+                sr['geofences'] = geofence_str
+        else:
+            for tr in stop_report:
+                tr['geofences'] = 'N/D'
+        # FIN - CALCULAR GEOCERCAS
+        # CALCULAR RESUMEN
+        if len(stop_report) > 0:
+            stop_duration_list = list(map(lambda x : x['stop_duration'], stop_report))
+            stop_duration_summarization = reduce(lambda x, y: x + y, stop_duration_list)
+            summarization.append({
+                "unit_name" : unit.name,
+                "unit_description": unit.description,
+                "initial_datetime": time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "final_datetime" : time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                "number_of_stops": len(stop_report),
+                "stop_duration_summarization": stop_duration_summarization,
+            })
+        # FIN - CALCULAR RESUMEN
         return {
                 'stop_report': stop_report,
                 'summarization': summarization,

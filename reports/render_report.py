@@ -463,6 +463,7 @@ class RenderReport:
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            discard_time = int(data['discard_time'])*60
             units = privilege.get_units(request)
             if int(data['unitid']) == 0:
                 stop_report = []
@@ -473,7 +474,7 @@ class RenderReport:
                         initial_timestamp,
                         final_timestamp,
                         data['geofence_option'],
-                        data['discard_time']*60,
+                        discard_time,
                     )
                     for usr in unit_stop_report['stop_report']:
                         stop_report.append(usr)
@@ -498,7 +499,7 @@ class RenderReport:
                         initial_timestamp,
                         final_timestamp,
                         data['geofence_option'],
-                        data['discard_time'],
+                        discard_time,
                     ),
                     status=status.HTTP_200_OK
                 )
