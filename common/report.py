@@ -973,7 +973,7 @@ class Report:
                 for geofence in geofences:
                     feature = json.loads(geofence.geojson)['features'][0]
                     s = shape(feature['geometry'])
-                    point = Point(sr['ongitude'],sr['latitude'])
+                    point = Point(sr['longitude'],sr['latitude'])
                     if s.contains(point):
                         matching_geofences.append(geofence.name)
                 geofence_str = ""
