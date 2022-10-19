@@ -57,9 +57,9 @@ def insert_location_batch(request):
                     'address':unit.last_address
                 }
                 # CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
-                ts = int(datetime.now().timestamp())
+                ts = int(datetime.utcnow().timestamp())
                 ts_offset = ts - data['timestamp']
-                if ts_offset > 31536000 and unit.account.name=='pampabaja_olmos':
+                if ts_offset > 31536000:
                     data['timestamp'] = ts
                 # FIN - CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
                 # CAMBIAR VELOCIDAD SI ES MAYOR A 105 PARA CIVA
@@ -111,7 +111,8 @@ def insert_location_batch(request):
                 data['account'] = unit.account.name
                 data['sutran_process'] = unit.sutran_process
                 data['osinergmin_process'] = unit.osinergmin_process
-                insert_location_in_history.delay(data)
+                if data['timestamp'] != previous_location['timestamp']:
+                    insert_location_in_history.delay(data)
 
                 # ALERTAS
                 process_alert.delay(data)
