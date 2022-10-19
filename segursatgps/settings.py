@@ -210,9 +210,13 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 
 # CORS
+CORS_ORIGIN_ALLOW = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "https://desarrollo.segursat.com",
     "http://desarrollo.segursat.com",
+    "http://localhost:3000",
 ]
 
 # IFRAME
