@@ -118,7 +118,7 @@ urlpatterns = [
     path('web/api/locations/insert-async-location-batch/', locations_views.insert_async_location_batch),
     path('web/api/locations/insert-history-location-batch/', locations_views.insert_history_location_batch),
     path('web/api/locations/insert-sutran-location/', locations_views.insert_sutran_location),
-    path('web/api/locations/get-location-history/<str:unit_name>/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_location_history),
+    path('web/api/locations/get-location-history/<id:unitid>/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_location_history),
     path('web/api/reports/detailed-report/', reports_views.get_detailed_report),
     path('web/api/reports/trip-report1/', reports_views.get_trip_report1),
     path('web/api/reports/trip-report2/', reports_views.get_trip_report2),

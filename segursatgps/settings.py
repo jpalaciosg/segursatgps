@@ -204,15 +204,24 @@ CHANNEL_LAYERS = {
 # celery settings
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_RESULT_EXPIRES = 1800
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 
 # CORS
+CORS_ORIGIN_ALLOW = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "https://desarrollo.segursat.com",
     "http://desarrollo.segursat.com",
+    "http://localhost:3000",
 ]
 
 # IFRAME
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# GEOCODING SERVER
+GEOCODING_SERVER = 'georeverse'
+GEOCODING_TIMEOUT = 10
