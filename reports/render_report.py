@@ -808,20 +808,21 @@ class RenderReport:
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = group.units.all()
-            harsh_driving_report = []
+            speed_report = []
             summarization = []
             for unit in units:
-                unit_harsh_driving_report = report.generate_driving_style_report(
+                unit_speed_report = report.generate_speed_report(
                     unit,
                     initial_timestamp,
                     final_timestamp,
+                    int(data['speed_limit']),
                 )
-                for item in unit_harsh_driving_report['harsh_driving_report']:
-                    harsh_driving_report.append(item)
-                for item in unit_harsh_driving_report['summarization']:
+                for item in unit_speed_report['speed_report']:
+                    speed_report.append(item)
+                for item in unit_speed_report['summarization']:
                     summarization.append(item)
             response = {
-                'harsh_driving_report':harsh_driving_report,
+                'speed_report':speed_report,
                 'summarization':summarization,
             }
             return Response(response,status=status.HTTP_200_OK)
