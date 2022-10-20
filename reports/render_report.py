@@ -77,7 +77,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -122,7 +122,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -188,7 +188,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -254,7 +254,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -320,7 +320,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -384,7 +384,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -458,7 +458,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -527,7 +527,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -591,7 +591,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
@@ -655,7 +655,7 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }

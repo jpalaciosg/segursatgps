@@ -600,8 +600,16 @@ class Report:
                         ).km
                         distance += distance2
                 tr['distance'] = round(distance,2)
-                tr['average_speed'] = round(sum(speeds)/len(speeds),2)
-                tr['max_speed'] = max(speeds)
+                try:
+                    average_speed = round(sum(speeds)/len(speeds),2)
+                except:
+                    average_speed = 0
+                tr['average_speed'] = average_speed
+                try:
+                    max_speed = max(speeds)
+                except:
+                    max_speed = 0
+                tr['max_speed'] = max_speed
                 movement_events = self.calculate_unit_movement_events(unit,trip_locations)
                 stop_duration = 0
                 for i in range(len(movement_events)):
