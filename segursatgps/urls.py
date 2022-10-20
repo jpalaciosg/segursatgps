@@ -132,10 +132,11 @@ urlpatterns = [
     path('web/api/reports/geofence-report/', reports_views.get_geofence_report),
     path('web/api/reports/hours-report/', reports_views.get_hours_report),
 
-    path('web/api/reports/group-driving-style-report/', reports_views.get_group_driving_style_report),
-    path('web/api/reports/group-speed-report/', reports_views.get_group_speed_report),
     path('web/api/reports/group-trip-report1/', reports_views.get_group_trip_report1),
     path('web/api/reports/group-trip-report2/', reports_views.get_group_trip_report2),
+
+    path('web/api/reports/group-speed-report/', reports_views.get_group_speed_report),
+    path('web/api/reports/group-driving-style-report/', reports_views.get_group_driving_style_report),
 
     path('web/api/management/get-accounts/', management_views.get_accounts),
     path('web/api/management/get-account/<int:id>/', management_views.get_account),

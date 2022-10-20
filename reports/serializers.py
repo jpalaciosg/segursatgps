@@ -50,3 +50,20 @@ class GroupTripReportSerializer(serializers.Serializer):
     initial_datetime = serializers.DateTimeField()
     final_datetime = serializers.DateTimeField()
     geofence_option = serializers.BooleanField()
+
+class GroupGeofenceReportSerializer(serializers.Serializer):
+    groupid = serializers.IntegerField(min_value=1)
+    initial_datetime = serializers.DateTimeField()
+    final_datetime = serializers.DateTimeField()
+    geofences = serializers.ListField(
+        child = serializers.IntegerField()
+    )
+
+class GroupStopReportSerializer(serializers.Serializer):
+    groupid = serializers.IntegerField(min_value=1)
+    initial_datetime = serializers.DateTimeField()
+    final_datetime = serializers.DateTimeField()
+    geofence_option = serializers.BooleanField()
+    discard_time = serializers.IntegerField(
+        min_value=0,
+    )
