@@ -386,3 +386,17 @@ def target_telemetry_report_view(request):
 @api_view(['POST'])
 def get_target_telemetry_report(request):
     pass
+
+@api_view(['POST'])
+def get_group_driving_style_report(request):
+    return render_report.render_group_driving_style_report(request)
+
+def group_driving_style_report_view(request):
+    # verificar privilegios
+    if privilege.view_driving_style_report(request) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    groups = privilege.get_groups(request)
+    return render(request,'reports/driving-style-report.html',{
+        'groups':groups,
+    })

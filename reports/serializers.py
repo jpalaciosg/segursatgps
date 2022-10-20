@@ -33,3 +33,14 @@ class StopReportSerializer(serializers.Serializer):
     discard_time = serializers.IntegerField(
         min_value=0,
     )
+
+class GroupReportSerializer(serializers.Serializer):
+    groupid = serializers.IntegerField(min_value=1)
+    initial_datetime = serializers.DateTimeField()
+    final_datetime = serializers.DateTimeField()
+
+class GroupSpeedReportSerializer(serializers.Serializer):
+    groupid = serializers.IntegerField(min_value=1)
+    initial_datetime = serializers.DateTimeField()
+    final_datetime = serializers.DateTimeField()
+    speed_limit = serializers.IntegerField()

@@ -51,6 +51,7 @@ urlpatterns = [
     path('reports/fleet-status/', reports_views.fleet_status_view, name='fleet-status'),
     path('reports/detailed-report/', reports_views.detailed_report_view, name='detailed-report'),
     path('reports/detailed-report-with-attributes/', reports_views.detailed_report_with_attributes_view, name='detailed-report-with-attributes'),
+    path('reports/group-driving-style-report/', reports_views.group_driving_style_report_view, name='group-driving-style-report'),
     path('reports/driving-style-report/', reports_views.driving_style_report_view, name='driving-style-report'),
     path('reports/speed-report/', reports_views.speed_report_view, name='speed-report'),
     path('reports/group-speed-report/', reports_views.group_speed_report_view, name='group-speed-report'),
@@ -130,6 +131,9 @@ urlpatterns = [
     path('web/api/reports/temperature-report/', reports_views.get_temperature_report),
     path('web/api/reports/geofence-report/', reports_views.get_geofence_report),
     path('web/api/reports/hours-report/', reports_views.get_hours_report),
+
+    path('web/api/reports/group-driving-style-report/', reports_views.get_group_driving_style_report),
+
     path('web/api/management/get-accounts/', management_views.get_accounts),
     path('web/api/management/get-account/<int:id>/', management_views.get_account),
     path('web/api/management/create-account/', management_views.create_account),
