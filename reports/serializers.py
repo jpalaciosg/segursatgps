@@ -44,3 +44,9 @@ class GroupSpeedReportSerializer(serializers.Serializer):
     initial_datetime = serializers.DateTimeField()
     final_datetime = serializers.DateTimeField()
     speed_limit = serializers.IntegerField()
+
+class GroupTripReportSerializer(serializers.Serializer):
+    groupid = serializers.IntegerField(min_value=1)
+    initial_datetime = serializers.DateTimeField()
+    final_datetime = serializers.DateTimeField()
+    geofence_option = serializers.BooleanField()
