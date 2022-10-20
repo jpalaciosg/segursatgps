@@ -166,11 +166,25 @@ def get_groups(request):
             for index in c_units:
                 try:
                     unit = Device.objects.get(id=index)
-                    item['units'].append({
-                        'id':index,
-                        'name':unit.name
-                    })
-                except:
+                    unit_serializer = DeviceSerializer(unit,many=False)
+                    unit_data = unit_serializer.data
+                    try:
+                        unit_data['last_attributes'] = json.loads(unit_data['last_attributes'])
+                    except:
+                        unit_data['last_attributes'] = ''
+                    try:
+                        unit_data['previous_location'] = json.loads(unit_data['previous_location'])
+                    except:
+                        unit_data['previous_location'] = ''
+                    try:
+                        unit_data['previous_location']['attributes'] = json.loads(unit_data['previous_location']['attributes'])
+                    except:
+                        unit_data['previous_location']['attributes'] = ''
+                    last_report = datetime.fromtimestamp(unit.last_timestamp)
+                    last_report = gmt_conversor.convert_utctolocaltime(last_report)
+                    unit_data['last_report'] = last_report.strftime("%d-%m-%Y, %H:%M:%S")
+                    item['units'].append(unit_data)
+                except Exception as e:
                     pass
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
@@ -188,10 +202,24 @@ def get_group(request,id):
         for index in c_units:
             try:
                 unit = Device.objects.get(id=index)
-                data['units'].append({
-                    'id':index,
-                    'name':unit.name
-                })
+                unit_serializer = DeviceSerializer(unit,many=False)
+                unit_data = unit_serializer.data
+                try:
+                    unit_data['last_attributes'] = json.loads(unit_data['last_attributes'])
+                except:
+                    unit_data['last_attributes'] = ''
+                try:
+                    unit_data['previous_location'] = json.loads(unit_data['previous_location'])
+                except:
+                    unit_data['previous_location'] = ''
+                try:
+                    unit_data['previous_location']['attributes'] = json.loads(unit_data['previous_location']['attributes'])
+                except:
+                    unit_data['previous_location']['attributes'] = ''
+                last_report = datetime.fromtimestamp(unit.last_timestamp)
+                last_report = gmt_conversor.convert_utctolocaltime(last_report)
+                unit_data['last_report'] = last_report.strftime("%d-%m-%Y, %H:%M:%S")
+                data['units'].append(unit_data)
             except:
                 pass
         return Response(data,status=status.HTTP_200_OK)
