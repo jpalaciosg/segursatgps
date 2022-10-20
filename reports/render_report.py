@@ -878,7 +878,63 @@ class RenderReport:
                 for item in unit_trip_report['summarization']:
                     summarization.append(item)
             response = {
-                'speed_report':speed_report,
+                'trip_report':trip_report,
+                'summarization':summarization,
+            }
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            error = {
+                'errors':serializer.errors
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+    def render_group_trip_report2(self,request):
+        data = request.data
+        serializer = report_serializers.GroupTripReportSerializer(data=data)
+        if serializer.is_valid():
+            try:
+                initial_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['initial_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+                final_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['final_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            if final_timestamp - initial_timestamp > 2678400:
+                error = {
+                    'detail': 'Report time range exceeded.'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            try:
+                groups = privilege.get_groups(request)
+                group = groups.get(id=int(data['groupid']))
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            units = group.units.all()
+            trip_report = []
+            summarization = []
+            for unit in units:
+                unit_trip_report = report.generate_trip_report2(
+                    unit,
+                    initial_timestamp,
+                    final_timestamp,
+                    bool(data['geofence_option']),
+                )
+                for item in unit_trip_report['trip_report']:
+                    trip_report.append(item)
+                for item in unit_trip_report['summarization']:
+                    summarization.append(item)
+            response = {
+                'trip_report':trip_report,
                 'summarization':summarization,
             }
             return Response(response,status=status.HTTP_200_OK)

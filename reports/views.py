@@ -404,3 +404,11 @@ def get_group_driving_style_report(request):
 @api_view(['POST'])
 def get_group_speed_report(request):
     return render_report.render_group_speed_report(request)
+
+@api_view(['POST'])
+def get_group_trip_report1(request):
+    return render_report.render_group_trip_report1(request)
+
+@api_view(['POST'])
+def get_group_trip_report2(request):
+    return render_report.render_group_trip_report2(request)
