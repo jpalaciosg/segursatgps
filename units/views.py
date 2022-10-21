@@ -126,6 +126,7 @@ def update_unit(request,id):
         unit.odometer = data['odometer']
         unit.show_unit_name_in_map = data['show_unit_name_in_map']
         unit.show_unit_description_in_map = data['show_unit_description_in_map']
+        unit.show_unit_datetime_in_map = data['show_unit_datetime_in_map']
         try:
             unit.save()
         except Exception as e:

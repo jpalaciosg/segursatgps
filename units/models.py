@@ -25,6 +25,7 @@ class Device(models.Model):
     previous_location = models.TextField(blank=True,default="{}")
     show_unit_name_in_map = models.BooleanField(default=True)
     show_unit_description_in_map = models.BooleanField(default=False)
+    show_unit_datetime_in_map = models.BooleanField(default=False)
     ignition_source = models.CharField(max_length=50,default="ignition")
     panic_source = models.CharField(max_length=50,default="panic")
     sutran_process = models.BooleanField(default=False)
