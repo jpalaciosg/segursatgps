@@ -1056,3 +1056,67 @@ class RenderReport:
                 'errors':serializer.errors
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+    def render_group_geofence_report(self,request):
+        data = request.data
+        serializer = report_serializers.GroupGeofenceReportSerializer(data=data)
+        if serializer.is_valid():
+            try:
+                initial_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['initial_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+                final_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['final_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            if final_timestamp - initial_timestamp > 2678400:
+                error = {
+                    'detail': 'Report time range exceeded.'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            try:
+                groups = privilege.get_groups(request)
+                group = groups.get(id=int(data['groupid']))
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            geofences = []
+            for i in range(len(data['geofences'])):
+                try:
+                    geofence = Geofence.objects.get(
+                        id = data['geofences'][i],
+                        account = request.user.profile.account,
+                    )
+                    geofences.append(geofence)
+                except Exception as e:
+                    pass
+            if len(geofences) == 0:
+                error = {
+                    'detail': 'There are no geofences'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            units = group.units.all()
+            geofence_report = []
+            for unit in units:
+                unit_geofence_report =report.generate_geofence_report(
+                    unit,
+                    initial_timestamp,
+                    final_timestamp,
+                    geofences,
+                )
+                for item in unit_geofence_report:
+                    geofence_report.append(item)
+            return Response(geofence_report,status=status.HTTP_200_OK)
+        else:
+            error = {
+                'errors':serializer.errors
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)

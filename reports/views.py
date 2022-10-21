@@ -431,3 +431,7 @@ def get_group_stop_report(request):
 @api_view(['POST'])
 def get_group_mileage_report(request):
     return render_report.render_group_mileage_report(request)
+
+@api_view(['POST'])
+def get_group_geofence_report(request):
+    return render_report.render_group_geofence_report(request)
