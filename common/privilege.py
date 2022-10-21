@@ -1,5 +1,4 @@
-from units.models import Device
-from users.models import Account
+from units.models import Device,Group
 
 class Privilege:
 
@@ -7,22 +6,14 @@ class Privilege:
         is_admin = request.user.profile.is_admin
         units = None
         if is_admin:
-            if request.user.profile.account.name == '20100176450':
-                units = []
-                solgas_units = Device.objects.filter(account=request.user.profile.account)
-                for unit in solgas_units:
-                    unit.description = f'SOLGAS - {unit.description}'
-                    units.append(unit)
-                account = Account.objects.get(name='10296954077')
-                yucra_units = Device.objects.filter(account=account)
-                for unit in yucra_units:
-                    unit.description = f'YUCRA - {unit.description}'
-                    units.append(unit)
-            else:
-                units = Device.objects.filter(account=request.user.profile.account)
+            units = Device.objects.filter(account=request.user.profile.account)
         else:
             units = request.user.profile.units.all()
         return units
+
+    def get_groups(self,request):
+        groups = Group.objects.filter(account=request.user.profile.account)
+        return groups
 
     def view_detailed_report(self,request):
         if request.user.profile.is_admin == False:

@@ -677,8 +677,10 @@ class Report:
                         trip_duration_summarization += tr['trip_duration']
                         stop_duration_summarization += tr['stop_duration']
             driving_duration_summarization = trip_duration_summarization-stop_duration_summarization
+            """
             stop_percentage_summarization = stop_duration_summarization*100/trip_duration_summarization
             driving_percentage_summarization = 100 - stop_percentage_summarization
+            """
             summarization.append({
                 "unit_name" : unit.name,
                 "unit_description": unit.description,
@@ -694,9 +696,9 @@ class Report:
                     stop_duration_summarization),
                 "driving_duration_summarization": time_conversor.convert_seconds_in_hour_format(
                     driving_duration_summarization),
-                "trip_percentage_summarization": 100,
-                "stop_percentage_summarization": stop_percentage_summarization,
-                "driving_percentage_summarization": driving_percentage_summarization,
+                "trip_percentage_summarization": "",
+                "stop_percentage_summarization": "",
+                "driving_percentage_summarization": "driving_percentage_summarization",
             })
         # FIN - CALCULAR RESUMEN
         return {
