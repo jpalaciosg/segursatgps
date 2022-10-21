@@ -2,6 +2,8 @@ from django.conf import settings
 
 from locations.models import Location,SutranLocation,OsinergminLocation
 from units.models import Device
+from geofences.models import Geofence
+from users.models import Account
 from segursatgps.celery import celery_app
 
 from common.device_reader import DeviceReader
@@ -12,6 +14,7 @@ from common.repository import Repository
 from datetime import datetime
 from geopy.distance import great_circle
 from asgiref.sync import async_to_sync
+from shapely.geometry import Point,shape
 import channels.layers
 import json
 import redis
@@ -65,7 +68,7 @@ def insert_location_in_history(data):
                 server_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
             )
         except Exception as e:
-            print(e)   
+            print(e)
     # FIN - INTRODUCIR UBICACION SUTRAN
     # INTRODUCIR UBICACION OSINERGMIN
     if data['osinergmin_process']:
@@ -129,13 +132,26 @@ def process_alerts_for_the_alert_center(data):
     device_reader = DeviceReader(data['uniqueid'])
     panic_event = device_reader.detect_panic_event(data['current_location'])
     battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
+    geofence_exit_event = False
+    if data['current_location']['account'] == '20603017847':
+        try:
+            account = Account.objects.get(name='20603017847') # cuenta hng_inversiones
+            geofence = Geofence.objects.get(name='ZONA AUTORIZADA LIMA',account=account)
+            geojson = json.loads(geofence.geojson)
+            s = shape(geojson['features'][0]['geometry'])
+            point1 = Point(data['current_location']['longitude'],data['current_location']['latitude'])
+            point2 = Point(data['previous_location']['longitude'],data['previous_location']['latitude'])
+            if s.contains(point2) == True and s.contains(point1) == False:
+                geofence_exit_event = True
+        except Exception as e:
+            pass
     if battery_event:
-        print('ALERTA BATERIA')
         device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
         device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
         device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         payload = {
-            'group': data['current_location']['account'].upper(),
+            #'group': data['current_location']['account'].upper(),
+            'group': data['current_location']['account_description'].upper(),
             'license_plate': data['current_location']['unit_name'],
             'device_datetime': device_datetime_str,
             'latitude': data['current_location']['latitude'],
@@ -147,12 +163,12 @@ def process_alerts_for_the_alert_center(data):
         redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
         redis_client.rpush('ssatAlertQueue', json.dumps(payload))
     if panic_event:
-        print('ALERTA DE PANICO')
         device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
         device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
         device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
         payload = {
-            'group': data['current_location']['account'].upper(),
+            #'group': data['current_location']['account'].upper(),
+            'group': data['current_location']['account_description'].upper(),
             'license_plate': data['current_location']['unit_name'],
             'device_datetime': device_datetime_str,
             'latitude': data['current_location']['latitude'],
@@ -160,6 +176,22 @@ def process_alerts_for_the_alert_center(data):
             'speed': data['current_location']['speed'],
             'angle': data['current_location']['angle'],
             'alert_type': "ALERTA DE PANICO - NP"
+        }
+        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+    if geofence_exit_event:
+        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+        payload = {
+            'group': data['current_location']['account_description'].upper(),
+            'license_plate': data['current_location']['unit_name'],
+            'device_datetime': device_datetime_str,
+            'latitude': data['current_location']['latitude'],
+            'longitude': data['current_location']['longitude'],
+            'speed': data['current_location']['speed'],
+            'angle': data['current_location']['angle'],
+            'alert_type': "ALERTA DE SALIDA DE GEOCERCA HNG_INVERSIONES - NP"
         }
         redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
         redis_client.rpush('ssatAlertQueue', json.dumps(payload))
@@ -172,7 +204,7 @@ def process_location_in_background(data):
         deviceid = data['deviceid']
         unit = Device.objects.get(uniqueid=deviceid)
     except Exception as e:
-       pass
+        pass
     if unit:
         try:
             previous_attributes = json.loads(unit.last_attributes)
@@ -191,13 +223,9 @@ def process_location_in_background(data):
         # CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
         ts = int(datetime.utcnow().timestamp())
         ts_offset = ts - data['timestamp']
-        if ts_offset > 31536000 and unit.account.name=='pampabaja_olmos':
+        if ts_offset > 31536000:
             data['timestamp'] = ts
         # FIN - CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
-        # CAMBIAR VELOCIDAD SI ES MAYOR A 105 PARA CIVA
-        if data['speed'] > 105 and unit.account.name=='civa':
-            data['speed'] = previous_location['speed']
-        # FIN - CAMBIAR VELOCIDAD SI ES MAYOR A 105 PARA CIVA
         unit.last_timestamp = data['timestamp']
         unit.last_latitude = data['latitude']
         unit.last_longitude = data['longitude']
@@ -307,6 +335,27 @@ def process_location_in_background(data):
         except Exception as e:
             print(e)
         # FIN - INSERTAR UBICACION EN EL HISTORICO
+        # INSERTAR EN LA TABLA SUTRAN
+        if unit.sutran_process:
+            try:
+                event = 'EN' if int(data['speed'] > 0) else 'PA'
+                timestamp = data['timestamp']
+                device_datetime = datetime.utcfromtimestamp(timestamp)
+                device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+                speed = 95 if int(data['speed']) > 95 else data['speed']
+                SutranLocation.objects.create(
+                    unit_name = unit.name,
+                    latitude = data['latitude'],
+                    longitude = data['longitude'],
+                    angle = data['angle'],
+                    speed = speed,
+                    event = event,
+                    device_datetime = device_datetime,
+                    server_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
+                )
+            except Exception as e:
+                print(f"ERROR SUTRAN: {str(e)}")
+        # FIN - INSERTAR EN LA TABLA SUTRAN
         # DETECTAR ALERTAS
         alert_reader = AlertReader(data['deviceid'])
         alert_reader.run()
