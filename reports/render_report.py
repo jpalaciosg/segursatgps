@@ -1001,3 +1001,58 @@ class RenderReport:
                 'errors':serializer.errors
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+    def render_group_mileage_report(self,request):
+        data = request.data
+        serializer = report_serializers.GroupReportSerializer(data=data)
+        if serializer.is_valid():
+            try:
+                initial_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['initial_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+                final_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['final_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            if final_timestamp - initial_timestamp > 2678400:
+                error = {
+                    'detail': 'Report time range exceeded.'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            try:
+                groups = privilege.get_groups(request)
+                group = groups.get(id=int(data['groupid']))
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            units = group.units.all()
+            total_mileage = []
+            mileage_by_date = []
+            for unit in units:
+                unit_mileage_report = report.generate_mileage_report(
+                    unit,
+                    initial_timestamp,
+                    final_timestamp,
+                )
+                for item in unit_mileage_report['total_mileage']:
+                    total_mileage.append(item)
+                for item in unit_mileage_report['mileage_by_date']:
+                    mileage_by_date.append(item)
+            response = {
+                'total_mileage':total_mileage,
+                'mileage_by_date':mileage_by_date,
+            }
+            return Response(response,status=status.HTTP_200_OK)
+        else:
+            error = {
+                'errors':serializer.errors
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)

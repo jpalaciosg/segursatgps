@@ -58,6 +58,7 @@ urlpatterns = [
     path('reports/trip-report/', reports_views.trip_report_view, name='trip-report'),
     path('reports/trip-report2/', reports_views.trip_report2_view, name='trip-report2'),
     path('reports/group-trip-report/', reports_views.group_trip_report_view, name='group-trip-report'),
+    path('reports/group-trip-report2/', reports_views.group_trip_report2_view, name='group-trip-report2'),
     path('reports/stop-report/', reports_views.stop_report_view, name='stop-report'),
     path('reports/group-stop-report/', reports_views.group_stop_report_view, name='group-stop-report'),
     path('reports/mileage-report/', reports_views.mileage_report_view, name='mileage-report'),
@@ -134,9 +135,10 @@ urlpatterns = [
 
     path('web/api/reports/group-trip-report1/', reports_views.get_group_trip_report1),
     path('web/api/reports/group-trip-report2/', reports_views.get_group_trip_report2),
-
+    path('web/api/reports/group-stop-report/', reports_views.get_group_stop_report),
     path('web/api/reports/group-speed-report/', reports_views.get_group_speed_report),
     path('web/api/reports/group-driving-style-report/', reports_views.get_group_driving_style_report),
+    path('web/api/reports/group-mileage-report/', reports_views.get_group_mileage_report),
 
     path('web/api/management/get-accounts/', management_views.get_accounts),
     path('web/api/management/get-account/<int:id>/', management_views.get_account),

@@ -115,10 +115,6 @@ def fleet_status_view(request):
         'units_stopped': units_stopped,
     })
 
-@api_view(['POST'])
-def get_detailed_report(request):
-    return render_report.render_detailed_report(request)
-
 @login_required
 def detailed_report_view(request):
     # verificar privilegios
@@ -141,10 +137,6 @@ def detailed_report_with_attributes_view(request):
         'units':units,
     })
 
-@api_view(['POST'])
-def get_driving_style_report(request):
-    return render_report.render_driving_style_report(request)
-
 def driving_style_report_view(request):
     # verificar privilegios
     if privilege.view_driving_style_report(request) == False:
@@ -154,14 +146,6 @@ def driving_style_report_view(request):
     return render(request,'reports/driving-style-report.html',{
         'units':units,
     })
-
-@api_view(['POST'])
-def get_trip_report1(request):
-    return render_report.render_trip_report1(request)
-
-@api_view(['POST'])
-def get_trip_report2(request):
-    return render_report.render_trip_report2(request)
 
 @login_required
 def trip_report_view(request):
@@ -227,11 +211,6 @@ def group_stop_report_view(request):
         'groups':groups,
     })
 
-# REPORTE DE VELOCIDAD
-@api_view(['POST'])
-def get_speed_report(request):
-    return render_report.render_speed_report(request)
-
 @login_required
 def speed_report_view(request):
     # verificar privilegios
@@ -255,10 +234,6 @@ def group_speed_report_view(request):
     return render(request,'reports/group-speed-report.html',{
         'groups':groups,
     })
-
-@api_view(['POST'])
-def get_mileage_report(request):
-    return render_report.render_mileage_report(request)
 
 # MILEAGE REPORT
 @login_required
@@ -304,11 +279,6 @@ def geofence_report_view(request):
         'form':form,
     })
 
-@api_view(['POST'])
-def get_geofence_report(request):
-    return render_report.render_geofence_report(request)
-
-# GROUP GEOFENCE REPORT
 @login_required
 def group_geofence_report_view(request):
     # verificar privilegios
@@ -334,10 +304,6 @@ def telemetry_report_view(request):
         'units':units,
     })
 
-@api_view(['POST'])
-def get_telemetry_report(request):
-    return render_report.render_telemetry_report(request)
-
 @login_required
 def temperature_report_view(request):
     # verificar privilegios
@@ -348,10 +314,6 @@ def temperature_report_view(request):
     return render(request,'reports/temperature-report.html',{
         'units':units,
     })
-
-@api_view(['POST'])
-def get_temperature_report(request):
-    return render_report.render_temperature_report(request)
 
 @login_required
 def hours_report_view(request):
@@ -364,10 +326,6 @@ def hours_report_view(request):
     return render(request,'reports/hours-report.html',{
         'units':units,
     })
-
-@api_view(['POST'])
-def get_hours_report(request):
-    return render_report.render_hours_report(request)
 
 @login_required
 def telemetry_trip_report_view(request):
@@ -383,10 +341,7 @@ def target_telemetry_report_view(request):
         'units':units,
     })
 
-@api_view(['POST'])
-def get_target_telemetry_report(request):
-    pass
-
+@login_required
 def group_driving_style_report_view(request):
     # verificar privilegios
     if privilege.view_driving_style_report(request) == False:
@@ -396,6 +351,62 @@ def group_driving_style_report_view(request):
     return render(request,'reports/group-driving-style-report.html',{
         'groups':groups,
     })
+
+@login_required
+def group_trip_report2_view(request):
+    # verificar privilegios
+    if privilege.view_group_trip_report(request) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    # GET
+    groups = privilege.get_groups(request)
+    return render(request,'reports/group-trip-report2.html',{
+        'groups':groups,
+    })
+
+@api_view(['POST'])
+def get_detailed_report(request):
+    return render_report.render_detailed_report(request)
+
+@api_view(['POST'])
+def get_mileage_report(request):
+    return render_report.render_mileage_report(request)
+
+@api_view(['POST'])
+def get_speed_report(request):
+    return render_report.render_speed_report(request)
+
+@api_view(['POST'])
+def get_driving_style_report(request):
+    return render_report.render_driving_style_report(request)
+
+@api_view(['POST'])
+def get_trip_report1(request):
+    return render_report.render_trip_report1(request)
+
+@api_view(['POST'])
+def get_trip_report2(request):
+    return render_report.render_trip_report2(request)
+
+@api_view(['POST'])
+def get_geofence_report(request):
+    return render_report.render_geofence_report(request)
+
+@api_view(['POST'])
+def get_telemetry_report(request):
+    return render_report.render_telemetry_report(request)
+
+@api_view(['POST'])
+def get_temperature_report(request):
+    return render_report.render_temperature_report(request)
+
+@api_view(['POST'])
+def get_hours_report(request):
+    return render_report.render_hours_report(request)
+
+@api_view(['POST'])
+def get_target_telemetry_report(request):
+    pass
 
 @api_view(['POST'])
 def get_group_driving_style_report(request):
@@ -416,3 +427,7 @@ def get_group_trip_report2(request):
 @api_view(['POST'])
 def get_group_stop_report(request):
     return render_report.render_group_stop_report(request)
+
+@api_view(['POST'])
+def get_group_mileage_report(request):
+    return render_report.render_group_mileage_report(request)
