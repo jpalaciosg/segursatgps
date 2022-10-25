@@ -314,10 +314,12 @@ def process_location_in_background(data):
         # INSERTAR UBICACION EN EL HISTORICO
         data['unit_id'] = unit.id
         data['unit_name'] = unit.name
+        """
         try:
             repository.write(data)
         except Exception as e:
             print(e)
+        """
         try:
             Location.objects.create(
                 unitid = data['unit_id'],
@@ -356,6 +358,146 @@ def process_location_in_background(data):
             except Exception as e:
                 print(f"ERROR SUTRAN: {str(e)}")
         # FIN - INSERTAR EN LA TABLA SUTRAN
+        # DETECTAR ALERTAS
+        alert_reader = AlertReader(data['deviceid'])
+        alert_reader.run()
+        # FIN - DETECTAR ALERTAS
+    return True
+
+@celery_app.task
+def process_thirdparty_location_in_background(data):
+    unit = None
+    try:
+        deviceid = data['deviceid']
+        unit = Device.objects.get(uniqueid=deviceid)
+    except Exception as e:
+        pass
+    if unit.is_replica:
+        try:
+            previous_attributes = json.loads(unit.last_attributes)
+        except Exception as e:
+            previous_attributes = json.loads("{}")
+        previous_location = {
+            'timestamp':unit.last_timestamp,
+            'latitude':unit.last_latitude,
+            'longitude':unit.last_longitude,
+            'altitude':unit.last_altitude,
+            'angle':unit.last_angle,
+            'speed':unit.last_speed,
+            'attributes':previous_attributes,
+            'address':unit.last_address
+        }
+        # CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
+        ts = int(datetime.utcnow().timestamp())
+        ts_offset = ts - data['timestamp']
+        if ts_offset > 31536000:
+            data['timestamp'] = ts
+        # FIN - CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
+        unit.last_timestamp = data['timestamp']
+        unit.last_latitude = data['latitude']
+        unit.last_longitude = data['longitude']
+        unit.last_altitude = data['altitude']
+        unit.last_angle = data['angle']
+        unit.last_speed = data['speed']
+        if int(data['speed']) > 0:
+            unit.last_movement = unit.last_timestamp = data['timestamp']
+        unit.last_attributes = json.dumps(data['attributes'])
+        # CALCULAR UBICACION PREVIA
+        if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
+            if data['latitude'] != 0.0 and data['longitude'] != 0.0:
+                distance = great_circle(
+                    (
+                        previous_location['latitude'],
+                        previous_location['longitude']
+                    ),
+                    (
+                        data['latitude'],
+                        data['longitude']
+                    ),
+                ).km
+                unit.odometer += distance
+        unit.previous_location = json.dumps(previous_location,ensure_ascii=False)
+        # FIN - CALCULAR UBICACION PREVIA
+        # CALCULAR LAST_HOURS
+        device_reader = DeviceReader(unit.uniqueid)
+        hours = int(device_reader.get_hours({
+            'attributes':data['attributes']
+        }))
+        last_hours = int(device_reader.get_hours({
+            'attributes':previous_attributes
+        }))
+        if hours > last_hours:
+            unit.last_hours = hours
+        # FIN - CALCULAR LAST_HOURS
+        # CALCULAR DIRECCION ULTIMA POSICION
+        if data['address'] == "":
+            try:
+                latitude = float(data['latitude'])
+                longitude = float(data['longitude'])
+                api_url = f'http://{settings.GEOCODING_SERVER}/nominatim/reverse?format=jsonv2&lat={latitude}&lon={longitude}&addressdetails=1'
+                headers = {'Content-Type': 'application/json'}
+                response = requests.get(api_url,headers=headers,timeout=settings.GEOCODING_TIMEOUT)
+                address = json.loads(response.content.decode('utf-8'))['display_name']
+                #address = json.dumps(address,ensure_ascii=False)
+            except Exception as e:
+                print(e)
+                address = ""
+            data['address'] = address
+        # FIN - CALCULAR DIRECCION ULTIMA POSICION
+        unit.last_address = data['address']
+        if data['timestamp'] > previous_location['timestamp']:
+            unit.save()
+        # ACTUALIZAR UNIDAD EN EL MAPA
+        if data['timestamp'] > previous_location['timestamp']:
+            account_name = unit.account.name
+            last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data['timestamp']))
+            last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+            channel_layer = channels.layers.get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'chat_{account_name}',
+                {
+                    'type': 'send_message',
+                    'message': {
+                        'type':'update_location',
+                        'payload': {
+                            'unitid': unit.id,
+                            'unit_name': unit.name,
+                            'unit_description': unit.description,
+                            'timestamp': data['timestamp'],
+                            'latitude': data['latitude'],
+                            'longitude': data['longitude'],
+                            'altitude': data['altitude'],
+                            'angle': data['angle'],
+                            'speed': data['speed'],
+                            'attributes': data['attributes'],
+                            'address': data['address'],
+                            'odometer': round(unit.odometer,2),
+                            'last_report': last_report
+                        }
+                    }
+                }
+            )
+        # FIN - ACTUALIZAR UNIDAD EN EL MAPA
+        # INSERTAR UBICACION EN EL HISTORICO
+        data['unit_id'] = unit.id
+        data['unit_name'] = unit.name
+        try:
+            Location.objects.create(
+                unitid = data['unit_id'],
+                protocol= data['protocol'],
+                timestamp = data['timestamp'],
+                latitude = data['latitude'],
+                longitude = data['longitude'],
+                altitude = data['altitude'],
+                angle = data['angle'],
+                speed = data['speed'],
+                attributes = json.dumps(data['attributes']),
+                address = data['address'],
+                reference = data['unit_name']
+            )
+        except Exception as e:
+            print(e)
+        # FIN - INSERTAR UBICACION EN EL HISTORICO
         # DETECTAR ALERTAS
         alert_reader = AlertReader(data['deviceid'])
         alert_reader.run()

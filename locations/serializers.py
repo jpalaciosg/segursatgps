@@ -23,3 +23,16 @@ class InsertSutranLocationSerializer(serializers.Serializer):
     longitude = serializers.FloatField()
     speed = serializers.IntegerField()
     angle = serializers.IntegerField()
+
+class InsertSolgasLocationSerializer(serializers.Serializer):
+    provider = serializers.CharField(max_length=100)
+    uniqueid = serializers.CharField(max_length=20)
+    license_plate = serializers.CharField(max_length=20)
+    timestamp = serializers.IntegerField(default=0)
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    altitude = serializers.IntegerField(default=0)
+    speed = serializers.IntegerField()
+    angle = serializers.IntegerField(default=0)
+    ignition = serializers.BooleanField(default=False)
+    panic = serializers.BooleanField(default=False)
