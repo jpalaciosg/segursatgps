@@ -10,10 +10,10 @@ from asgiref.sync import async_to_sync
 
 from .models import Location,SutranLocation
 from units.models import Device
-from .serializers import InsertLocationSerializer,LocationSerializer,InsertSutranLocationSerializer
+from .serializers import InsertLocationSerializer,LocationSerializer,InsertSutranLocationSerializer,InsertSolgasLocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
-from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alerts_for_the_alert_center,process_location_in_background
+from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alerts_for_the_alert_center,process_location_in_background,process_thirdparty_location_in_background
 
 # Create your views here.
 
@@ -311,3 +311,47 @@ def insert_async_location_batch(request):
         'detail':f'Registered ({len(data_list)-error_counter}/{len(data_list)})'
     }
     return Response(response)
+
+@api_view(['POST'])
+def insert_async_location(request):
+    data = request.data
+    serializer = InsertLocationSerializer(data=data)
+    if serializer.is_valid():
+        data = serializer.validated_data
+        process_location_in_background.delay(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def insert_async_solgas_location(request):
+    data = request.data
+    serializer = InsertSolgasLocationSerializer(data=data)
+    if serializer.is_valid():
+        data = serializer.validated_data
+        data['deviceid'] = data['license_plate']
+        data['protocol'] = 'generic'
+        data['attributes'] = {
+            'ignition': data['ignition'],
+            'panic': data['panic'],
+        }
+        del data['license_plate']
+        del data['uniqueid']
+        del data['ignition']
+        del data['panic']
+        process_thirdparty_location_in_background.delay(data)
+        response = {
+            'status':'OK'
+        }
+        return Response(data,status=status.HTTP_200_OK)
+    else:
+        error = {
+            'errors':serializer.errors
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
