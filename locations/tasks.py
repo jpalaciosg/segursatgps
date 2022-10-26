@@ -369,10 +369,13 @@ def process_thirdparty_location_in_background(data):
     unit = None
     try:
         deviceid = data['deviceid']
-        unit = Device.objects.get(uniqueid=deviceid)
+        unit = Device.objects.get(
+            uniqueid = deviceid,
+            is_replica = True
+        )
     except Exception as e:
         pass
-    if unit.is_replica:
+    if unit:
         try:
             previous_attributes = json.loads(unit.last_attributes)
         except Exception as e:
