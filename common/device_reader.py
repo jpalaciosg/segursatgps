@@ -39,6 +39,14 @@ class DeviceReader:
         reader = Teltonika(self.deviceid)
         return reader.detect_harsh_cornering_event(location)
 
+    def detect_valve1_event(self,unit,location):
+        reader = Teltonika(self.deviceid)
+        return reader.detect_valve1_event(unit,location)
+
+    def detect_valve2_event(self,unit,location):
+        reader = Teltonika(self.deviceid)
+        return reader.detect_valve2_event(unit,location)
+
     def get_odometer(self,location):
         reader = Teltonika(self.deviceid)
         return reader.get_odometer(location)

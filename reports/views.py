@@ -127,6 +127,17 @@ def detailed_report_view(request):
     })
 
 @login_required
+def extended_detailed_report_view(request):
+    # verificar privilegios
+    if privilege.view_detailed_report(request) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    units = privilege.get_units(request)
+    return render(request,'reports/extended-detailed-report.html',{
+        'units':units,
+    })
+
+@login_required
 def detailed_report_with_attributes_view(request):
     # verificar privilegios
     if privilege.view_detailed_report_with_attributes(request) == False:
@@ -367,6 +378,10 @@ def group_trip_report2_view(request):
 @api_view(['POST'])
 def get_detailed_report(request):
     return render_report.render_detailed_report(request)
+
+@api_view(['POST'])
+def get_extended_detailed_report(request):
+    return render_report.render_extended_detailed_report(request)
 
 @api_view(['POST'])
 def get_mileage_report(request):
