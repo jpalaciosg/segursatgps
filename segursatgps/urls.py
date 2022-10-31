@@ -122,6 +122,7 @@ urlpatterns = [
     path('web/api/locations/insert-history-location-batch/', locations_views.insert_history_location_batch),
     path('web/api/locations/insert-sutran-location/', locations_views.insert_sutran_location),
     path('web/api/locations/insert-async-solgas-location/', locations_views.insert_async_solgas_location),
+    path('web/api/locations/insert-async-solgas-location-batch/', locations_views.insert_async_solgas_location_batch),
     path('web/api/locations/get-location-history/<int:unitid>/<str:initial_datetime>/<str:final_datetime>/', locations_views.get_location_history),
     path('web/api/reports/detailed-report/', reports_views.get_detailed_report),
     path('web/api/reports/extended-detailed-report/', reports_views.get_extended_detailed_report),
