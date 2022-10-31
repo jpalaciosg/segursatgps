@@ -62,6 +62,34 @@ class Teltonika:
             print(e)
             return False
 
+    def detect_valve1_event(self,unit,location):
+        try:
+            valve1_source = unit.valve1_source
+            attributes = location['attributes']
+            if valve1_source in attributes:
+                if attributes[valve1_source] == 1:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        except Exception as e:
+            return False
+    
+    def detect_valve2_event(self,unit,location):
+        try:
+            valve2_source = unit.valve2_source
+            attributes = location['attributes']
+            if valve2_source in attributes:
+                if attributes[valve2_source] == 1:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+        except Exception as e:
+            return False
+
     def detect_battery_disconnection_event(self,current_location,previous_location):
         try:
             previous_power = float(previous_location['attributes']['power'])

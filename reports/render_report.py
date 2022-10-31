@@ -59,6 +59,51 @@ class RenderReport:
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+    def render_extended_detailed_report(self,request):
+        data = request.data
+        serializer = report_serializers.ReportSerializer(data=data)
+        if serializer.is_valid():
+            try:
+                initial_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['initial_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+                final_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['final_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            if final_timestamp - initial_timestamp > 604800:
+                error = {
+                    'detail': 'Report time range exceeded.'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            units = privilege.get_units(request)
+            try:
+                unit = units.get(id=int(data['unitid']))
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                report.generate_extended_detailed_report(
+                    unit,
+                    initial_timestamp,
+                    final_timestamp,
+                ),
+                status=status.HTTP_200_OK
+            )
+        else:
+            error = {
+                'errors':serializer.errors
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
     def render_driving_style_report(self,request):
         data = request.data
         serializer = report_serializers.ReportSerializer(data=data)

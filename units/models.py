@@ -29,6 +29,8 @@ class Device(models.Model):
     is_replica = models.BooleanField(default=False)
     ignition_source = models.CharField(max_length=50,default="ignition")
     panic_source = models.CharField(max_length=50,default="panic")
+    valve1_source = models.CharField(max_length=50,default="nothing")
+    valve2_source = models.CharField(max_length=50,default="nothing")
     sutran_process = models.BooleanField(default=False)
     osinergmin_process = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True,null=True)

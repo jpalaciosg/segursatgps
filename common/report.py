@@ -121,6 +121,93 @@ class Report:
                 data[i]['distance'] = round(distance,2)
         return data
 
+    def generate_extended_detailed_report(self,unit,initial_timestamp,final_timestamp):
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        serializer = locations_serializers.LocationSerializer(locations,many=True)
+        device_reader = DeviceReader(unit.uniqueid)
+        data = serializer.data
+        valve1_counter = 0
+        valve2_counter = 0
+        for i in range(len(data)):
+            data[i]['unit_name'] = unit.name
+            data[i]['unit_description'] = unit.description
+            data[i]['datetime'] = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                data[i]['timestamp'],"%d/%m/%Y %H:%M:%S")
+            try:
+                attributes = json.loads(data[i]['attributes'])
+            except:
+                attributes = {}
+            data[i]['attributes'] = attributes
+            data[i]['ignition'] = device_reader.detect_ignition_event({
+                'attributes':attributes
+            })
+            data[i]['odometer'] = device_reader.get_odometer({
+                'attributes':attributes
+            })
+            data[i]['valve1'] = device_reader.detect_valve1_event(unit,{
+                'attributes':attributes
+            })
+            if data[i]['valve1'] == True:
+                valve1_counter += 1
+            data[i]['valve2'] = device_reader.detect_valve2_event(unit,{
+                'attributes':attributes
+            })
+            if data[i]['valve2'] == True:
+                valve2_counter += 1
+            if i == 0:
+                data[i]['distance'] = 0.0
+            else:
+                distance = great_circle(
+                    (
+                        data[i-1]['latitude'],
+                        data[i-1]['longitude']
+                    ),
+                    (
+                        data[i]['latitude'],
+                        data[i]['longitude']
+                    ),
+                ).km
+                data[i]['distance'] = round(distance,2)
+        summarization = [
+            {
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                final_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'type': 'valve1',
+            'amount': valve1_counter,
+            },
+            {
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                final_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'type': 'valve2',
+            'amount': valve2_counter,
+            },
+        ]
+        if len(data) == 0:
+            return {
+                'valve_report':[],
+                'summarization':[],
+            }
+        else:
+            return {
+                'valve_report':data,
+                'summarization':summarization,
+            }
+
     def generate_driving_style_report(self,unit,initial_timestamp,final_timestamp):
         locations = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
