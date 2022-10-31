@@ -355,3 +355,32 @@ def insert_async_solgas_location(request):
             'errors':serializer.errors
         }
         return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def insert_async_solgas_location_batch(request):
+    data_list = request.data
+    error_counter = 0
+    if len(data_list) == 0:
+        response = {'detail':'Payload is empty'}
+        return Response(response,status=status.HTTP_400_BAD_REQUEST)
+    for data in data_list:
+        serializer = InsertSolgasLocationSerializer(data=data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            data['deviceid'] = data['license_plate']
+            data['protocol'] = 'generic'
+            data['attributes'] = {
+                'ignition': data['ignition'],
+                'panic': data['panic'],
+            }
+            del data['license_plate']
+            del data['uniqueid']
+            del data['ignition']
+            del data['panic']
+            process_thirdparty_location_in_background.delay(data)
+        else:
+            error_counter += 1
+    response = {
+        'detail':f'Registered ({len(data_list)-error_counter}/{len(data_list)})'
+    }
+    return Response(response)
