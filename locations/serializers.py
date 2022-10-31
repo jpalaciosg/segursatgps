@@ -1,3 +1,4 @@
+from email.policy import default
 from rest_framework import serializers
 from .models import Location
 
@@ -34,5 +35,6 @@ class InsertSolgasLocationSerializer(serializers.Serializer):
     altitude = serializers.IntegerField(default=0)
     speed = serializers.IntegerField()
     angle = serializers.IntegerField(default=0)
+    address = serializers.CharField(default="")
     ignition = serializers.BooleanField(default=False)
     panic = serializers.BooleanField(default=False)
