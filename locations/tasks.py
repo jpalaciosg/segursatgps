@@ -71,6 +71,7 @@ def insert_location_in_history(data):
             print(e)
     # FIN - INTRODUCIR UBICACION SUTRAN
     # INTRODUCIR UBICACION OSINERGMIN
+    """
     if data['osinergmin_process']:
         try:
             OsinergminLocation.objects.create(
@@ -87,7 +88,8 @@ def insert_location_in_history(data):
                 reference = data['unit_name']
             )
         except Exception as e:
-            print(e)   
+            print(e)
+    """
     # FIN - INTRODUCIR UBICACION OSINERGMIN
     return True
 
