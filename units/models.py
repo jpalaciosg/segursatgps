@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import Account
+from forwarders.models import Forwarder
 
 # Create your models here.
 class Device(models.Model):
@@ -33,6 +34,8 @@ class Device(models.Model):
     valve2_source = models.CharField(max_length=50,default="nothing")
     sutran_process = models.BooleanField(default=False)
     osinergmin_process = models.BooleanField(default=False)
+    forwarding_enabled = models.BooleanField(default=False)
+    forwarders = models.ManyToManyField(Forwarder)
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
