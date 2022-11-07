@@ -8,6 +8,7 @@ from segursatgps.celery import celery_app
 
 from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
+from common.alert_reader_without_notification import AlertReaderWithoutNotification
 from common.gmt_conversor import GMTConversor
 from common.repository import Repository
 
@@ -70,27 +71,6 @@ def insert_location_in_history(data):
         except Exception as e:
             print(e)
     # FIN - INTRODUCIR UBICACION SUTRAN
-    # INTRODUCIR UBICACION OSINERGMIN
-    """
-    if data['osinergmin_process']:
-        try:
-            OsinergminLocation.objects.create(
-                unitid = data['unit_id'],
-                protocol= data['protocol'],
-                timestamp = data['timestamp'],
-                latitude = data['latitude'],
-                longitude = data['longitude'],
-                altitude = data['altitude'],
-                angle = data['angle'],
-                speed = data['speed'],
-                attributes = json.dumps(data['attributes']),
-                address = data['address'],
-                reference = data['unit_name']
-            )
-        except Exception as e:
-            print(e)
-    """
-    # FIN - INTRODUCIR UBICACION OSINERGMIN
     return True
 
 @celery_app.task
@@ -123,8 +103,8 @@ def process_alert(data):
     return True
 
 @celery_app.task
-def process_history_alert(data):
-    alert_reader = AlertReader(data['deviceid'])
+def process_alert_without_notification(data):
+    alert_reader = AlertReaderWithoutNotification(data['deviceid'])
     alert_reader.run()
     del alert_reader
     return True

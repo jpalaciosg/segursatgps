@@ -35,7 +35,10 @@ class Device(models.Model):
     sutran_process = models.BooleanField(default=False)
     osinergmin_process = models.BooleanField(default=False)
     forwarding_enabled = models.BooleanField(default=False)
-    forwarders = models.ManyToManyField(Forwarder)
+    forwarders = models.ManyToManyField(Forwarder,
+        blank=True,
+        null=True,
+    )
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
