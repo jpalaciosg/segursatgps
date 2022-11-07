@@ -13,7 +13,7 @@ from units.models import Device
 from .serializers import InsertLocationSerializer,LocationSerializer,InsertSutranLocationSerializer,InsertSolgasLocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
-from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alerts_for_the_alert_center,process_location_in_background,process_thirdparty_location_in_background
+from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alert_without_notification,process_alerts_for_the_alert_center,process_location_in_background,process_thirdparty_location_in_background
 
 # Create your views here.
 
@@ -121,7 +121,7 @@ def insert_location_batch(request):
                 # ALERTAS CENTRAL
                 process_alerts_for_the_alert_center.delay({
                     'uniqueid': unit.uniqueid,
-                    'current_location': data,                      
+                    'current_location': data,
                     'previous_location': previous_location,
                 })
                 # FIN - ALERTAS CENTRAL
@@ -164,7 +164,7 @@ def insert_location_batch(request):
             return Response(errors)
     if len(error_list) != 0:
         return Response(error_list)
-    return Response([])   
+    return Response([])
 
 @api_view(['GET'])
 def get_location_history(request,unitid,initial_datetime,final_datetime):
@@ -251,7 +251,7 @@ def insert_history_location_batch(request):
                 insert_location_in_history2.delay(data)
 
                 # ALERTAS
-                #process_alert.delay(data)
+                process_alert_without_notification(data)
                 # FIN - ALERTAS
         else:
             errors = {
