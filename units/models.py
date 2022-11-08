@@ -37,6 +37,13 @@ class Device(models.Model):
     forwarding_enabled = models.BooleanField(default=False)
     forwarders = models.ManyToManyField(Forwarder,
         blank=True,
+        #null=True,
+    )
+    is_parent = models.BooleanField(default=False)
+    child = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        blank=True,
         null=True,
     )
     created = models.DateTimeField(auto_now_add=True,null=True)
