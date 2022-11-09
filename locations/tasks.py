@@ -98,7 +98,7 @@ def insert_location_in_history2(data):
 @celery_app.task
 def process_alert(data):
     try:
-        unit = Device.objects.get(uniqueid=data['uniqueid'])
+        unit = Device.objects.get(uniqueid=data['deviceid'])
     except:
         unit = None
     if unit:
@@ -117,7 +117,7 @@ def process_alert_without_notification(data):
 @celery_app.task
 def process_alerts_for_the_alert_center(data):
     try:
-        unit = Device.objects.get(uniqueid=data['uniqueid'])
+        unit = Device.objects.get(uniqueid=data['deviceid'])
     except:
         unit = None
     if unit:
@@ -354,6 +354,43 @@ def process_location_in_background(data):
         alert_reader = AlertReader(unit)
         alert_reader.run()
         # FIN - DETECTAR ALERTAS
+        # PROCESAR ALERTAS PARA LA CENTRAL
+        device_reader = DeviceReader(unit)
+        panic_event = device_reader.detect_panic_event(data)
+        battery_event = device_reader.detect_battery_disconnection_event(data,previous_location)
+        if battery_event:
+            device_datetime = datetime.fromtimestamp(data['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE BATERIA - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        if panic_event:
+            device_datetime = datetime.fromtimestamp(data['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE PANICO - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        # FIN - PROCESAR ALERTAS PARA LA CENTRAL
     return True
 
 @celery_app.task
