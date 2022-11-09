@@ -20,7 +20,7 @@ class Report:
 
     def calculate_unit_ignition_events(self,unit,locations):
         ignition_events = []
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         for i in range(len(locations)):
             if i != 0:
                 previous_location = locations[i-1]
@@ -87,7 +87,7 @@ class Report:
             longitude=0.0
         )
         serializer = locations_serializers.LocationSerializer(locations,many=True)
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         data = serializer.data
         for i in range(len(data)):
             data[i]['unit_name'] = unit.name
@@ -131,7 +131,7 @@ class Report:
             longitude=0.0
         )
         serializer = locations_serializers.LocationSerializer(locations,many=True)
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         data = serializer.data
         valve1_counter = 0
         valve2_counter = 0
@@ -224,7 +224,7 @@ class Report:
         harsh_braking = 0
         harsh_acceleration = 0
         harsh_cornering = 0
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         for i in range(len(data)):
             data[i]['unit_name'] = unit.name
             data[i]['unit_description'] = unit.description
@@ -1116,7 +1116,7 @@ class Report:
         temperature_report = []
         summarization = []
         temp_list = []
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         for location in locations:
             item = {
                 'unit_name': unit.name,
@@ -1176,7 +1176,7 @@ class Report:
         hours_report = []
         summarization = []
         hours_list = []
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         for location in locations:
             item = {
                 'unit_name': unit.name,
@@ -1243,7 +1243,7 @@ class Report:
         odometer_list = []
         speed_list = []
         accumulated_distance = 0.0
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         for i in range(len(locations)):
             if i > 0:
                 distance = great_circle(

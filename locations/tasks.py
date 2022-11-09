@@ -111,7 +111,8 @@ def process_alert_without_notification(data):
 
 @celery_app.task
 def process_alerts_for_the_alert_center(data):
-    device_reader = DeviceReader(data['uniqueid'])
+    unit = Device.objects.get(uniqueid=data['uniqueid'])
+    device_reader = DeviceReader(unit)
     panic_event = device_reader.detect_panic_event(data['current_location'])
     battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
     geofence_exit_event = False
@@ -234,7 +235,7 @@ def process_location_in_background(data):
         unit.previous_location = json.dumps(previous_location,ensure_ascii=False)
         # FIN - CALCULAR UBICACION PREVIA
         # CALCULAR LAST_HOURS
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         hours = int(device_reader.get_hours({
             'attributes':data['attributes']
         }))
@@ -404,7 +405,7 @@ def process_thirdparty_location_in_background(data):
         unit.previous_location = json.dumps(previous_location,ensure_ascii=False)
         # FIN - CALCULAR UBICACION PREVIA
         # CALCULAR LAST_HOURS
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         hours = int(device_reader.get_hours({
             'attributes':data['attributes']
         }))

@@ -14,8 +14,8 @@ gmt_conversor = GMTConversor()
 
 class Teltonika:
 
-    def __init__(self, deviceid):
-        self.deviceid = deviceid
+    def __init__(self, unit):
+        self.unit = unit
 
     def __check_ignition(self,attributes,ignition_source):
         if ignition_source in attributes:
@@ -40,10 +40,7 @@ class Teltonika:
 
     def detect_ignition_event(self,location):
         try:
-            unit = Device.objects.get(
-                uniqueid=self.deviceid
-            )
-            ignition_source = unit.ignition_source
+            ignition_source = self.unit.ignition_source
             attributes = location['attributes']
             return self.__check_ignition(attributes,ignition_source)
         except Exception as e:
@@ -52,19 +49,16 @@ class Teltonika:
 
     def detect_panic_event(self,location):
         try:
-            unit = Device.objects.get(
-                uniqueid=self.deviceid
-            )
-            panic_source = unit.panic_source
+            panic_source = self.unit.panic_source
             attributes = location['attributes']
             return self.__check_panic(attributes,panic_source)
         except Exception as e:
             print(e)
             return False
 
-    def detect_valve1_event(self,unit,location):
+    def detect_valve1_event(self,location):
         try:
-            valve1_source = unit.valve1_source
+            valve1_source = self.unit.valve1_source
             attributes = location['attributes']
             if valve1_source in attributes:
                 if attributes[valve1_source] == 1:
@@ -76,9 +70,9 @@ class Teltonika:
         except Exception as e:
             return False
     
-    def detect_valve2_event(self,unit,location):
+    def detect_valve2_event(self,location):
         try:
-            valve2_source = unit.valve2_source
+            valve2_source = self.unit.valve2_source
             attributes = location['attributes']
             if valve2_source in attributes:
                 if attributes[valve2_source] == 1:
@@ -97,30 +91,6 @@ class Teltonika:
             if previous_power > 1 and current_power < 1:
                 return True
             return False
-        except Exception as e:
-            print(e)
-            return False
-
-    def detect_motor_lock_event(self,location):
-        try:
-            try:
-                device_digital_output = DeviceDigitalOutput.objects.get(
-                    device__uniqueid=self.deviceid,
-                    input_event="MOTOR_LOCK"
-                )
-                output = device_digital_output.output
-                output = f'out{output}'
-            except:
-                input = None
-            attributes = location['attributes']
-            if input != None and input in attributes:
-                print(attributes[input])
-                if attributes[input] == True:
-                    return True
-                else:
-                    return False
-            else:
-                return False
         except Exception as e:
             print(e)
             return False

@@ -85,7 +85,7 @@ def fleet_status_view(request):
         else:
             units_stopped += 1
         unit.timeout = int(timeout)
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         unit.last_ignition = device_reader.detect_ignition_event({
             'attributes':json.loads(unit.last_attributes)
         })
