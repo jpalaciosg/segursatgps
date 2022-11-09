@@ -111,73 +111,77 @@ def process_alert_without_notification(data):
 
 @celery_app.task
 def process_alerts_for_the_alert_center(data):
-    unit = Device.objects.get(uniqueid=data['uniqueid'])
-    device_reader = DeviceReader(unit)
-    panic_event = device_reader.detect_panic_event(data['current_location'])
-    battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
-    geofence_exit_event = False
-    if data['current_location']['account'] == '20603017847':
-        try:
-            account = Account.objects.get(name='20603017847') # cuenta hng_inversiones
-            geofence = Geofence.objects.get(name='ZONA AUTORIZADA LIMA',account=account)
-            geojson = json.loads(geofence.geojson)
-            s = shape(geojson['features'][0]['geometry'])
-            point1 = Point(data['current_location']['longitude'],data['current_location']['latitude'])
-            point2 = Point(data['previous_location']['longitude'],data['previous_location']['latitude'])
-            if s.contains(point2) == True and s.contains(point1) == False:
-                geofence_exit_event = True
-        except Exception as e:
-            pass
-    if battery_event:
-        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        payload = {
-            #'group': data['current_location']['account'].upper(),
-            'group': data['current_location']['account_description'].upper(),
-            'license_plate': data['current_location']['unit_name'],
-            'device_datetime': device_datetime_str,
-            'latitude': data['current_location']['latitude'],
-            'longitude': data['current_location']['longitude'],
-            'speed': data['current_location']['speed'],
-            'angle': data['current_location']['angle'],
-            'alert_type': "ALERTA DE BATERIA - NP"
-        }
-        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
-    if panic_event:
-        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        payload = {
-            #'group': data['current_location']['account'].upper(),
-            'group': data['current_location']['account_description'].upper(),
-            'license_plate': data['current_location']['unit_name'],
-            'device_datetime': device_datetime_str,
-            'latitude': data['current_location']['latitude'],
-            'longitude': data['current_location']['longitude'],
-            'speed': data['current_location']['speed'],
-            'angle': data['current_location']['angle'],
-            'alert_type': "ALERTA DE PANICO - NP"
-        }
-        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
-    if geofence_exit_event:
-        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        payload = {
-            'group': data['current_location']['account_description'].upper(),
-            'license_plate': data['current_location']['unit_name'],
-            'device_datetime': device_datetime_str,
-            'latitude': data['current_location']['latitude'],
-            'longitude': data['current_location']['longitude'],
-            'speed': data['current_location']['speed'],
-            'angle': data['current_location']['angle'],
-            'alert_type': "ALERTA DE SALIDA DE GEOCERCA HNG_INVERSIONES - NP"
-        }
-        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+    try:
+        unit = Device.objects.get(uniqueid=data['uniqueid'])
+    except:
+        unit = None
+    if unit:
+        device_reader = DeviceReader(unit)
+        panic_event = device_reader.detect_panic_event(data['current_location'])
+        battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
+        geofence_exit_event = False
+        if data['current_location']['account'] == '20603017847':
+            try:
+                account = Account.objects.get(name='20603017847') # cuenta hng_inversiones
+                geofence = Geofence.objects.get(name='ZONA AUTORIZADA LIMA',account=account)
+                geojson = json.loads(geofence.geojson)
+                s = shape(geojson['features'][0]['geometry'])
+                point1 = Point(data['current_location']['longitude'],data['current_location']['latitude'])
+                point2 = Point(data['previous_location']['longitude'],data['previous_location']['latitude'])
+                if s.contains(point2) == True and s.contains(point1) == False:
+                    geofence_exit_event = True
+            except Exception as e:
+                pass
+        if battery_event:
+            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                #'group': data['current_location']['account'].upper(),
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE BATERIA - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        if panic_event:
+            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                #'group': data['current_location']['account'].upper(),
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE PANICO - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        if geofence_exit_event:
+            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE SALIDA DE GEOCERCA HNG_INVERSIONES - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
     return True
 
 @celery_app.task
