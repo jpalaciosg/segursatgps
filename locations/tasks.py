@@ -363,13 +363,13 @@ def process_location_in_background(data):
             device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
             device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
             payload = {
-                'group': data['current_location']['account_description'].upper(),
-                'license_plate': data['current_location']['unit_name'],
+                'group': unit.account.description,
+                'license_plate': unit.name,
                 'device_datetime': device_datetime_str,
-                'latitude': data['current_location']['latitude'],
-                'longitude': data['current_location']['longitude'],
-                'speed': data['current_location']['speed'],
-                'angle': data['current_location']['angle'],
+                'latitude': data['latitude'],
+                'longitude': data['longitude'],
+                'speed': data['speed'],
+                'angle': data['angle'],
                 'alert_type': "ALERTA DE BATERIA - NP"
             }
             redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
@@ -379,13 +379,13 @@ def process_location_in_background(data):
             device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
             device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
             payload = {
-                'group': data['current_location']['account_description'].upper(),
-                'license_plate': data['current_location']['unit_name'],
+                'group': unit.account.description,
+                'license_plate': unit.name,
                 'device_datetime': device_datetime_str,
-                'latitude': data['current_location']['latitude'],
-                'longitude': data['current_location']['longitude'],
-                'speed': data['current_location']['speed'],
-                'angle': data['current_location']['angle'],
+                'latitude': data['latitude'],
+                'longitude': data['longitude'],
+                'speed': data['speed'],
+                'angle': data['angle'],
                 'alert_type': "ALERTA DE PANICO - NP"
             }
             redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
