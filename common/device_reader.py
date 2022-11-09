@@ -12,50 +12,51 @@ import json
 gmt_conversor = GMTConversor()
 
 class DeviceReader:
-    def __init__(self, deviceid):
-        self.deviceid = deviceid
+    def __init__(self, unit):
+        self.unit = unit
 
     def detect_ignition_event(self,location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.detect_ignition_event(location)
 
     def detect_panic_event(self,location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.detect_panic_event(location)
 
     def detect_battery_disconnection_event(self,current_location,previous_location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.detect_battery_disconnection_event(current_location,previous_location)
 
     def detect_harsh_acceleration_event(self,location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.detect_harsh_acceleration_event(location)
 
     def detect_harsh_braking_event(self,location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.detect_harsh_braking_event(location)
 
     def detect_harsh_cornering_event(self,location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.detect_harsh_cornering_event(location)
 
-    def detect_valve1_event(self,unit,location):
-        reader = Teltonika(self.deviceid)
-        return reader.detect_valve1_event(unit,location)
+    def detect_valve1_event(self,location):
+        reader = Teltonika(self.unit)
+        return reader.detect_valve1_event(location)
 
-    def detect_valve2_event(self,unit,location):
-        reader = Teltonika(self.deviceid)
-        return reader.detect_valve2_event(unit,location)
+    def detect_valve2_event(self,location):
+        reader = Teltonika(self.unit)
+        return reader.detect_valve2_event(location)
 
     def get_odometer(self,location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.get_odometer(location)
 
     def get_hours(self,location):
-        reader = Teltonika(self.deviceid)
+        reader = Teltonika(self.unit)
         return reader.get_hours(location)
 
-    def get_unit_status(self,unit):
+    def get_unit_status(self):
+        unit = self.unit
         serializer = DeviceSerializer(unit,many=False)
         data = serializer.data
         try:

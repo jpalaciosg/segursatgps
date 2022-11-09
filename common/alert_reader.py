@@ -16,8 +16,8 @@ from common.gmt_conversor import GMTConversor
 gmt_conversor = GMTConversor() #conversor zona horaria
 
 class AlertReader:
-    def __init__(self, deviceid):
-        self.deviceid = deviceid
+    def __init__(self, unit):
+        self.unit = unit
 
     def __detect_geofence_entry(self,current_location,previous_location,account):
         response = []
@@ -58,11 +58,11 @@ class AlertReader:
         return response
     
     def __detect_battery_disconnection_alert(self,current_location,previous_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_battery_disconnection_event(current_location,previous_location)
 
     def __detect_panic_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_panic_event(current_location)
 
     def __detect_speed_event(self,current_speed,speed_limit):
@@ -81,19 +81,20 @@ class AlertReader:
             return False
 
     def __detect_harsh_acceleration_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_harsh_acceleration_event(current_location)
 
     def __detect_harsh_braking_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_harsh_braking_event(current_location)
 
     def __detect_harsh_cornering_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_harsh_cornering_event(current_location)
 
     def run(self):
-        unit = Device.objects.get(uniqueid=self.deviceid)
+        #unit = Device.objects.get(uniqueid=self.deviceid)
+        unit = self.unit
         previous_location = json.loads(unit.previous_location)
         current_location = {
             'timestamp': unit.last_timestamp,

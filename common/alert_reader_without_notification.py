@@ -16,7 +16,7 @@ from common.gmt_conversor import GMTConversor
 gmt_conversor = GMTConversor() #conversor zona horaria
 
 class AlertReaderWithoutNotification:
-    def __init__(self, deviceid):
+    def __init__(self,deviceid):
         self.deviceid = deviceid
 
     def __detect_geofence_entry(self,current_location,previous_location,account):
@@ -58,11 +58,11 @@ class AlertReaderWithoutNotification:
         return response
     
     def __detect_battery_disconnection_alert(self,current_location,previous_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_battery_disconnection_event(current_location,previous_location)
 
     def __detect_panic_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_panic_event(current_location)
 
     def __detect_speed_event(self,current_speed,speed_limit):
@@ -81,15 +81,15 @@ class AlertReaderWithoutNotification:
             return False
 
     def __detect_harsh_acceleration_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_harsh_acceleration_event(current_location)
 
     def __detect_harsh_braking_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_harsh_braking_event(current_location)
 
     def __detect_harsh_cornering_event(self,current_location):
-        device_reader = DeviceReader(self.deviceid)
+        device_reader = DeviceReader(self.unit)
         return device_reader.detect_harsh_cornering_event(current_location)
 
     def run(self):

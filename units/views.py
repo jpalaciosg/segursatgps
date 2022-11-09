@@ -105,7 +105,7 @@ def get_unit(request,name):
 @api_view(['GET'])
 def get_unit_status(request,id):
     unit = Device.objects.get(id=id)
-    device_reader = DeviceReader(unit.uniqueid)
+    device_reader = DeviceReader(unit)
     response = device_reader.get_unit_status(unit)
     return Response(response,status=status.HTTP_200_OK)
 

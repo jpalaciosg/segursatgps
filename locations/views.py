@@ -91,7 +91,7 @@ def insert_location_batch(request):
                 unit.previous_location = json.dumps(previous_location,ensure_ascii=False)
                 # FIN CALCULAR UBICACION PREVIA
                 # CALCULAR LAST_HOURS
-                device_reader = DeviceReader(unit.uniqueid)
+                device_reader = DeviceReader(unit)
                 hours = int(device_reader.get_hours({
                     'attributes':data['attributes']
                 }))

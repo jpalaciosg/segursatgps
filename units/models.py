@@ -5,7 +5,7 @@ from forwarders.models import Forwarder
 # Create your models here.
 class Device(models.Model):
     uniqueid = models.CharField(unique=True,max_length=20)
-    imei = models.CharField(unique=True,max_length=20)
+    #imei = models.CharField(unique=True,max_length=20)
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=200,blank=True)
     sim_phonenumber = models.CharField(max_length=20,blank=True)

@@ -97,9 +97,14 @@ def insert_location_in_history2(data):
 
 @celery_app.task
 def process_alert(data):
-    alert_reader = AlertReader(data['deviceid'])
-    alert_reader.run()
-    del alert_reader
+    try:
+        unit = Device.objects.get(uniqueid=data['deviceid'])
+    except:
+        unit = None
+    if unit:
+        alert_reader = AlertReader(unit)
+        alert_reader.run()
+        del alert_reader
     return True
 
 @celery_app.task
@@ -111,72 +116,77 @@ def process_alert_without_notification(data):
 
 @celery_app.task
 def process_alerts_for_the_alert_center(data):
-    device_reader = DeviceReader(data['uniqueid'])
-    panic_event = device_reader.detect_panic_event(data['current_location'])
-    battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
-    geofence_exit_event = False
-    if data['current_location']['account'] == '20603017847':
-        try:
-            account = Account.objects.get(name='20603017847') # cuenta hng_inversiones
-            geofence = Geofence.objects.get(name='ZONA AUTORIZADA LIMA',account=account)
-            geojson = json.loads(geofence.geojson)
-            s = shape(geojson['features'][0]['geometry'])
-            point1 = Point(data['current_location']['longitude'],data['current_location']['latitude'])
-            point2 = Point(data['previous_location']['longitude'],data['previous_location']['latitude'])
-            if s.contains(point2) == True and s.contains(point1) == False:
-                geofence_exit_event = True
-        except Exception as e:
-            pass
-    if battery_event:
-        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        payload = {
-            #'group': data['current_location']['account'].upper(),
-            'group': data['current_location']['account_description'].upper(),
-            'license_plate': data['current_location']['unit_name'],
-            'device_datetime': device_datetime_str,
-            'latitude': data['current_location']['latitude'],
-            'longitude': data['current_location']['longitude'],
-            'speed': data['current_location']['speed'],
-            'angle': data['current_location']['angle'],
-            'alert_type': "ALERTA DE BATERIA - NP"
-        }
-        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
-    if panic_event:
-        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        payload = {
-            #'group': data['current_location']['account'].upper(),
-            'group': data['current_location']['account_description'].upper(),
-            'license_plate': data['current_location']['unit_name'],
-            'device_datetime': device_datetime_str,
-            'latitude': data['current_location']['latitude'],
-            'longitude': data['current_location']['longitude'],
-            'speed': data['current_location']['speed'],
-            'angle': data['current_location']['angle'],
-            'alert_type': "ALERTA DE PANICO - NP"
-        }
-        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
-    if geofence_exit_event:
-        device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-        device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-        device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-        payload = {
-            'group': data['current_location']['account_description'].upper(),
-            'license_plate': data['current_location']['unit_name'],
-            'device_datetime': device_datetime_str,
-            'latitude': data['current_location']['latitude'],
-            'longitude': data['current_location']['longitude'],
-            'speed': data['current_location']['speed'],
-            'angle': data['current_location']['angle'],
-            'alert_type': "ALERTA DE SALIDA DE GEOCERCA HNG_INVERSIONES - NP"
-        }
-        redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-        redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+    try:
+        unit = Device.objects.get(uniqueid=data['deviceid'])
+    except:
+        unit = None
+    if unit:
+        device_reader = DeviceReader(unit)
+        panic_event = device_reader.detect_panic_event(data['current_location'])
+        battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
+        geofence_exit_event = False
+        if data['current_location']['account'] == '20603017847':
+            try:
+                account = Account.objects.get(name='20603017847') # cuenta hng_inversiones
+                geofence = Geofence.objects.get(name='ZONA AUTORIZADA LIMA',account=account)
+                geojson = json.loads(geofence.geojson)
+                s = shape(geojson['features'][0]['geometry'])
+                point1 = Point(data['current_location']['longitude'],data['current_location']['latitude'])
+                point2 = Point(data['previous_location']['longitude'],data['previous_location']['latitude'])
+                if s.contains(point2) == True and s.contains(point1) == False:
+                    geofence_exit_event = True
+            except Exception as e:
+                pass
+        if battery_event:
+            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                #'group': data['current_location']['account'].upper(),
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE BATERIA - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        if panic_event:
+            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                #'group': data['current_location']['account'].upper(),
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE PANICO - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        if geofence_exit_event:
+            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE SALIDA DE GEOCERCA HNG_INVERSIONES - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
     return True
 
 @celery_app.task
@@ -234,7 +244,7 @@ def process_location_in_background(data):
         unit.previous_location = json.dumps(previous_location,ensure_ascii=False)
         # FIN - CALCULAR UBICACION PREVIA
         # CALCULAR LAST_HOURS
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         hours = int(device_reader.get_hours({
             'attributes':data['attributes']
         }))
@@ -341,9 +351,46 @@ def process_location_in_background(data):
                 print(f"ERROR SUTRAN: {str(e)}")
         # FIN - INSERTAR EN LA TABLA SUTRAN
         # DETECTAR ALERTAS
-        alert_reader = AlertReader(data['deviceid'])
+        alert_reader = AlertReader(unit)
         alert_reader.run()
         # FIN - DETECTAR ALERTAS
+        # PROCESAR ALERTAS PARA LA CENTRAL
+        device_reader = DeviceReader(unit)
+        panic_event = device_reader.detect_panic_event(data)
+        battery_event = device_reader.detect_battery_disconnection_event(data,previous_location)
+        if battery_event:
+            device_datetime = datetime.fromtimestamp(data['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE BATERIA - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        if panic_event:
+            device_datetime = datetime.fromtimestamp(data['timestamp'])
+            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
+            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+            payload = {
+                'group': data['current_location']['account_description'].upper(),
+                'license_plate': data['current_location']['unit_name'],
+                'device_datetime': device_datetime_str,
+                'latitude': data['current_location']['latitude'],
+                'longitude': data['current_location']['longitude'],
+                'speed': data['current_location']['speed'],
+                'angle': data['current_location']['angle'],
+                'alert_type': "ALERTA DE PANICO - NP"
+            }
+            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
+            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
+        # FIN - PROCESAR ALERTAS PARA LA CENTRAL
     return True
 
 @celery_app.task
@@ -404,7 +451,7 @@ def process_thirdparty_location_in_background(data):
         unit.previous_location = json.dumps(previous_location,ensure_ascii=False)
         # FIN - CALCULAR UBICACION PREVIA
         # CALCULAR LAST_HOURS
-        device_reader = DeviceReader(unit.uniqueid)
+        device_reader = DeviceReader(unit)
         hours = int(device_reader.get_hours({
             'attributes':data['attributes']
         }))
@@ -484,7 +531,7 @@ def process_thirdparty_location_in_background(data):
             print(e)
         # FIN - INSERTAR UBICACION EN EL HISTORICO
         # DETECTAR ALERTAS
-        alert_reader = AlertReader(data['deviceid'])
+        alert_reader = AlertReader(unit)
         alert_reader.run()
         # FIN - DETECTAR ALERTAS
     return True
