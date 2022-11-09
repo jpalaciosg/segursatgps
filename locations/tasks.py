@@ -97,9 +97,14 @@ def insert_location_in_history2(data):
 
 @celery_app.task
 def process_alert(data):
-    alert_reader = AlertReader(data['deviceid'])
-    alert_reader.run()
-    del alert_reader
+    try:
+        unit = Device.objects.get(uniqueid=data['uniqueid'])
+    except:
+        unit = None
+    if unit:
+        alert_reader = AlertReader(unit)
+        alert_reader.run()
+        del alert_reader
     return True
 
 @celery_app.task
@@ -346,7 +351,7 @@ def process_location_in_background(data):
                 print(f"ERROR SUTRAN: {str(e)}")
         # FIN - INSERTAR EN LA TABLA SUTRAN
         # DETECTAR ALERTAS
-        alert_reader = AlertReader(data['deviceid'])
+        alert_reader = AlertReader(unit)
         alert_reader.run()
         # FIN - DETECTAR ALERTAS
     return True
@@ -489,7 +494,7 @@ def process_thirdparty_location_in_background(data):
             print(e)
         # FIN - INSERTAR UBICACION EN EL HISTORICO
         # DETECTAR ALERTAS
-        alert_reader = AlertReader(data['deviceid'])
+        alert_reader = AlertReader(unit)
         alert_reader.run()
         # FIN - DETECTAR ALERTAS
     return True

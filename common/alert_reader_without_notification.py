@@ -16,8 +16,8 @@ from common.gmt_conversor import GMTConversor
 gmt_conversor = GMTConversor() #conversor zona horaria
 
 class AlertReaderWithoutNotification:
-    def __init__(self,unit):
-        self.unit = unit
+    def __init__(self,deviceid):
+        self.deviceid = deviceid
 
     def __detect_geofence_entry(self,current_location,previous_location,account):
         response = []
@@ -93,8 +93,7 @@ class AlertReaderWithoutNotification:
         return device_reader.detect_harsh_cornering_event(current_location)
 
     def run(self):
-        #unit = Device.objects.get(uniqueid=self.deviceid)
-        unit = self.unit
+        unit = Device.objects.get(uniqueid=self.deviceid)
         previous_location = json.loads(unit.previous_location)
         current_location = {
             'timestamp': unit.last_timestamp,
