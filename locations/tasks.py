@@ -358,7 +358,7 @@ def process_location_in_background(data):
             # REPLICA INTERNA
             if unit.is_parent:
                 if unit.child:
-                    if unit.id != unit.child.id:
+                    if unit.id != unit.child.id and unit.is_child:
                         if data['timestamp'] > previous_location['timestamp']:
                             unit.child.last_timestamp = data['timestamp']
                             unit.child.last_latitude = data['latitude']
