@@ -46,6 +46,7 @@ class Device(models.Model):
         blank=True,
         null=True,
     )
+    is_child = models.BooleanField(default=False)
     created = models.DateTimeField(auto_now_add=True,null=True)
     modified = models.DateTimeField(auto_now=True)
     class Meta:
