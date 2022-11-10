@@ -354,6 +354,67 @@ def process_location_in_background(data):
         alert_reader = AlertReader(unit)
         alert_reader.run()
         # FIN - DETECTAR ALERTAS
+        # REPLICA INTERNA
+        if unit.is_parent:
+            if unit.child:
+                if unit.id != unit.child.id:
+                    if data['timestamp'] > previous_location['timestamp']:
+                        unit.child.last_timestamp = data['timestamp']
+                        unit.child.last_latitude = data['latitude']
+                        unit.child.last_longitude = data['longitude']
+                        unit.child.last_altitude = data['altitude']
+                        unit.child.last_angle = data['angle']
+                        unit.child.last_speed = data['speed']
+                        if int(data['speed']) > 0:
+                            unit.child.last_movement = data['timestamp']
+                        unit.child.last_attributes = json.dumps(data['attributes'])
+                        if previous_location['latitude'] != 0.0 and previous_location['longitude'] != 0.0:
+                            if data['latitude'] != 0.0 and data['longitude'] != 0.0:
+                                distance = great_circle(
+                                    (
+                                        previous_location['latitude'],
+                                        previous_location['longitude']
+                                    ),
+                                    (
+                                        data['latitude'],
+                                        data['longitude']
+                                    ),
+                                ).km
+                                unit.child.odometer += distance
+                        unit.child.previous_location = json.dumps(previous_location,ensure_ascii=False)
+                        if hours > last_hours:
+                            unit.child.last_hours = hours
+                        unit.child.last_address = data['address']
+                        unit.child.save()
+                        account_name = unit.child.account.name
+                        last_report = gmt_conversor.convert_utctolocaltime(datetime.utcfromtimestamp(data['timestamp']))
+                        last_report = last_report.strftime("%d/%m/%Y, %H:%M:%S")
+                        channel_layer = channels.layers.get_channel_layer()
+                        async_to_sync(channel_layer.group_send)(
+                            f'chat_{account_name}',
+                            {
+                                'type': 'send_message',
+                                'message': {
+                                    'type':'update_location',
+                                    'payload': {
+                                        'unitid': unit.child.id,
+                                        'unit_name': unit.child.name,
+                                        'unit_description': unit.child.description,
+                                        'timestamp': data['timestamp'],
+                                        'latitude': data['latitude'],
+                                        'longitude': data['longitude'],
+                                        'altitude': data['altitude'],
+                                        'angle': data['angle'],
+                                        'speed': data['speed'],
+                                        'attributes': data['attributes'],
+                                        'address': data['address'],
+                                        'odometer': round(unit.odometer,2),
+                                        'last_report': last_report
+                                    }
+                                }
+                            }
+                        )
+        # FIN - REPLICA INTERNA
         # PROCESAR ALERTAS PARA LA CENTRAL
         device_reader = DeviceReader(unit)
         panic_event = device_reader.detect_panic_event(data)
