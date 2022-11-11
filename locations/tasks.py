@@ -219,6 +219,8 @@ def process_location_in_background(data):
                 ts_offset = ts - data['timestamp']
                 if ts_offset > 31536000:
                     data['timestamp'] = ts
+                if ts_offset < -600:
+                    return True
                 # FIN - CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
                 unit.last_timestamp = data['timestamp']
                 unit.last_latitude = data['latitude']
