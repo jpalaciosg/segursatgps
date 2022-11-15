@@ -9,6 +9,17 @@ class Privilege:
             units = Device.objects.filter(account=request.user.profile.account)
         else:
             units = request.user.profile.units.all()
+        # CAMBIO PROVISIONAL SOLGAS
+        if request.user.profile.account.name == '20100176450':
+            if request.path.find('reports') != -1:
+                if units:
+                    for unit in units:
+                        try:
+                            parent = Device.objects.get(child__id=unit.id)
+                            unit.id = parent.id
+                        except Exception as e:
+                            pass
+        # FIN - CAMBIO PROVISIONAL SOLGAS
         return units
 
     def get_groups(self,request):

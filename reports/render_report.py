@@ -32,14 +32,15 @@ class RenderReport:
                     'detail':str(e)
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
-            if final_timestamp - initial_timestamp > 604800:
+            if final_timestamp - initial_timestamp > 2678400:
                 error = {
                     'detail': 'Report time range exceeded.'
                 }
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request)
             try:
-                unit = units.get(id=int(data['unitid']))
+                #unit = units.get(id=int(data['unitid']))
+                unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
             except Exception as e:
                 error = {
                     'detail':str(e)
@@ -84,7 +85,7 @@ class RenderReport:
                 return Response(error,status=status.HTTP_400_BAD_REQUEST)
             units = privilege.get_units(request)
             try:
-                unit = units.get(id=int(data['unitid']))
+                unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
             except Exception as e:
                 error = {
                     'detail':str(e)
@@ -149,7 +150,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except:
                     error = {
                         'detail':str(e)
@@ -214,7 +215,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -280,7 +281,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -346,7 +347,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -411,7 +412,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -484,7 +485,7 @@ class RenderReport:
                 return Response(geofence_report,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -552,7 +553,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -618,7 +619,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -682,7 +683,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)
@@ -746,7 +747,7 @@ class RenderReport:
                 return Response(response,status=status.HTTP_200_OK)
             else:
                 try:
-                    unit = units.get(id=int(data['unitid']))
+                    unit = [unit for unit in units if unit.id == int(data['unitid'])][0]
                 except Exception as e:
                     error = {
                         'detail':str(e)

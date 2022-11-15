@@ -13,11 +13,13 @@ from units.models import Device
 from .serializers import InsertLocationSerializer,LocationSerializer,InsertSutranLocationSerializer,InsertSolgasLocationSerializer
 from common.gmt_conversor import GMTConversor
 from common.device_reader import DeviceReader
+from common.privilege import Privilege
 from .tasks import insert_location_in_history,insert_location_in_history2,process_alert,process_alert_without_notification,process_alerts_for_the_alert_center,process_location_in_background,process_thirdparty_location_in_background
 
 # Create your views here.
 
 gmt_conversor = GMTConversor() #conversor zona horaria
+privilege = Privilege()
 
 @api_view(['POST'])
 def insert_location_batch(request):
@@ -170,8 +172,10 @@ def insert_location_batch(request):
 def get_location_history(request,unitid,initial_datetime,final_datetime):
     initial_timestamp = None
     final_timestamp = None
+    units = privilege.get_units(request)
     try:
-        unit = Device.objects.get(id=unitid)
+        #unit = Device.objects.get(id=unitid)
+        unit = [unit for unit in units if unit.id == unitid][0]
     except Exception as e:
         error = {
             'error':str(e)
