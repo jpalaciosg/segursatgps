@@ -60,6 +60,7 @@ class Report:
                 if previous_location.speed == 0 and current_location.speed > 0:
                     #print('START')
                     movement_events.append({
+                        'id':locations[i].id,
                         'latitude':locations[i].latitude,
                         'longitude':locations[i].longitude,
                         'timestamp':locations[i].timestamp,
@@ -69,6 +70,7 @@ class Report:
                 elif previous_location.speed > 0 and current_location.speed == 0:
                     #print('STOP')
                     movement_events.append({
+                        'id':locations[i].id,
                         'latitude':locations[i].latitude,
                         'longitude':locations[i].longitude,
                         'timestamp':locations[i].timestamp,
@@ -207,6 +209,86 @@ class Report:
                 'valve_report':data,
                 'summarization':summarization,
             }
+
+    def generate_location_history(self,unit,initial_timestamp,final_timestamp):
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        serializer = locations_serializers.LocationSerializer(locations,many=True)
+        device_reader = DeviceReader(unit)
+        data = serializer.data
+        for i in range(len(data)):
+            data[i]['unit_name'] = unit.name
+            data[i]['unit_description'] = unit.description
+            data[i]['datetime'] = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                data[i]['timestamp'],"%d/%m/%Y %H:%M:%S")
+            try:
+                attributes = json.loads(data[i]['attributes'])
+            except:
+                attributes = {}
+            data[i]['attributes'] = attributes
+            data[i]['ignition'] = device_reader.detect_ignition_event({
+                'attributes':attributes
+            })
+            data[i]['odometer'] = device_reader.get_odometer({
+                'attributes':attributes
+            })
+            data[i]['is_stop'] = False
+        movement_events = self.calculate_unit_movement_events(unit,locations)
+        stop_report = []
+        for i in range(len(movement_events)):
+            if i == 0:
+                if movement_events[i]['event'] == 'START':
+                    stop_duration = movement_events[i]['timestamp'] - initial_timestamp
+                    stop_report.append({
+                        'id': movement_events[i]['id'],
+                        'latitude': movement_events[i]['latitude'],
+                        'longitude': movement_events[i]['longitude'],
+                        'stop_duration': stop_duration,
+                        'stop_time': str(timedelta(seconds=stop_duration)),
+                    })
+                elif  i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
+                    stop_duration = final_timestamp - movement_events[i]['timestamp']
+                    stop_report.append({
+                        'id': movement_events[i]['id'],
+                        'latitude': movement_events[i]['latitude'],
+                        'longitude': movement_events[i]['longitude'],
+                        'stop_duration': stop_duration,
+                        'stop_time': str(timedelta(seconds=stop_duration)),
+                    })
+            else:
+                if i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
+                    stop_duration = final_timestamp - movement_events[i]['timestamp']
+                    stop_report.append({
+                        'id': movement_events[i]['id'],
+                        'latitude': movement_events[i]['latitude'],
+                        'longitude': movement_events[i]['longitude'],
+                        'stop_duration': stop_duration,
+                        'stop_time': str(timedelta(seconds=stop_duration)),
+                    })
+                elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
+                    stop_duration = movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
+                    stop_report.append({
+                        'id': movement_events[i-1]['id'],
+                        'latitude': movement_events[i-1]['latitude'],
+                        'longitude': movement_events[i-1]['longitude'],
+                        'stop_duration': stop_duration,
+                        'stop_time': str(timedelta(seconds=stop_duration)),
+                    })
+        #print(stop_report)
+        for item in data:
+            for sr in stop_report:
+                if item['id'] == sr['id']:
+                    item['is_stop'] = True
+                    item['stop_duration'] = sr['stop_duration']
+                    item['stop_time'] = sr['stop_time']
+                    break
+        return data
 
     def generate_driving_style_report(self,unit,initial_timestamp,final_timestamp):
         locations = Location.objects.using('history_db_replica').filter(
