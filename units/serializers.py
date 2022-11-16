@@ -32,7 +32,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class UpdateGroupSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=50)
-    description = serializers.CharField(max_length=100)
+    description = serializers.CharField(max_length=100,allow_blank=True)
     units = serializers.ListField(
         child=serializers.IntegerField()
     )
