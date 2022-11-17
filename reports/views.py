@@ -384,6 +384,10 @@ def get_extended_detailed_report(request):
     return render_report.render_extended_detailed_report(request)
 
 @api_view(['POST'])
+def get_location_report(request):
+    return render_report.render_location_report(request)
+
+@api_view(['POST'])
 def get_mileage_report(request):
     return render_report.render_mileage_report(request)
 
