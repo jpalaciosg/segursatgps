@@ -28,20 +28,19 @@ def units_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
-    """
-    for unit in units:
-        try:
-            unit.created = unit.created.replace(tzinfo=timezone('America/Lima'))
-            unit.modified = unit.modified.replace(tzinfo=timezone('America/Lima'))
-        except Exception as e:
-            print(e)
-    """
     for unit in units:
         unit.odometer = str(unit.odometer)
         unit.modified = gmt_conversor.convert_utctolocaltime(unit.modified).strftime("%d/%m/%Y %H:%M:%S")
         unit.created = gmt_conversor.convert_utctolocaltime(unit.created).strftime("%d/%m/%Y %H:%M:%S")
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'units/units.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
@@ -49,11 +48,18 @@ def unit_group_view(request):
     units = privilege.get_units(request)
     groups = Group.objects.filter(account=request.user.profile.account)
     for group in groups:
-        group.modified = gmt_conversor.convert_utctolocaltime(group.modified) # convertir a zona horaria
-        group.created = gmt_conversor.convert_utctolocaltime(group.created) # convertir a zona horaria
+        group.modified = gmt_conversor.convert_utctolocaltime(group.modified).strftime("%d/%m/%Y %H:%M:%S")
+        group.created = gmt_conversor.convert_utctolocaltime(group.created).strftime("%d/%m/%Y %H:%M:%S")
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'units/groups.html',{
         'units':units,
         'groups':groups,
+        'navbar':navbar,
     })
 
 @api_view(['GET'])

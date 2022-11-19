@@ -37,7 +37,6 @@ def dashboard_view(request):
     units_stopped = []
     now = datetime.now()
     current_timestamp = int(datetime.timestamp(now))
-
     for unit in units:
         dt = datetime.fromtimestamp(unit.last_timestamp)
         dt = gmt_conversor.convert_utctolocaltime(dt)
@@ -51,7 +50,12 @@ def dashboard_view(request):
             units_in_motion.append(unit)
         else:
             units_stopped.append(unit)
-
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/dashboard.html',{
         'units_transmitting': units_transmitting,
         'units_not_transmitted': units_not_transmitted,
@@ -59,6 +63,7 @@ def dashboard_view(request):
         'units_stopped': units_stopped,
         'units': units,
         'now': gmt_conversor.convert_utctolocaltime(now),
+        'navbar':navbar,
     })
 
 @login_required
@@ -106,6 +111,12 @@ def fleet_status_view(request):
             unit.main_battery = False
             unit.secondary_battery = True
     units_transmitting = len(units) - units_not_transmitted
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/fleet-status.html',{
         'units': units,
         'now': gmt_conversor.convert_utctolocaltime(now),
@@ -113,6 +124,7 @@ def fleet_status_view(request):
         'units_not_transmitted': units_not_transmitted,
         'units_in_motion': units_in_motion,
         'units_stopped': units_stopped,
+        'navbar':navbar,
     })
 
 @login_required
@@ -122,8 +134,15 @@ def detailed_report_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/detailed-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
@@ -133,8 +152,15 @@ def extended_detailed_report_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/extended-detailed-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
@@ -144,8 +170,15 @@ def detailed_report_with_attributes_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/detailed-report-with-attributes.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 def driving_style_report_view(request):
@@ -154,8 +187,15 @@ def driving_style_report_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/driving-style-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
@@ -166,19 +206,32 @@ def trip_report_view(request):
     # fin - verificar privilegios
     # GET
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/trip-report.html',{
         'units':units,
     })
 
 @login_required
 def trip_report2_view(request):
-    # verificar privilegios
     if privilege.view_day_trip_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
+    # verificar privilegios
     return render(request,'reports/trip-report2.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
@@ -187,10 +240,16 @@ def group_trip_report_view(request):
     if privilege.view_group_trip_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    # GET
     groups = Group.objects.filter(account=request.user.profile.account)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/group-trip-report.html',{
         'groups':groups,
+        'navbar':navbar,
     })
 
 @api_view(['POST'])
@@ -203,10 +262,16 @@ def stop_report_view(request):
     if privilege.view_stop_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    # GET
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/stop-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 # GROUP STOP REPORT
@@ -216,10 +281,16 @@ def group_stop_report_view(request):
     if privilege.view_group_stop_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    # GET
     groups = Group.objects.filter(account=request.user.profile.account)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/group-stop-report.html',{
         'groups':groups,
+        'navbar':navbar,
     })
 
 @login_required
@@ -229,8 +300,15 @@ def speed_report_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/speed-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 # GROUP SPEED REPORT
@@ -240,10 +318,16 @@ def group_speed_report_view(request):
     if privilege.view_group_speed_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    # GET
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     groups = Group.objects.filter(account=request.user.profile.account)
     return render(request,'reports/group-speed-report.html',{
         'groups':groups,
+        'navbar':navbar,
     })
 
 # MILEAGE REPORT
@@ -253,12 +337,16 @@ def mileage_report_view(request):
     if privilege.view_mileage_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    #GET
     units = privilege.get_units(request)
-    form = MileageReportForm()
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/mileage-report.html',{
         'units':units,
-        'form':form,
+        'navbar':navbar,
     })
 
 # GROUP MILEAGE REPORT
@@ -267,10 +355,16 @@ def group_mileage_report_view(request):
     if privilege.view_group_mileage_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    # GET
     groups = Group.objects.filter(account=request.user.profile.account)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/group-mileage-report.html',{
         'groups':groups,
+        'navbar':navbar,
     })
 
 # GEOFENCE REPORT
@@ -280,14 +374,18 @@ def geofence_report_view(request):
     if privilege.view_geofence_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    #GET
     geofences = Geofence.objects.filter(account=request.user.profile.account)
     units = privilege.get_units(request)
-    form = ReportForm()
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/geofence-report.html',{
         'units':units,
         'geofences':geofences,
-        'form':form,
+        'navbar':navbar,
     })
 
 @login_required
@@ -296,12 +394,18 @@ def group_geofence_report_view(request):
     if privilege.view_geofence_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    # GET
     geofences = Geofence.objects.filter(account=request.user.profile.account)
     groups = Group.objects.filter(account=request.user.profile.account)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/group-geofence-report.html',{
         'groups':groups,
         'geofences':geofences,
+        'navbar':navbar,
     })
 
 @login_required
@@ -311,8 +415,15 @@ def telemetry_report_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/telemetry-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
@@ -322,34 +433,61 @@ def temperature_report_view(request):
         return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/temperature-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
 def hours_report_view(request):
-    #GET
     # verificar privilegios
     if privilege.view_hours_report(request) == False:
         return HttpResponse("<h1>Acceso Restringido</h1>", status=403)
     # fin - verificar privilegios
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/hours-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
 def telemetry_trip_report_view(request):
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/telemetry-trip-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
 def target_telemetry_report_view(request):
     units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/target-telemetry-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
@@ -359,8 +497,15 @@ def group_driving_style_report_view(request):
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
     groups = privilege.get_groups(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'reports/group-driving-style-report.html',{
         'groups':groups,
+        'navbar':navbar,
     })
 
 @login_required
@@ -369,10 +514,16 @@ def group_trip_report2_view(request):
     if privilege.view_group_trip_report(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>", status=403)
     # fin - verificar privilegios
-    # GET
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     groups = privilege.get_groups(request)
     return render(request,'reports/group-trip-report2.html',{
         'groups':groups,
+        'navbar':navbar,
     })
 
 @api_view(['POST'])

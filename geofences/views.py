@@ -32,8 +32,15 @@ def geofences_view(request):
             geofence.modified = gmt_conversor.convert_localtimetoutc(geofence.modified)
         except Exception as e:
             print(e)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'geofences/geofences.html',{
         'geofences':geofences,
+        'navbar':navbar,
     })
 
 @login_required
@@ -49,8 +56,15 @@ def geofence_group_view(request):
             gg.modified = gmt_conversor.convert_localtimetoutc(gg.modified)
         except Exception as e:
             print(e)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'geofences/geofence-group.html',{
         'geofence_groups':geofence_groups,
+        'navbar':navbar,
     })
 
 @api_view(['GET'])
