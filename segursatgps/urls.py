@@ -27,7 +27,6 @@ import maps.views as maps_views
 import alerts.views as alerts_views
 import triggers.views as triggers_views
 import locations.views as locations_views
-import maintenances.views as maintenances_views
 import generic.views as generic_views
 import management.views as management_views
 import mails.views as mails_views

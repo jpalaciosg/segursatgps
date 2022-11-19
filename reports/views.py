@@ -214,6 +214,7 @@ def trip_report_view(request):
     navbar = not disable_navbar
     return render(request,'reports/trip-report.html',{
         'units':units,
+        'navbar':navbar,
     })
 
 @login_required
