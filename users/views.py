@@ -3,12 +3,12 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-#from django.contrib.auth.models import User
 from users.models import User
 from units.models import Device
 from .models import Profile
@@ -22,6 +22,7 @@ gmt_conversor = GMTConversor() #conversor zona horaria
 privilege = Privilege()
 
 # Create your views here.
+@csrf_exempt
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
