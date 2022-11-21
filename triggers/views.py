@@ -36,10 +36,17 @@ def fleet_trigger_view(request):
             trigger.modified = gmt_conversor.convert_utctolocaltime(trigger.modified)
         except Exception as e:
             print(e)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'triggers/fleet-trigger.html',{
         'triggers':triggers,
         'mail_lists':mail_lists,
         'geofences': geofences,
+        'navbar':navbar,
     })
 
 @api_view(['GET'])
@@ -836,10 +843,17 @@ def unit_trigger_view(request):
             trigger.modified = gmt_conversor.convert_utctolocaltime(trigger.modified)
         except Exception as e:
             print(e)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'triggers/unit-trigger.html',{
         'triggers':triggers,
         'mail_lists':mail_lists,
-        'geofences': geofences,
+        'geofences':geofences,
+        'navbar':navbar,
     })
 
 @api_view(['GET'])

@@ -27,7 +27,6 @@ import maps.views as maps_views
 import alerts.views as alerts_views
 import triggers.views as triggers_views
 import locations.views as locations_views
-import maintenances.views as maintenances_views
 import generic.views as generic_views
 import management.views as management_views
 import mails.views as mails_views
@@ -45,8 +44,7 @@ urlpatterns = [
     path('drivers/', drivers_views.drivers_view, name='drivers'),
     path('drivers/delete-driver/<int:id>/', drivers_views.delete_driver, name='delete-driver'),
     path('geofences/', geofences_views.geofences_view, name='geofences'),
-    path('geofence/groups/', geofences_views.geofence_group_view, name='geofence-group'),
-    path('geofences/delete-geofence/<int:id>/', geofences_views.delete_geofence, name='delete-geofence'),
+    path('geofences/groups/', geofences_views.geofence_group_view, name='geofence-group'),
     path('dashboard/', reports_views.dashboard_view, name='dashboard'),
     path('reports/fleet-status/', reports_views.fleet_status_view, name='fleet-status'),
     path('reports/detailed-report/', reports_views.detailed_report_view, name='detailed-report'),
@@ -73,14 +71,10 @@ urlpatterns = [
     path('maps/', maps_views.map_view, name='map'),
     path('triggers/fleet-trigger/', triggers_views.fleet_trigger_view, name='fleet-trigger'),
     path('triggers/unit-trigger/', triggers_views.unit_trigger_view, name='unit-trigger'),
-    path('triggers/delete-fleet-trigger/<int:id>/', triggers_views.delete_fleet_trigger, name='delete-fleet-trigger'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
     path('alerts/history/', alerts_views.alert_history_view, name='alert-history'),
     path('mails/mail-lists/', mails_views.mail_list_view, name='mail-lists'),
     path('checkpoint/add-event/', checkpoint_views.add_event),
-    path('maintenances/', maintenances_views.maintenances_view, name='maintenances'),
-    path('maintenances/triggers/', maintenances_views.triggers_view, name='maintenance-triggers'),
-    path('maintenances/history/', maintenances_views.maintenance_history_view, name='maintenance-history'),
     path('management/', management_views.management_view, name='management'),
     path('management/map/', management_views.management_map_view, name='management-map'),
     path('management/dashboard/', management_views.management_dashboard_view, name='management-dashboard'),

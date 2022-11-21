@@ -29,8 +29,15 @@ def mail_list_view(request):
             mail_list.modified = gmt_conversor.convert_utctolocaltime(mail_list.modified)
         except Exception as e:
             print(e)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
     return render(request,'mails/mail-lists.html',{
-        'mail_lists': mail_lists,
+        'mail_lists':mail_lists,
+        'navbar':navbar,
     })
 
 @api_view(['GET'])

@@ -222,6 +222,16 @@ def process_location_in_background(data):
                 if ts_offset < -600:
                     return True
                 # FIN - CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
+                # CAMBIAR VELOCIDAD SI ES MAYOR A 105 PARA CIVA
+                civa_accounts = [
+                    '20102427891_Civa_Interprovincial',
+                    '20102427891_Civa_Miskymayo',
+                    '20102427891_Civa_MinaCentro',
+                ]
+                if unit.account.name in civa_accounts:
+                    if data['speed'] > 105:
+                        data['speed'] = previous_location['speed']
+                # FIN - CAMBIAR VELOCIDAD SI ES MAYOR A 105 PARA CIVA
                 unit.last_timestamp = data['timestamp']
                 unit.last_latitude = data['latitude']
                 unit.last_longitude = data['longitude']
