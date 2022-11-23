@@ -229,7 +229,7 @@ def process_location_in_background(data):
                     '20102427891_Civa_MinaCentro',
                 ]
                 if unit.account.name in civa_accounts:
-                    if data['speed'] > 95:
+                    if data['speed'] > 92:
                         data['speed'] = previous_location['speed']
                 # FIN - CAMBIAR VELOCIDAD SI ES MAYOR A 95 PARA CIVA
                 unit.last_timestamp = data['timestamp']
