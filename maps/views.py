@@ -1,6 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
+from common.privilege import Privilege
+
+privilege = Privilege()
+
 # Create your views here.
 @login_required
 def map_view(request):
@@ -12,4 +16,11 @@ def map_view(request):
     navbar = not disable_navbar
     return render(request,'maps/map.html',{
         'navbar':navbar,
+    })
+
+@login_required
+def mobile_map_view(request):
+    units = privilege.get_units(request)
+    return render(request,'maps/mobile.html',{
+        'units':units,
     })

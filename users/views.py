@@ -24,35 +24,60 @@ privilege = Privilege()
 # Create your views here.
 @csrf_exempt
 def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        mode = request.POST['mode']
-        user = authenticate(request,username=username,password=password)
-        if user:
-            login(request,user)
-            try:
-                profile = request.user.profile
-            except:
-                profile = None
-            if profile:
-                next = request.GET.get('next')
-                if next:
-                    return redirect(next)
-                else:
-                    if mode == '0':
-                        return redirect('map')
-                    elif mode == '1':
-                        return redirect('main')
+    path = request.build_absolute_uri()
+    path = path.replace('http://','')
+    path = path.replace('https://','')
+    path = path.split('/')[0]
+    print('carajo')
+    print(path)
+    if path == 'mobile.segursat.com':
+        if request.method == 'POST':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(request,username=username,password=password)
+            if user:
+                login(request,user)
+                try:
+                    profile = request.user.profile
+                except:
+                    profile = None
+                if profile:
+                    return redirect('mobile-map')
+                logout(request)
+                return render(request,'users/login-mobile.html',{
+                    'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
+                })
+        return render(request,'users/login-mobile.html')
+    else:
+        if request.method == 'POST':
+            username = request.POST['username']
+            password = request.POST['password']
+            mode = request.POST['mode']
+            user = authenticate(request,username=username,password=password)
+            if user:
+                login(request,user)
+                try:
+                    profile = request.user.profile
+                except:
+                    profile = None
+                if profile:
+                    next = request.GET.get('next')
+                    if next:
+                        return redirect(next)
                     else:
-                        return redirect('map')
-            logout(request)
-            return render(request,'users/login.html',{
-                'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
-            })
-        else:
-            return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
-    return render(request,'users/login.html')
+                        if mode == '0':
+                            return redirect('map')
+                        elif mode == '1':
+                            return redirect('main')
+                        else:
+                            return redirect('map')
+                logout(request)
+                return render(request,'users/login.html',{
+                    'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
+                })
+            else:
+                return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
+        return render(request,'users/login.html')
 
 def superadmin_login_view(request):
     if request.method == 'POST':
