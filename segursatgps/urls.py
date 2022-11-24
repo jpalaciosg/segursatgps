@@ -69,6 +69,7 @@ urlpatterns = [
     path('reports/hours-report/', reports_views.hours_report_view, name='hours-report'),
     path('reports/telemetry-trip-report/', reports_views.telemetry_trip_report_view, name='telemetry-trip-report'),
     path('maps/', maps_views.map_view, name='map'),
+    path('maps/mobile/', maps_views.mobile_map_view, name='mobile-map'),
     path('triggers/fleet-trigger/', triggers_views.fleet_trigger_view, name='fleet-trigger'),
     path('triggers/unit-trigger/', triggers_views.unit_trigger_view, name='unit-trigger'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),
