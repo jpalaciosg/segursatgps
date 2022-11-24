@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'triggers',
     'alerts',
     'locations',
-    'maintenances',
     'mails',
     'checkpoint',
     'forwarders',
