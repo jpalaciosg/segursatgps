@@ -153,16 +153,6 @@ class Report:
             data[i]['odometer'] = device_reader.get_odometer({
                 'attributes':attributes
             })
-            data[i]['valve1'] = device_reader.detect_valve1_event({
-                'attributes':attributes
-            })
-            if data[i]['valve1'] == True:
-                valve1_counter += 1
-            data[i]['valve2'] = device_reader.detect_valve2_event({
-                'attributes':attributes
-            })
-            if data[i]['valve2'] == True:
-                valve2_counter += 1
             if i == 0:
                 data[i]['distance'] = 0.0
             else:
@@ -177,6 +167,68 @@ class Report:
                     ),
                 ).km
                 data[i]['distance'] = round(distance,2)
+        
+        # CALCULAR EVENTOS
+        valve1_events = []
+        valve2_events = []
+        for i in range(len(locations)):
+            if i != 0:
+                previous_location = locations[i-1]
+                current_location = locations[i]
+                previous_valve1 = device_reader.detect_valve1_event({
+                    'attributes':json.loads(previous_location.attributes)
+                })
+                current_valve1 = device_reader.detect_valve1_event({
+                    'attributes':json.loads(current_location.attributes)
+                })
+                if previous_valve1 == False and current_valve1 == True:
+                    #print('ON')
+                    valve1_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'OPEN',
+                    })
+                elif previous_valve1 == True and current_valve1 == False:
+                    #print('OFF')
+                    valve1_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'CLOSE',
+                    })
+        for i in range(len(locations)):
+            if i != 0:
+                previous_location = locations[i-1]
+                current_location = locations[i]
+                previous_valve2 = device_reader.detect_valve2_event({
+                    'attributes':json.loads(previous_location.attributes)
+                })
+                current_valve2 = device_reader.detect_valve2_event({
+                    'attributes':json.loads(current_location.attributes)
+                })
+                if previous_valve2 == False and current_valve2 == True:
+                    #print('ON')
+                    valve2_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'OPEN',
+                    })
+                elif previous_valve2 == True and current_valve2 == False:
+                    #print('OFF')
+                    valve2_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'CLOSE',
+                    })
+        # FIN - CALCULAR EVENTOS
+
         summarization = [
             {
             'unit_name': unit.name,
@@ -186,7 +238,7 @@ class Report:
             'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
                 final_timestamp,"%d/%m/%Y %H:%M:%S"),
             'type': 'valve1',
-            'amount': valve1_counter,
+            'amount': len(valve1_events),
             },
             {
             'unit_name': unit.name,
@@ -196,17 +248,25 @@ class Report:
             'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
                 final_timestamp,"%d/%m/%Y %H:%M:%S"),
             'type': 'valve2',
-            'amount': valve2_counter,
+            'amount': len(valve2_events),
             },
         ]
         if len(data) == 0:
             return {
                 'valve_report':[],
+                'events':{
+                    'valve1_events':[],
+                    'valve2_events':[],
+                },
                 'summarization':[],
             }
         else:
             return {
                 'valve_report':data,
+                'events':{
+                    'valve1_events':valve1_events,
+                    'valve2_events':valve2_events,
+                },
                 'summarization':summarization,
             }
 
