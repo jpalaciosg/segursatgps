@@ -28,8 +28,6 @@ def login_view(request):
     path = path.replace('http://','')
     path = path.replace('https://','')
     path = path.split('/')[0]
-    print('carajo')
-    print(path)
     if path == 'mobile.segursat.com':
         if request.method == 'POST':
             username = request.POST['username']
@@ -47,6 +45,8 @@ def login_view(request):
                 return render(request,'users/login-mobile.html',{
                     'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
                 })
+        if request.user.is_authenticated:
+            redirect('mobile-map')
         return render(request,'users/login-mobile.html')
     else:
         if request.method == 'POST':
@@ -77,6 +77,8 @@ def login_view(request):
                 })
             else:
                 return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
+        if request.user.is_authenticated:
+            return redirect('map')
         return render(request,'users/login.html')
 
 def superadmin_login_view(request):
