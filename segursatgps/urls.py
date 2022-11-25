@@ -53,6 +53,7 @@ urlpatterns = [
     path('reports/group-driving-style-report/', reports_views.group_driving_style_report_view, name='group-driving-style-report'),
     path('reports/driving-style-report/', reports_views.driving_style_report_view, name='driving-style-report'),
     path('reports/speed-report/', reports_views.speed_report_view, name='speed-report'),
+    path('reports/long-speed-report/', reports_views.long_speed_report_view, name='long-speed-report'),
     path('reports/group-speed-report/', reports_views.group_speed_report_view, name='group-speed-report'),
     path('reports/trip-report/', reports_views.trip_report_view, name='trip-report'),
     path('reports/trip-report2/', reports_views.trip_report2_view, name='trip-report2'),

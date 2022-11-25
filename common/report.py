@@ -153,12 +153,12 @@ class Report:
             data[i]['odometer'] = device_reader.get_odometer({
                 'attributes':attributes
             })
-            data[i]['valve1'] = device_reader.detect_valve1_event(unit,{
+            data[i]['valve1'] = device_reader.detect_valve1_event({
                 'attributes':attributes
             })
             if data[i]['valve1'] == True:
                 valve1_counter += 1
-            data[i]['valve2'] = device_reader.detect_valve2_event(unit,{
+            data[i]['valve2'] = device_reader.detect_valve2_event({
                 'attributes':attributes
             })
             if data[i]['valve2'] == True:
