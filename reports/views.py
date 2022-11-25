@@ -312,6 +312,24 @@ def speed_report_view(request):
         'navbar':navbar,
     })
 
+@login_required
+def long_speed_report_view(request):
+    # verificar privilegios
+    if privilege.view_speed_report(request) == False:
+        return HttpResponse("<h1>Acceso restringido</h1>", status=403)
+    # fin - verificar privilegios
+    units = privilege.get_units(request)
+    disable_navbar = request.GET.get('disablenavbar',None)
+    try:
+        disable_navbar = bool(int(disable_navbar))
+    except Exception as e:
+        disable_navbar = False
+    navbar = not disable_navbar
+    return render(request,'reports/long-speed-report.html',{
+        'units':units,
+        'navbar':navbar,
+    })
+
 # GROUP SPEED REPORT
 @login_required
 def group_speed_report_view(request):
