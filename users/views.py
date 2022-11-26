@@ -25,8 +25,7 @@ privilege = Privilege()
 @csrf_exempt
 def login_view(request):
     path = request.build_absolute_uri()
-    path = path.replace('http://','')
-    path = path.replace('https://','')
+    path = path.replace('http://','').replace('https://','')
     path = path.split('/')[0]
     if path == 'mobile.segursat.com':
         if request.method == 'POST':
@@ -46,8 +45,28 @@ def login_view(request):
                     'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
                 })
         if request.user.is_authenticated:
-            redirect('mobile-map')
+            return redirect('mobile-map')
         return render(request,'users/login-mobile.html')
+    elif path == 'management.segursat.com':
+        if request.method == 'POST':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(request,username=username,password=password)
+            if user:
+                login(request,user)
+                try:
+                    profile = request.user.profile
+                except:
+                    profile = None
+                if profile:
+                    return redirect('management-map')
+                logout(request)
+                return render(request,'users/login-mobile.html',{
+                    'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
+                })
+        if request.user.is_authenticated:
+            return redirect('management-map')
+        return render(request,'users/salogin.html')
     else:
         if request.method == 'POST':
             username = request.POST['username']
