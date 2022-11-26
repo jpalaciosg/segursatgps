@@ -25,11 +25,8 @@ privilege = Privilege()
 @csrf_exempt
 def login_view(request):
     path = request.build_absolute_uri()
-    path = path.replace('http://','')
-    path = path.replace('https://','')
+    path = path.replace('http://','').replace('https://','')
     path = path.split('/')[0]
-    print('carajo')
-    print(path)
     if path == 'mobile.segursat.com':
         if request.method == 'POST':
             username = request.POST['username']
@@ -47,7 +44,29 @@ def login_view(request):
                 return render(request,'users/login-mobile.html',{
                     'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
                 })
+        if request.user.is_authenticated:
+            return redirect('mobile-map')
         return render(request,'users/login-mobile.html')
+    elif path == 'management.segursat.com':
+        if request.method == 'POST':
+            username = request.POST['username']
+            password = request.POST['password']
+            user = authenticate(request,username=username,password=password)
+            if user:
+                login(request,user)
+                try:
+                    profile = request.user.profile
+                except:
+                    profile = None
+                if profile:
+                    return redirect('management-map')
+                logout(request)
+                return render(request,'users/login-mobile.html',{
+                    'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
+                })
+        if request.user.is_authenticated:
+            return redirect('management-map')
+        return render(request,'users/salogin.html')
     else:
         if request.method == 'POST':
             username = request.POST['username']
@@ -77,6 +96,8 @@ def login_view(request):
                 })
             else:
                 return render(request,'users/login.html',{'error':'Usuario y/o contraseña invalidos'})
+        if request.user.is_authenticated:
+            return redirect('map')
         return render(request,'users/login.html')
 
 def superadmin_login_view(request):
