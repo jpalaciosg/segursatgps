@@ -566,6 +566,10 @@ def get_speed_report(request):
     return render_report.render_speed_report(request)
 
 @api_view(['POST'])
+def get_long_speed_report(request):
+    return render_report.render_long_speed_report(request)
+
+@api_view(['POST'])
 def get_driving_style_report(request):
     return render_report.render_driving_style_report(request)
 
