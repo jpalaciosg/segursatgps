@@ -79,6 +79,36 @@ class Report:
                     })
         return movement_events
 
+    def calculate_unit_speed_events(self,unit,locations,speed_limit):
+        speed_events = []
+        for i in range(len(locations)):
+            if i != 0:
+                previous_location = locations[i-1]
+                current_location = locations[i]
+                if previous_location.speed <= speed_limit and current_location.speed > speed_limit:
+                    #print('START')
+                    speed_events.append({
+                        'id':locations[i].id,
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'speed':locations[i].speed,
+                        'address':locations[i].address,
+                        'event':'SPEED_START',
+                    })
+                elif previous_location.speed > speed_limit and current_location.speed <= speed_limit:
+                    #print('STOP')
+                    speed_events.append({
+                        'id':locations[i].id,
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'speed':locations[i].speed,
+                        'address':locations[i].address,
+                        'event':'SPEED_STOP',
+                    })
+        return speed_events
+
     def generate_detailed_report(self,unit,initial_timestamp,final_timestamp):
         locations = Location.objects.using('history_db_replica').filter(
             unitid=unit.id,
@@ -456,6 +486,141 @@ class Report:
                 except:
                     item['attributes'] = {}
                 speed_report.append(item)
+        if len(speed_report) > 0:
+            summarization.append({
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                    final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                'number_of_speeds': len(speed_report)
+            })
+        return {
+            'speed_report': speed_report,
+            'summarization': summarization
+        }
+
+    def generate_long_speed_report(self,unit,initial_timestamp,final_timestamp,speed_limit):
+        speed_report = []
+        summarization = []
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        speed_events = self.calculate_unit_speed_events(unit,locations,speed_limit)
+
+        for i in range(len(speed_events)):
+            if i == 0:
+                if speed_events[i]['event'] == 'SPEED_STOP':
+                    speed_duration = speed_events[i]['timestamp'] - initial_timestamp
+                    speeds = ([ location.speed for location in locations
+                        if location.speed > speed_limit and
+                            location.timestamp >= initial_timestamp and
+                            location.timestamp <= speed_events[i]['timestamp']
+                    ])
+                    speed_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'initial_latitude':'N/D',
+                        'initial_longitude':'N/D',
+                        'initial_timestamp':initial_timestamp,
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                        'initial_address':'N/D',
+                        'final_latitude':speed_events[i]['latitude'],
+                        'final_longitude':speed_events[i]['longitude'],
+                        'final_timestamp':speed_events[i]['timestamp'],
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            speed_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_address':speed_events[i]['address'],
+                        'speed_duration':speed_duration,
+                        'speed_time':str(timedelta(seconds=speed_duration)),
+                        'speeds':speeds,
+                    })
+                elif i == len(speed_events)-1 and speed_events[i]['event'] == 'SPEED_START':
+                    speed_duration =  final_timestamp - speed_events[i]['timestamp']
+                    speeds = ([ location.speed for location in locations
+                        if location.speed > speed_limit and
+                            location.timestamp >= speed_events[i]['timestamp'] and
+                            location.timestamp <= final_timestamp
+                    ])
+                    speed_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'initial_latitude':speed_events[i]['latitude'],
+                        'initial_longitude':speed_events[i]['longitude'],
+                        'initial_timestamp':speed_events[i]['timestamp'],
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            speed_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'initial_address':speed_events[i]['address'],
+                        'final_latitude':'N/D',
+                        'final_longitude':'N/D',
+                        'final_timestamp':final_timestamp,
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                        'final_address':'N/D',
+                        'speed_duration':speed_duration,
+                        'speed_time':str(timedelta(seconds=speed_duration)),
+                        'speeds':speeds,
+                    })
+            else:
+                if i == len(speed_events)-1 and speed_events[i]['event'] == 'SPEED_START':
+                    speed_duration =  final_timestamp - speed_events[i]['timestamp']
+                    speeds = ([ location.speed for location in locations
+                        if location.speed > speed_limit and
+                            location.timestamp >= speed_events[i]['timestamp'] and
+                            location.timestamp <= final_timestamp
+                    ]),
+                    speed_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'initial_latitude':speed_events[i]['latitude'],
+                        'final_longitude':speed_events[i]['longitude'],
+                        'initial_timestamp':speed_events[i]['timestamp'],
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            speed_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'initial_address':speed_events[i]['address'],
+                        'final_latitude':'N/D',
+                        'final_longitude':'N/D',
+                        'final_timestamp':final_timestamp,
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            final_timestamp,"%d/%m/%Y %H:%M:%S"),
+                        'final_address':'N/D',
+                        'speed_duration':speed_duration,
+                        'speed_time':str(timedelta(seconds=speed_duration)),
+                        'speeds':speeds,
+                    })
+                elif speed_events[i-1]['event'] == 'SPEED_START' and speed_events[i]['event'] == 'SPEED_STOP':
+                    speed_duration = speed_events[i]['timestamp'] - speed_events[i-1]['timestamp']
+                    speeds = ([ location.speed for location in locations
+                        if location.speed > speed_limit and
+                            location.timestamp >= speed_events[i-1]['timestamp'] and
+                            location.timestamp <= speed_events[i]['timestamp']
+                    ])
+                    speed_report.append({
+                        'unit_name':unit.name,
+                        'unit_description':unit.description,
+                        'initial_latitude':speed_events[i-1]['latitude'],
+                        'initial_longitude':speed_events[i-1]['longitude'],
+                        'initial_timestamp':speed_events[i-1]['timestamp'],
+                        'initial_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            speed_events[i-1]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'initial_address':speed_events[i-1]['address'],
+                        'final_latitude':speed_events[i]['latitude'],
+                        'final_longitude':speed_events[i]['longitude'],
+                        'final_timestamp':speed_events[i]['timestamp'],
+                        'final_datetime':time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            speed_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_address':speed_events[i]['address'],
+                        'speed_duration':speed_duration,
+                        'speed_time':str(timedelta(seconds=speed_duration)),
+                        'speeds':speeds,
+                    })
         if len(speed_report) > 0:
             summarization.append({
                 'unit_name': unit.name,

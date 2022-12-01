@@ -113,6 +113,8 @@ DATABASE_ROUTERS = ['segursatgps.router.DBRouter']
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+print(BASE_DIR)
+
 DATABASES = {
     'default': {
         #'ENGINE': 'django.db.backends.sqlite3',
@@ -120,25 +122,24 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'read_default_file': '/srv/segursatgps/segursatgps/my1.cnf',
+            'read_default_file': f'{BASE_DIR}/segursatgps/my1.cnf',
         },
     },
     'history_db': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'read_default_file': '/srv/segursatgps/segursatgps/my2.cnf',
+            'read_default_file': f'{BASE_DIR}/segursatgps/my2.cnf',
         },
     },
     'history_db_replica': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'read_default_file': '/srv/segursatgps/segursatgps/my3.cnf',
+            'read_default_file': f'{BASE_DIR}/segursatgps/my3.cnf',
         },
     },
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
