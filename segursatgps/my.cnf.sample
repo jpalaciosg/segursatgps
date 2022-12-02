@@ -1,6 +1,0 @@
-[client]
-host = # IP OR DOMAIN DATABASE INSTANCE
-database = # DATABASE NAME
-user = # DATABASE USER NAME
-password = # DATABASE PASSWORD
-default-character-set = utf8
