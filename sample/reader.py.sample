@@ -1,0 +1,112 @@
+#!/usr/bin/python3
+
+import pymysql
+import json
+import requests
+from requests.auth import HTTPBasicAuth
+import time
+
+from datetime import datetime
+from pytz import timezone
+
+TRACCAR_DATABASE_INSTANCE = ''
+TRACCAR_DATABASE_USER = ''
+TRACCAR_DATABASE_PASSWORD = ''
+TRACCAR_DATABASE = ''
+
+LOCATION_AMOUNT = 250
+GET_DATA_QUERY = f"SELECT * FROM tc_positions p INNER JOIN tc_devices d ON d.id=p.deviceid WHERE segursatgpsProcess=0 ORDER BY p.devicetime LIMIT {LOCATION_AMOUNT}"
+
+ENDPOINT = '' # http://172.31.64.122:8000/web/api/locations/insert-async-location-batch/
+USER = ''
+PASSWORD = ''
+
+
+while True:
+
+    print("=====================")
+    print("Iniciando query")
+
+    db = pymysql.connect(host=TRACCAR_DATABASE_INSTANCE,
+        user=TRACCAR_DATABASE_USER,
+        password=TRACCAR_DATABASE_PASSWORD,
+        database=TRACCAR_DATABASE,
+        charset='utf8mb4',
+        #cursorclass=pymysql.cursors.DictCursor
+    )
+    cursor = db.cursor()
+    cursor.execute(GET_DATA_QUERY)
+
+    results = cursor.fetchall()
+    locations = []
+
+    for row in results:
+        id = row[0]
+        protocol = row[1]
+        device_time = row[4]
+        device_time = device_time.replace(tzinfo=timezone('UTC'))
+        timestamp = int(datetime.timestamp(device_time))
+        latitude = row[7]
+        longitude = row[8]
+        altitude = row[9]
+        speed = int(row[10])
+        speed = speed * 1.852
+        speed = int(speed)
+        angle = int(row[11])
+        address = str(row[12])
+        attributes = json.loads(row[13])
+        unit_name = row[18]
+        deviceid = row[19]
+        locations.append({
+            'id':id,
+            'protocol':protocol,
+            'unit_name':unit_name,
+            'deviceid':deviceid,
+            'timestamp':timestamp,
+            'latitude':latitude,
+            'longitude':longitude,
+            'altitude':altitude,
+            'speed':speed,
+            'angle':angle,
+            'address':address,
+            'attributes':attributes
+        })
+
+    db.close()
+
+    print(f"Ubicaciones: {len(locations)}")
+
+    if len(locations) == 0:
+        print('Waiting 15 seconds')
+        time.sleep(15)
+    else:
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
+        r = requests.post(
+            ENDPOINT,
+            auth=HTTPBasicAuth(USER,PASSWORD),
+            headers=headers,
+            timeout=60,
+            json=locations,
+        )
+        try:
+            response = r.json()
+            print(response)
+        except:
+            print(r.text)
+        if r.status_code == 200:
+            db = pymysql.connect(host=TRACCAR_DATABASE_INSTANCE,
+                user=TRACCAR_DATABASE_USER,
+                password=TRACCAR_DATABASE_PASSWORD,
+                database=TRACCAR_DATABASE,
+                charset='utf8mb4',
+                #cursorclass=pymysql.cursors.DictCursor
+            )
+            ids = [str(location['id']) for location in locations]
+            ids = ",".join(ids)
+            cursor = db.cursor()
+            query = f"DELETE FROM tc_positions WHERE id IN ({ids})"
+            cursor.execute(query)
+            db.commit()
+            db.close()
+        time.sleep(1)
+
