@@ -775,6 +775,7 @@ class Report:
                             stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
                         elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
                             stop_duration += movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
+                if len(movement_events) == 0: stop_duration = tr['trip_duration']
                 tr['stop_duration'] = stop_duration
                 tr['stop_time'] = str(timedelta(seconds=stop_duration))
                 tr['driving_duration'] = tr['trip_duration'] - stop_duration
@@ -1017,6 +1018,7 @@ class Report:
                             stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
                         elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
                             stop_duration += movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
+                if len(movement_events) == 0: stop_duration = tr['trip_duration']
                 tr['stop_duration'] = stop_duration
                 tr['stop_time'] = str(timedelta(seconds=stop_duration))
                 tr['driving_duration'] = tr['trip_duration'] - stop_duration
