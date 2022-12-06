@@ -6,14 +6,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 
-import json
-
 from .models import Geofence, GeofenceGroup
 from .serializers import GeofenceSerializer,UpdateGeofenceSerializer
 from .forms import GeofenceCreateForm
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
+
+import json
+from geopy.distance import great_circle
 
 gmt_conversor = GMTConversor() #conversor zona horaria
 privilege = Privilege()
@@ -111,6 +112,35 @@ def create_geofence(request):
                 'geojson': e
             }}
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
+        # REDUCIR PUNTOS
+        geojson = json.loads(data['geojson'])
+        if geojson['features'][0]['geometry']['type'] == 'Polygon':
+            coordinates = geojson['features'][0]['geometry']['coordinates'][0]
+            if len(coordinates) > 100:
+                for u in range(len(coordinates)):
+                    if u != 0:
+                        distance = great_circle(
+                            (
+                                coordinates[u-1][1],
+                                coordinates[u-1][0]
+                            ),
+                            (
+                                coordinates[u][1],
+                                coordinates[u][0]
+                            ),
+                        ).meters
+                        if distance < 15:
+                            coordinates[u] = coordinates[u-1]
+                new_coordinates = []
+                for u in range(len(coordinates)):
+                    if u != 0 and coordinates[u] != coordinates[u-1]:
+                        new_coordinates.append(coordinates[u])
+                if new_coordinates[0] != new_coordinates[-1]:
+                    new_coordinates.append(new_coordinates[0])
+                geojson['features'][0]['geometry']['coordinates'][0] = new_coordinates
+                geojson = json.dumps(geojson)
+                data['geojson'] = geojson
+        # FIN - REDUCIR PUNTOS
         serializer.create(data,request)
         response = {
             'status':'OK'

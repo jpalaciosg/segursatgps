@@ -3,7 +3,9 @@ from geopy.distance import great_circle
 from shapely.geometry import Point,shape
 from statistics import mean,median
 from functools import reduce
+from statistics import mean
 import json
+
 
 from locations.models import Location
 from geofences.models import Geofence
@@ -513,16 +515,26 @@ class Report:
             longitude=0.0
         )
         speed_events = self.calculate_unit_speed_events(unit,locations,speed_limit)
-
         for i in range(len(speed_events)):
             if i == 0:
                 if speed_events[i]['event'] == 'SPEED_STOP':
                     speed_duration = speed_events[i]['timestamp'] - initial_timestamp
-                    speeds = ([ location.speed for location in locations
-                        if location.speed > speed_limit and
+                    positions = ([
+                        {'latitude':location.latitude,'longitude':location.longitude,'timestamp':location.timestamp,'speed':location.speed}
+                        for location in locations
+                            if
                             location.timestamp >= initial_timestamp and
-                            location.timestamp <= speed_events[i]['timestamp']
+                            location.timestamp < speed_events[i]['timestamp']
                     ])
+                    distance = sum([
+                        great_circle(
+                            (positions[i-1]['latitude'],positions[i-1]['longitude']),
+                            (positions[i]['latitude'],positions[i]['longitude']),
+                        ).km
+                        for i in range(len(positions))
+                            if i != 0
+                    ])
+                    speeds = [ position['speed'] for position in positions ]
                     speed_report.append({
                         'unit_name':unit.name,
                         'unit_description':unit.description,
@@ -540,15 +552,29 @@ class Report:
                         'final_address':speed_events[i]['address'],
                         'speed_duration':speed_duration,
                         'speed_time':str(timedelta(seconds=speed_duration)),
-                        'speeds':speeds,
+                        'positions':positions,
+                        'distance':round(distance,2),
+                        'mean_speed':round(mean(speeds),2),
+                        'max_speed':round(mean(speeds),2),
                     })
                 elif i == len(speed_events)-1 and speed_events[i]['event'] == 'SPEED_START':
                     speed_duration =  final_timestamp - speed_events[i]['timestamp']
-                    speeds = ([ location.speed for location in locations
-                        if location.speed > speed_limit and
+                    positions = ([
+                        {'latitude':location.latitude,'longitude':location.longitude,'timestamp':location.timestamp,'speed':location.speed}
+                        for location in locations
+                            if
                             location.timestamp >= speed_events[i]['timestamp'] and
-                            location.timestamp <= final_timestamp
+                            location.timestamp < final_timestamp
                     ])
+                    distance = sum([
+                        great_circle(
+                            (positions[i-1]['latitude'],positions[i-1]['longitude']),
+                            (positions[i]['latitude'],positions[i]['longitude']),
+                        ).km
+                        for i in range(len(positions))
+                            if i != 0
+                    ])
+                    speeds = [ position['speed'] for position in positions ]
                     speed_report.append({
                         'unit_name':unit.name,
                         'unit_description':unit.description,
@@ -566,16 +592,30 @@ class Report:
                         'final_address':'N/D',
                         'speed_duration':speed_duration,
                         'speed_time':str(timedelta(seconds=speed_duration)),
-                        'speeds':speeds,
+                        'positions':positions,
+                        'distance':round(distance,2),
+                        'mean_speed':round(mean(speeds),2),
+                        'max_speed':round(mean(speeds),2),
                     })
             else:
                 if i == len(speed_events)-1 and speed_events[i]['event'] == 'SPEED_START':
                     speed_duration =  final_timestamp - speed_events[i]['timestamp']
-                    speeds = ([ location.speed for location in locations
-                        if location.speed > speed_limit and
+                    positions = ([
+                        {'latitude':location.latitude,'longitude':location.longitude,'timestamp':location.timestamp,'speed':location.speed}
+                        for location in locations
+                            if
                             location.timestamp >= speed_events[i]['timestamp'] and
-                            location.timestamp <= final_timestamp
-                    ]),
+                            location.timestamp < final_timestamp
+                    ])
+                    distance = sum([
+                        great_circle(
+                            (positions[i-1]['latitude'],positions[i-1]['longitude']),
+                            (positions[i]['latitude'],positions[i]['longitude']),
+                        ).km
+                        for i in range(len(positions))
+                            if i != 0
+                    ])
+                    speeds = [ position['speed'] for position in positions ]
                     speed_report.append({
                         'unit_name':unit.name,
                         'unit_description':unit.description,
@@ -593,15 +633,29 @@ class Report:
                         'final_address':'N/D',
                         'speed_duration':speed_duration,
                         'speed_time':str(timedelta(seconds=speed_duration)),
-                        'speeds':speeds,
+                        'positions':positions,
+                        'distance':round(distance,2),
+                        'mean_speed':round(mean(speeds),2),
+                        'max_speed':round(mean(speeds),2),
                     })
                 elif speed_events[i-1]['event'] == 'SPEED_START' and speed_events[i]['event'] == 'SPEED_STOP':
                     speed_duration = speed_events[i]['timestamp'] - speed_events[i-1]['timestamp']
-                    speeds = ([ location.speed for location in locations
-                        if location.speed > speed_limit and
+                    positions = ([
+                        {'latitude':location.latitude,'longitude':location.longitude,'timestamp':location.timestamp,'speed':location.speed}
+                        for location in locations
+                            if
                             location.timestamp >= speed_events[i-1]['timestamp'] and
-                            location.timestamp <= speed_events[i]['timestamp']
+                            location.timestamp < speed_events[i]['timestamp']
                     ])
+                    distance = sum([
+                        great_circle(
+                            (positions[i-1]['latitude'],positions[i-1]['longitude']),
+                            (positions[i]['latitude'],positions[i]['longitude']),
+                        ).km
+                        for i in range(len(positions))
+                            if i != 0
+                    ])
+                    speeds = [ position['speed'] for position in positions ]
                     speed_report.append({
                         'unit_name':unit.name,
                         'unit_description':unit.description,
@@ -619,8 +673,14 @@ class Report:
                         'final_address':speed_events[i]['address'],
                         'speed_duration':speed_duration,
                         'speed_time':str(timedelta(seconds=speed_duration)),
-                        'speeds':speeds,
+                        'positions':positions,
+                        'distance':round(distance,2),
+                        'mean_speed':round(mean(speeds),2),
+                        'max_speed':round(mean(speeds),2),
                     })
+        # LIMPIAR ITEMS CON SOLO UNA VELOCIDAD
+        speed_report = [ sr for sr in speed_report if len(sr['positions']) > 1 ]
+        # fin - LIMPIAR ITEMS CON SOLO UNA VELOCIDAD
         if len(speed_report) > 0:
             summarization.append({
                 'unit_name': unit.name,
@@ -629,7 +689,7 @@ class Report:
                     initial_timestamp,"%d/%m/%Y %H:%M:%S"),
                 'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
                     final_timestamp,"%d/%m/%Y %H:%M:%S"),
-                'number_of_speeds': len(speed_report)
+                'number_of_speeds': len(speed_report),
             })
         return {
             'speed_report': speed_report,
@@ -775,6 +835,7 @@ class Report:
                             stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
                         elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
                             stop_duration += movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
+                if len(movement_events) == 0: stop_duration = tr['trip_duration']
                 tr['stop_duration'] = stop_duration
                 tr['stop_time'] = str(timedelta(seconds=stop_duration))
                 tr['driving_duration'] = tr['trip_duration'] - stop_duration
@@ -1017,6 +1078,7 @@ class Report:
                             stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
                         elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
                             stop_duration += movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
+                if len(movement_events) == 0: stop_duration = tr['trip_duration']
                 tr['stop_duration'] = stop_duration
                 tr['stop_time'] = str(timedelta(seconds=stop_duration))
                 tr['driving_duration'] = tr['trip_duration'] - stop_duration
