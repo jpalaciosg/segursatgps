@@ -357,6 +357,73 @@ class RenderReport:
             }
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
 
+    def render_geofence_long_speed_report(self,request):
+        data = request.data
+        serializer = report_serializers.ReportSerializer(data=data)
+        if serializer.is_valid():
+            try:
+                initial_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['initial_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+                final_timestamp = time_conversor.convert_local_datetimestr_to_utc_timestamp(
+                    data['final_datetime'],
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            except Exception as e:
+                error = {
+                    'detail':str(e)
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            if final_timestamp - initial_timestamp > 2678400:
+                error = {
+                    'detail': 'Report time range exceeded.'
+                }
+                return Response(error,status=status.HTTP_400_BAD_REQUEST)
+            units = privilege.get_units(request)
+            geofences = Geofence.objects.filter(account=request.user.profile.account)
+            if int(data['unitid']) == 0:
+                speed_report = []
+                summarization = []
+                for unit in units:
+                    unit_speed_report = report.generate_geofence_long_speed_report(
+                        unit,
+                        initial_timestamp,
+                        final_timestamp,
+                        geofences,
+                    )
+                    for usr in unit_speed_report['speed_report']:
+                        speed_report.append(usr)
+                    for usr in unit_speed_report['summarization']:
+                        summarization.append(usr)
+                response = {
+                    'speed_report':speed_report,
+                    'summarization':summarization,
+                }
+                return Response(response,status=status.HTTP_200_OK)
+            else:
+                try:
+                    unit = self.__get_unit(units,int(data['unitid']))
+                except Exception as e:
+                    error = {
+                        'detail':str(e)
+                    }
+                    return Response(error,status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    report.generate_geofence_long_speed_report(
+                        unit,
+                        initial_timestamp,
+                        final_timestamp,
+                        geofences,
+                    ),
+                    status=status.HTTP_200_OK
+                )
+        else:
+            error = {
+                'errors':serializer.errors
+            }
+            return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
     def render_trip_report1(self,request):
         data = request.data
         serializer = report_serializers.TripReportSerializer(data=data)
