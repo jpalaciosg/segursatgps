@@ -14,6 +14,8 @@ class GeofenceSerializer(serializers.ModelSerializer):
 
 class UpdateGeofenceSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
-    description = serializers.CharField()
+    description = serializers.CharField(allow_blank=True)
     geojson = serializers.JSONField()
     show_geofence_on_map = serializers.BooleanField()
+    enable_speed = serializers.BooleanField()
+    speed = serializers.IntegerField(min_value=0)

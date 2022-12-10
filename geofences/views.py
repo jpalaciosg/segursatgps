@@ -26,13 +26,6 @@ def geofences_view(request):
     if privilege.view_geofences(request) == False:
         return HttpResponse("<h1>Acceso restringido</h1>",status=403)
     # fin - verificar privilegios
-    geofences = Geofence.objects.filter(account=request.user.profile.account)
-    for geofence in geofences:
-        try:
-            geofence.created = gmt_conversor.convert_localtimetoutc(geofence.created)
-            geofence.modified = gmt_conversor.convert_localtimetoutc(geofence.modified)
-        except Exception as e:
-            print(e)
     disable_navbar = request.GET.get('disablenavbar',None)
     try:
         disable_navbar = bool(int(disable_navbar))
@@ -40,7 +33,6 @@ def geofences_view(request):
         disable_navbar = False
     navbar = not disable_navbar
     return render(request,'geofences/geofences.html',{
-        'geofences':geofences,
         'navbar':navbar,
     })
 
@@ -74,8 +66,10 @@ def get_geofences(request):
         geofences = Geofence.objects.filter(account=request.user.profile.account)
         serializer = GeofenceSerializer(geofences,many=True)
         data = serializer.data
-        for item in data:
-            item['geojson'] = json.loads(item['geojson'])
+        for i in range(len(data)):
+            data[i]['geojson'] = json.loads(data[i]['geojson'])
+            data[i]['created'] = gmt_conversor.convert_utctolocaltime(geofences[i].modified).strftime("%d/%m/%Y %H:%M:%S")
+            data[i]['modified'] = gmt_conversor.convert_utctolocaltime(geofences[i].created).strftime("%d/%m/%Y %H:%M:%S")
         return Response(data,status=status.HTTP_200_OK)
     except Exception as e:
         error = {'detail':str(e)}
@@ -166,6 +160,8 @@ def update_geofence(request,id):
         geofence.description = data['description']
         geofence.geojson = data['geojson']
         geofence.show_geofence_on_map = data['show_geofence_on_map']
+        geofence.enable_speed = data['enable_speed']
+        geofence.speed = data['speed']
         geofence.save()
         return Response(data,status=status.HTTP_200_OK)
     else:
