@@ -103,7 +103,7 @@ def create_geofence(request):
             geojson = json.loads(data['geojson'])
         except Exception as e:
             error = {'errors':{
-                'geojson': e
+                'geojson': str(e)
             }}
             return Response(error,status=status.HTTP_400_BAD_REQUEST)
         # REDUCIR PUNTOS
