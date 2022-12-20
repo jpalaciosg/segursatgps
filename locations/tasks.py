@@ -10,7 +10,7 @@ from common.device_reader import DeviceReader
 from common.alert_reader import AlertReader
 from common.alert_reader_without_notification import AlertReaderWithoutNotification
 from common.gmt_conversor import GMTConversor
-from common.repository import Repository
+from common.position_store import PositionStore
 
 from datetime import datetime
 from geopy.distance import great_circle
@@ -22,56 +22,6 @@ import redis
 import requests
 
 gmt_conversor = GMTConversor() #conversor zona horaria
-repository = Repository()
-
-@celery_app.task
-def insert_location_in_history(data):
-    # INTRODUCIR UBICACION EN EL HISTORICO
-    """
-    try:
-        repository.write(data)
-    except Exception as e:
-        print(e)
-    """
-    try:
-        Location.objects.create(
-            unitid = data['unit_id'],
-            protocol= data['protocol'],
-            timestamp = data['timestamp'],
-            latitude = data['latitude'],
-            longitude = data['longitude'],
-            altitude = data['altitude'],
-            angle = data['angle'],
-            speed = data['speed'],
-            attributes = json.dumps(data['attributes']),
-            address = data['address'],
-            reference = data['unit_name']
-        )
-    except Exception as e:
-        print(e)
-    # FIN - INTRODUCIR UBICACION EN EL HISTORICO
-    # INTRODUCIR UBICACION SUTRAN
-    if data['sutran_process']:
-        try:
-            event = 'EN' if int(data['speed'] > 0) else 'PA'
-            timestamp = data['timestamp']
-            device_datetime = datetime.utcfromtimestamp(timestamp)
-            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-            speed = 95 if int(data['speed']) > 95 else data['speed']
-            SutranLocation.objects.create(
-                unit_name = data['unit_name'],
-                latitude = data['latitude'],
-                longitude = data['longitude'],
-                angle = data['angle'],
-                speed = speed,
-                event = event,
-                device_datetime = device_datetime,
-                server_datetime = gmt_conversor.convert_utctolocaltime(datetime.utcnow()),
-            )
-        except Exception as e:
-            print(e)
-    # FIN - INTRODUCIR UBICACION SUTRAN
-    return True
 
 @celery_app.task
 def insert_location_in_history2(data):
@@ -96,97 +46,10 @@ def insert_location_in_history2(data):
     return True
 
 @celery_app.task
-def process_alert(data):
-    try:
-        unit = Device.objects.get(uniqueid=data['deviceid'])
-    except:
-        unit = None
-    if unit:
-        alert_reader = AlertReader(unit)
-        alert_reader.run()
-        del alert_reader
-    return True
-
-@celery_app.task
 def process_alert_without_notification(data):
     alert_reader = AlertReaderWithoutNotification(data['deviceid'])
     alert_reader.run()
     del alert_reader
-    return True
-
-@celery_app.task
-def process_alerts_for_the_alert_center(data):
-    try:
-        unit = Device.objects.get(uniqueid=data['deviceid'])
-    except:
-        unit = None
-    if unit:
-        device_reader = DeviceReader(unit)
-        panic_event = device_reader.detect_panic_event(data['current_location'])
-        battery_event = device_reader.detect_battery_disconnection_event(data['current_location'],data['previous_location'])
-        geofence_exit_event = False
-        if data['current_location']['account'] == '20603017847':
-            try:
-                account = Account.objects.get(name='20603017847') # cuenta hng_inversiones
-                geofence = Geofence.objects.get(name='ZONA AUTORIZADA LIMA',account=account)
-                geojson = json.loads(geofence.geojson)
-                s = shape(geojson['features'][0]['geometry'])
-                point1 = Point(data['current_location']['longitude'],data['current_location']['latitude'])
-                point2 = Point(data['previous_location']['longitude'],data['previous_location']['latitude'])
-                if s.contains(point2) == True and s.contains(point1) == False:
-                    geofence_exit_event = True
-            except Exception as e:
-                pass
-        if battery_event:
-            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-            payload = {
-                #'group': data['current_location']['account'].upper(),
-                'group': data['current_location']['account_description'].upper(),
-                'license_plate': data['current_location']['unit_name'],
-                'device_datetime': device_datetime_str,
-                'latitude': data['current_location']['latitude'],
-                'longitude': data['current_location']['longitude'],
-                'speed': data['current_location']['speed'],
-                'angle': data['current_location']['angle'],
-                'alert_type': "ALERTA DE BATERIA - NP"
-            }
-            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
-        if panic_event:
-            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-            payload = {
-                #'group': data['current_location']['account'].upper(),
-                'group': data['current_location']['account_description'].upper(),
-                'license_plate': data['current_location']['unit_name'],
-                'device_datetime': device_datetime_str,
-                'latitude': data['current_location']['latitude'],
-                'longitude': data['current_location']['longitude'],
-                'speed': data['current_location']['speed'],
-                'angle': data['current_location']['angle'],
-                'alert_type': "ALERTA DE PANICO - NP"
-            }
-            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
-        if geofence_exit_event:
-            device_datetime = datetime.fromtimestamp(data['current_location']['timestamp'])
-            device_datetime = gmt_conversor.convert_utctolocaltime(device_datetime)
-            device_datetime_str = device_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-            payload = {
-                'group': data['current_location']['account_description'].upper(),
-                'license_plate': data['current_location']['unit_name'],
-                'device_datetime': device_datetime_str,
-                'latitude': data['current_location']['latitude'],
-                'longitude': data['current_location']['longitude'],
-                'speed': data['current_location']['speed'],
-                'angle': data['current_location']['angle'],
-                'alert_type': "ALERTA DE SALIDA DE GEOCERCA HNG_INVERSIONES - NP"
-            }
-            redis_client = redis.StrictRedis(host='localhost',port=6379,db=0)
-            redis_client.rpush('ssatAlertQueue', json.dumps(payload))
     return True
 
 @celery_app.task
@@ -320,12 +183,8 @@ def process_location_in_background(data):
                 # INSERTAR UBICACION EN EL HISTORICO
                 data['unit_id'] = unit.id
                 data['unit_name'] = unit.name
-                """
-                try:
-                    repository.write(data)
-                except Exception as e:
-                    print(e)
-                """
+                data['account_id'] = unit.account.id
+                data['account_name'] = unit.account.name
                 try:
                     Location.objects.create(
                         unitid = data['unit_id'],
@@ -364,6 +223,10 @@ def process_location_in_background(data):
                     except Exception as e:
                         print(f"ERROR SUTRAN: {str(e)}")
                 # FIN - INSERTAR EN LA TABLA SUTRAN
+                # INSERTAR DATA EN POSITIONDB
+                position_store = PositionStore()
+                position_store.write(data)
+                # FIN - INSERTAR DATA EN POSITIONDB
                 # DETECTAR ALERTAS
                 alert_reader = AlertReader(unit)
                 alert_reader.run()
@@ -428,6 +291,13 @@ def process_location_in_background(data):
                                         }
                                     }
                                 )
+                            # INSERTAR DATA EN POSITIONDB - HIJO
+                            data2 = data
+                            data2['account_id'] = unit.child.account.id
+                            data2['account_name'] = unit.child.account.name
+                            position_store = PositionStore()
+                            position_store.write(data2)
+                            # FIN - INSERTAR DATA EN POSITIONDB - HIJO
                 # FIN - REPLICA INTERNA
                 # PROCESAR ALERTAS PARA LA CENTRAL
                 device_reader = DeviceReader(unit)
@@ -586,6 +456,8 @@ def process_thirdparty_location_in_background(data):
             # INSERTAR UBICACION EN EL HISTORICO
             data['unit_id'] = unit.id
             data['unit_name'] = unit.name
+            data['account_id'] = unit.account.id
+            data['account_name'] = unit.account.name
             try:
                 Location.objects.create(
                     unitid = data['unit_id'],
@@ -603,6 +475,10 @@ def process_thirdparty_location_in_background(data):
             except Exception as e:
                 print(e)
             # FIN - INSERTAR UBICACION EN EL HISTORICO
+            # INSERTAR DATA EN POSITIONDB
+            position_store = PositionStore()
+            position_store.write(data)
+            # FIN - INSERTAR DATA EN POSITIONDB
             # DETECTAR ALERTAS
             alert_reader = AlertReader(unit)
             alert_reader.run()
