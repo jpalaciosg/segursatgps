@@ -4,7 +4,6 @@ from datetime import datetime
 import json
 
 class PositionStore:
-    #global datetime,connections
     def write(self,data):
         try:
             protocol = data['protocol']
@@ -16,7 +15,7 @@ class PositionStore:
             altitude = data['altitude']
             angle = data['angle']
             speed = data['speed']
-            attributes = data['attributes']
+            attributes = json.dumps(data['attributes'])
             address = data['address']
             reference_unit_name = data['unit_name']
             reference_account_name = data['account_name']
@@ -31,23 +30,11 @@ class PositionStore:
             #print(query)
             cursor = connections['positiondb'].cursor()
             cursor.execute(query)
-        except:
+        except Exception as e:
+            """
+            f = open('/tmp/positionstore.log','a')
+            f.write(str(e))
+            f.write('\n')
+            f.close()
+            """
             pass
-"""
-position_store = PositionStore()
-position_store.write({
-    'protocol': 'generic',
-    'unit_id': 1,
-    'account_id': 1,
-    'timestamp': 1671504459,
-    'latitude': 0.0,
-    'longitude': 0.0,
-    'altitude': 0,
-    'angle': 0,
-    'speed': 0,
-    'attributes': '{}',
-    'address': '',
-    'unit_name': 'PRUEBA',
-    'account_name': 'pruebas',
-})
-"""
