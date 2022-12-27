@@ -837,7 +837,8 @@ class Report:
                             speed_report.append({
                                 'unit_name':unit.name,
                                 'unit_description':unit.description,
-                                'geofence':geofence.name,
+                                'geofence_name':geofence.name,
+                                'geofence_speed':geofence.speed,
                                 'initial_latitude':new_positions[0]['latitude'],
                                 'initial_longitude':new_positions[0]['longitude'],
                                 'initial_timestamp':gr['initial_timestamp'],
@@ -859,16 +860,16 @@ class Report:
                                 'trespass_level':'LEVE',
                             })
         if len(speed_report) > 0:
-            sumarization_geofences = list(dict.fromkeys([ sr['geofence'] for sr in speed_report ]))
+            sumarization_geofences = list(dict.fromkeys([ sr['geofence_name'] for sr in speed_report ]))
             for summarization_geofence in sumarization_geofences:
                 speed_counter = 0
                 for sr in speed_report:
-                    if sr['geofence'] == summarization_geofence:
+                    if sr['geofence_name'] == summarization_geofence:
                         speed_counter +=1
                 summarization.append({
                     'unit_name': unit.name,
                     'unit_description': unit.description,
-                    'geofence': summarization_geofence,
+                    'geofence_name': summarization_geofence,
                     'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
                         initial_timestamp,"%d/%m/%Y %H:%M:%S"),
                     'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
