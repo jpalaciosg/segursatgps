@@ -293,6 +293,7 @@ def process_location_in_background(data):
                                 )
                             # INSERTAR DATA EN POSITIONDB - HIJO
                             data2 = data
+                            data2['unit_id'] = unit.child.id
                             data2['account_id'] = unit.child.account.id
                             data2['account_name'] = unit.child.account.name
                             position_store = PositionStore()
