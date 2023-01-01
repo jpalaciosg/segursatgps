@@ -22,6 +22,9 @@ class PositionStore:
             reference_account_name = data['account_name']
             date_str = datetime.utcfromtimestamp(timestamp).strftime("%Y%m%d")
             table_name = f"d{date_str}"
+            # limpiar strings
+            address = address.replace("'","\'\'")
+            # fin - limpiar strings
             query = (
                 f"INSERT INTO {table_name}"
                 "(protocol,unitid,accountid,timestamp,latitude,longitude,altitude,speed,angle,attributes,address,reference_unit_name,reference_account_name)"
