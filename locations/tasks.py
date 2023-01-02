@@ -78,11 +78,12 @@ def process_location_in_background(data):
                     'address':unit.last_address
                 }
                 # CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
+                data['original_timestamp'] = data['timestamp']
                 ts = int(datetime.utcnow().timestamp())
                 ts_offset = ts - data['timestamp']
                 if ts_offset > 31536000:
                     data['timestamp'] = ts
-                if ts_offset < -600:
+                if ts_offset < -1200:
                     return True
                 # FIN - CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
                 # CAMBIAR VELOCIDAD SI ES MAYOR A 95 PARA CIVA
@@ -364,6 +365,7 @@ def process_thirdparty_location_in_background(data):
                 'address':unit.last_address
             }
             # CAMBIAR TIMESTAMP SI TIENE MAS DE 1 AÑO DE ANTIGUEDAD
+            data['original_timestamp'] = data['timestamp']
             ts = int(datetime.utcnow().timestamp())
             ts_offset = ts - data['timestamp']
             if ts_offset > 31536000:
