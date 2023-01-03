@@ -144,6 +144,13 @@ DATABASES = {
             'read_default_file': f'{BASE_DIR}/segursatgps/my4.cnf',
         },
     },
+    'positiondb_replica': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'read_default_file': f'{BASE_DIR}/segursatgps/my5.cnf',
+        },
+    },
 }
 
 # Password validation
