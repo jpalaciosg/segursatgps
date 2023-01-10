@@ -25,6 +25,17 @@ class RenderReport:
                 pass
         return unit
 
+    def __replace_id_in_children(self,units):
+        for unit in units:
+            if unit.is_child:
+                try:
+                    parent = Device.objects.get(child__id=unit.id)
+                    unit.id = parent.id
+                except Exception as e:
+                    pass
+        return units
+            
+
     def render_detailed_report(self,request):
         data = request.data
         serializer = report_serializers.ReportSerializer(data=data)
@@ -188,6 +199,7 @@ class RenderReport:
                 harsh_driving_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_harsh_driving_report = report.generate_driving_style_report(
                         unit,
                         initial_timestamp,
@@ -253,6 +265,7 @@ class RenderReport:
                 speed_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_speed_report = report.generate_speed_report(
                         unit,
                         initial_timestamp,
@@ -319,6 +332,7 @@ class RenderReport:
                 speed_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_speed_report = report.generate_long_speed_report(
                         unit,
                         initial_timestamp,
@@ -386,6 +400,7 @@ class RenderReport:
                 speed_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_speed_report = report.generate_geofence_long_speed_report(
                         unit,
                         initial_timestamp,
@@ -452,6 +467,7 @@ class RenderReport:
                 trip_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_trip_report = report.generate_trip_report1(
                         unit,
                         initial_timestamp,
@@ -518,6 +534,7 @@ class RenderReport:
                 trip_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_trip_report = report.generate_trip_report2(
                         unit,
                         initial_timestamp,
@@ -584,6 +601,7 @@ class RenderReport:
                 total_mileage = []
                 mileage_by_date = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_mileage_report = report.generate_mileage_report(
                         unit,
                         initial_timestamp,
@@ -662,6 +680,7 @@ class RenderReport:
             if int(data['unitid']) == 0:
                 geofence_report = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_geofence_report =report.generate_geofence_report(
                         unit,
                         initial_timestamp,
@@ -723,6 +742,7 @@ class RenderReport:
                 stop_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_stop_report = report.generate_stop_report(
                         unit,
                         initial_timestamp,
@@ -791,6 +811,7 @@ class RenderReport:
                 temperature_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_temperature_report = report.generate_temperature_report(
                         unit,
                         initial_timestamp,
@@ -855,6 +876,7 @@ class RenderReport:
                 hours_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_hours_report = report.generate_hours_report(
                         unit,
                         initial_timestamp,
@@ -919,6 +941,7 @@ class RenderReport:
                 telemetry_report = []
                 summarization = []
                 for unit in units:
+                    unit = self.__get_unit(units,unit.id)
                     unit_telemetry_report = report.generate_telemetry_report(
                         unit,
                         initial_timestamp,
@@ -990,6 +1013,7 @@ class RenderReport:
             harsh_driving_report = []
             summarization = []
             for unit in units:
+                unit = self.__get_unit(units,unit.id)
                 unit_harsh_driving_report = report.generate_driving_style_report(
                     unit,
                     initial_timestamp,
@@ -1045,6 +1069,7 @@ class RenderReport:
             speed_report = []
             summarization = []
             for unit in units:
+                unit = self.__get_unit(units,unit.id)
                 unit_speed_report = report.generate_speed_report(
                     unit,
                     initial_timestamp,
@@ -1101,6 +1126,7 @@ class RenderReport:
             trip_report = []
             summarization = []
             for unit in units:
+                unit = self.__get_unit(units,unit.id)
                 unit_trip_report = report.generate_trip_report1(
                     unit,
                     initial_timestamp,
@@ -1157,6 +1183,7 @@ class RenderReport:
             trip_report = []
             summarization = []
             for unit in units:
+                unit = self.__get_unit(units,unit.id)
                 unit_trip_report = report.generate_trip_report2(
                     unit,
                     initial_timestamp,
@@ -1214,6 +1241,7 @@ class RenderReport:
             stop_report = []
             summarization = []
             for unit in units:
+                unit = self.__get_unit(units,unit.id)
                 unit_stop_report = report.generate_stop_report(
                     unit,
                     initial_timestamp,
@@ -1271,6 +1299,7 @@ class RenderReport:
             total_mileage = []
             mileage_by_date = []
             for unit in units:
+                unit = self.__get_unit(units,unit.id)
                 unit_mileage_report = report.generate_mileage_report(
                     unit,
                     initial_timestamp,
@@ -1340,6 +1369,7 @@ class RenderReport:
             units = group.units.all()
             geofence_report = []
             for unit in units:
+                unit = self.__get_unit(units,unit.id)
                 unit_geofence_report =report.generate_geofence_report(
                     unit,
                     initial_timestamp,
