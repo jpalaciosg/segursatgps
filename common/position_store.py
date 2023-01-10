@@ -64,16 +64,20 @@ class PositionStore:
             try:
                 timestamp1 = int(datetime.timestamp(dr[0]))
                 timestamp2 = int(datetime.timestamp(dr[1]))
-                year = dr[0].year
-                month = dr[0].month
-                day = dr[0].day
+                year = str(dr[0].year)
+                month = str(dr[0].month)
+                day = str(dr[0].day)
+                month = '0'+month if len(month) == 1 else month
+                day = '0'+day if len(day) == 1 else day
                 table_name = f"d{year}{month}{day}"
                 query = (
                     f"SELECT * FROM {table_name} "
                     f"WHERE unitid={unitid} AND accountid={accountid} AND "
-                    f"timestamp>={timestamp1} AND timestamp<{timestamp2}"
+                    f"timestamp>={timestamp1} AND timestamp<{timestamp2} "
+                    f"ORDER BY timestamp"
                 )
-                cursor = connections['positiondb'].cursor()
+                #print(query)
+                cursor = connections['positiondb_replica'].cursor()
                 cursor.execute(query)
                 headers = [x[0] for x in cursor.description]
                 result = cursor.fetchall()
