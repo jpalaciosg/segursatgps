@@ -13,9 +13,11 @@ from locations import serializers as locations_serializers
 from common.gmt_conversor import GMTConversor
 from common.time_conversor import TimeConversor
 from common.device_reader import DeviceReader
+from common.position_store import PositionStore
 
 gmt_conversor = GMTConversor()
 time_conversor = TimeConversor()
+position_store = PositionStore()
 
 class Report:
 
@@ -304,48 +306,36 @@ class Report:
         }
 
     def generate_detailed_report(self,unit,initial_timestamp,final_timestamp):
-        locations = Location.objects.using('history_db_replica').filter(
-            unitid=unit.id,
-            timestamp__gte=initial_timestamp,
-            timestamp__lt=final_timestamp
-        ).order_by('timestamp').exclude(
-            latitude=0.0,
-            longitude=0.0
-        )
-        serializer = locations_serializers.LocationSerializer(locations,many=True)
         device_reader = DeviceReader(unit)
-        data = serializer.data
+        data = position_store.read(unit.id,unit.account.id,initial_timestamp,final_timestamp)
+        detailed_report = []
         for i in range(len(data)):
-            data[i]['unit_name'] = unit.name
-            data[i]['unit_description'] = unit.description
-            data[i]['datetime'] = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+            dt = time_conversor.convert_utc_timestamp_to_local_datetimestr(
                 data[i]['timestamp'],"%d/%m/%Y %H:%M:%S")
             try:
                 attributes = json.loads(data[i]['attributes'])
             except:
                 attributes = {}
-            data[i]['attributes'] = attributes
-            data[i]['ignition'] = device_reader.detect_ignition_event({
+            ignition = device_reader.detect_ignition_event({
                 'attributes':attributes
             })
-            data[i]['odometer'] = device_reader.get_odometer({
+            odometer = device_reader.get_odometer({
                 'attributes':attributes
             })
-            if i == 0:
-                data[i]['distance'] = 0.0
-            else:
-                distance = great_circle(
-                    (
-                        data[i-1]['latitude'],
-                        data[i-1]['longitude']
-                    ),
-                    (
-                        data[i]['latitude'],
-                        data[i]['longitude']
-                    ),
-                ).km
-                data[i]['distance'] = round(distance,2)
-        return data
+            detailed_report.append({
+                'unit_name': unit.name,
+                'unit_description': unit.description,
+                'datetime': dt,
+                'latitude': data[i]['latitude'],
+                'longitude': data[i]['longitude'],
+                'altitude': data[i]['altitude'],
+                'angle': data[i]['angle'],
+                'speed': data[i]['speed'],
+                'odometer': odometer,
+                'ignition': ignition,
+                'address': data[i]['address'],
+            })
+        return detailed_report
 
     def generate_extended_detailed_report(self,unit,initial_timestamp,final_timestamp):
         locations = Location.objects.using('history_db_replica').filter(
@@ -535,6 +525,11 @@ class Report:
                         'longitude': movement_events[i]['longitude'],
                         'stop_duration': stop_duration,
                         'stop_time': str(timedelta(seconds=stop_duration)),
+                        'initial_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+                        'final_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+
                     })
                 elif  i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
                     stop_duration = final_timestamp - movement_events[i]['timestamp']
@@ -544,6 +539,10 @@ class Report:
                         'longitude': movement_events[i]['longitude'],
                         'stop_duration': stop_duration,
                         'stop_time': str(timedelta(seconds=stop_duration)),
+                        'initial_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            final_timestamp,"%d/%m/%Y %H:%M:%S"),
                     })
             else:
                 if i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
@@ -554,6 +553,10 @@ class Report:
                         'longitude': movement_events[i]['longitude'],
                         'stop_duration': stop_duration,
                         'stop_time': str(timedelta(seconds=stop_duration)),
+                        'initial_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            final_timestamp,"%d/%m/%Y %H:%M:%S"),
                     })
                 elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
                     stop_duration = movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
@@ -563,6 +566,10 @@ class Report:
                         'longitude': movement_events[i-1]['longitude'],
                         'stop_duration': stop_duration,
                         'stop_time': str(timedelta(seconds=stop_duration)),
+                        'initial_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i-1]['timestamp'],"%d/%m/%Y %H:%M:%S"),
+                        'final_stop_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                            movement_events[i]['timestamp'],"%d/%m/%Y %H:%M:%S"),
                     })
         #print(stop_report)
         for item in data:
@@ -571,6 +578,8 @@ class Report:
                     item['is_stop'] = True
                     item['stop_duration'] = sr['stop_duration']
                     item['stop_time'] = sr['stop_time']
+                    item['initial_stop_datetime'] = sr['initial_stop_datetime']
+                    item['final_stop_datetime'] = sr['final_stop_datetime']
                     break
         return data
 
@@ -1622,11 +1631,33 @@ class Report:
             for sr in stop_report:
                 matching_geofences = []
                 for geofence in geofences:
-                    feature = json.loads(geofence.geojson)['features'][0]
-                    s = shape(feature['geometry'])
-                    point = Point(sr['longitude'],sr['latitude'])
-                    if s.contains(point):
-                        matching_geofences.append(geofence.name)
+                    try:
+                        geojson = json.loads(geofence.geojson)
+                        if 'radius' in geojson['features'][0]['properties']:
+                            lat = geojson['features'][0]['geometry']['coordinates'][1]
+                            lon = geojson['features'][0]['geometry']['coordinates'][0]
+                            radius = geojson['features'][0]['properties']['radius']
+                            distance = great_circle(
+                                (
+                                    lat,
+                                    lon,
+                                ),
+                                (
+                                    sr['latitude'],
+                                    sr['longitude'],
+                                ),
+                            ).meters
+                            #print(distance)
+                            if distance < radius:
+                                matching_geofences.append(geofence.name)
+                        else:
+                            feature = geojson['features'][0]
+                            s = shape(feature['geometry'])
+                            point = Point(sr['longitude'],sr['latitude'])
+                            if s.contains(point):
+                                matching_geofences.append(geofence.name)
+                    except Exception as e:
+                        print(e)
                 geofence_str = ""
                 for i in range(len(matching_geofences)):
                     if i==0:
