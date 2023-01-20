@@ -7,8 +7,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 
 from .models import Geofence, GeofenceGroup
-from .serializers import GeofenceSerializer,UpdateGeofenceSerializer
-from .forms import GeofenceCreateForm
+from .serializers import GeofenceSerializer,UpdateGeofenceSerializer,GeofenceGroupSerializer
 
 from common.gmt_conversor import GMTConversor
 from common.privilege import Privilege
@@ -181,5 +180,70 @@ def delete_geofence(request,id):
     response = {
         'status': 'OK',
         'description': 'Geofence was deleted.',
+    }
+    return Response(response,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_geofence_groups(request):
+    try:
+        geofence_groups = GeofenceGroup.objects.filter(account=request.user.profile.account)
+        serializer = GeofenceGroupSerializer(geofence_groups,many=True)
+        data = serializer.data
+        for i in range(len(data)):
+            data[i]['created'] = gmt_conversor.convert_utctolocaltime(geofence_groups[i].modified).strftime("%d/%m/%Y %H:%M:%S")
+            data[i]['modified'] = gmt_conversor.convert_utctolocaltime(geofence_groups[i].created).strftime("%d/%m/%Y %H:%M:%S")
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        error = {'detail':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_geofence_group(request,id):
+    try:
+        geofence_group = GeofenceGroup.objects.get(id=id,account=request.user.profile.account)
+        serializer = GeofenceGroupSerializer(geofence_group,many=False)
+        data = serializer.data
+        return Response(data,status=status.HTTP_200_OK)
+    except Exception as e:
+        error = {'detail':str(e)}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+def update_geofence_group(request,id):
+    data = request.data
+    try:
+        geofence_group = GeofenceGroup.objects.get(id=id,account=request.user.profile.account)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    serializer = GeofenceGroupSerializer(geofence_group,data=data,partial=True)
+    if serializer.is_valid():
+        data = serializer.validated_data
+        non_updatable_fields = ['modified','created']
+        for key in data:
+            if key not in non_updatable_fields:
+                setattr(geofence_group,key,data[key])
+        geofence_group.save()
+        response = GeofenceSerializer(geofence_group,many=False).data
+        return Response(response,status=status.HTTP_200_OK)
+    else:
+        error = {'errors':serializer.errors}
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+def delete_geofence_group(request,id):
+    try:
+        geofence_group = GeofenceGroup.objects.get(id=id,account=request.user.profile.account)
+    except Exception as e:
+        error = {
+            'detail': str(e)
+        }
+        return Response(error,status=status.HTTP_400_BAD_REQUEST)
+    geofence_group.delete()
+    response = {
+        'status': 'OK',
+        'description': 'GeofenceGroup was deleted.',
     }
     return Response(response,status=status.HTTP_200_OK)
