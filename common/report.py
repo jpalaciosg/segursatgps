@@ -305,6 +305,7 @@ class Report:
             'summarization': summarization
         }
 
+    """
     def generate_detailed_report(self,unit,initial_timestamp,final_timestamp):
         device_reader = DeviceReader(unit)
         data = position_store.read(unit.id,unit.account.id,initial_timestamp,final_timestamp)
@@ -336,6 +337,197 @@ class Report:
                 'address': data[i]['address'],
             })
         return detailed_report
+    """
+    def generate_detailed_report(self,unit,initial_timestamp,final_timestamp):
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        serializer = locations_serializers.LocationSerializer(locations,many=True)
+        device_reader = DeviceReader(unit)
+        data = serializer.data
+        for i in range(len(data)):
+            data[i]['unit_name'] = unit.name
+            data[i]['unit_description'] = unit.description
+            data[i]['datetime'] = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                data[i]['timestamp'],"%d/%m/%Y %H:%M:%S")
+            try:
+                attributes = json.loads(data[i]['attributes'])
+            except:
+                attributes = {}
+            data[i]['attributes'] = attributes
+            data[i]['ignition'] = device_reader.detect_ignition_event({
+                'attributes':attributes
+            })
+            data[i]['odometer'] = device_reader.get_odometer({
+                'attributes':attributes
+            })
+            if i == 0:
+                data[i]['distance'] = 0.0
+            else:
+                distance = great_circle(
+                    (
+                        data[i-1]['latitude'],
+                        data[i-1]['longitude']
+                    ),
+                    (
+                        data[i]['latitude'],
+                        data[i]['longitude']
+                    ),
+                ).km
+                data[i]['distance'] = round(distance,2)
+        return data
+
+    def generate_extended_detailed_report(self,unit,initial_timestamp,final_timestamp):
+        locations = Location.objects.using('history_db_replica').filter(
+            unitid=unit.id,
+            timestamp__gte=initial_timestamp,
+            timestamp__lt=final_timestamp
+        ).order_by('timestamp').exclude(
+            latitude=0.0,
+            longitude=0.0
+        )
+        serializer = locations_serializers.LocationSerializer(locations,many=True)
+        device_reader = DeviceReader(unit)
+        data = serializer.data
+        valve1_counter = 0
+        valve2_counter = 0
+        for i in range(len(data)):
+            data[i]['unit_name'] = unit.name
+            data[i]['unit_description'] = unit.description
+            data[i]['datetime'] = time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                data[i]['timestamp'],"%d/%m/%Y %H:%M:%S")
+            try:
+                attributes = json.loads(data[i]['attributes'])
+            except:
+                attributes = {}
+            data[i]['attributes'] = attributes
+            data[i]['ignition'] = device_reader.detect_ignition_event({
+                'attributes':attributes
+            })
+            data[i]['odometer'] = device_reader.get_odometer({
+                'attributes':attributes
+            })
+            if i == 0:
+                data[i]['distance'] = 0.0
+            else:
+                distance = great_circle(
+                    (
+                        data[i-1]['latitude'],
+                        data[i-1]['longitude']
+                    ),
+                    (
+                        data[i]['latitude'],
+                        data[i]['longitude']
+                    ),
+                ).km
+                data[i]['distance'] = round(distance,2)
+        
+        # CALCULAR EVENTOS
+        valve1_events = []
+        valve2_events = []
+        for i in range(len(locations)):
+            if i != 0:
+                previous_location = locations[i-1]
+                current_location = locations[i]
+                previous_valve1 = device_reader.detect_valve1_event({
+                    'attributes':json.loads(previous_location.attributes)
+                })
+                current_valve1 = device_reader.detect_valve1_event({
+                    'attributes':json.loads(current_location.attributes)
+                })
+                if previous_valve1 == False and current_valve1 == True:
+                    #print('ON')
+                    valve1_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'OPEN',
+                    })
+                elif previous_valve1 == True and current_valve1 == False:
+                    #print('OFF')
+                    valve1_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'CLOSE',
+                    })
+        for i in range(len(locations)):
+            if i != 0:
+                previous_location = locations[i-1]
+                current_location = locations[i]
+                previous_valve2 = device_reader.detect_valve2_event({
+                    'attributes':json.loads(previous_location.attributes)
+                })
+                current_valve2 = device_reader.detect_valve2_event({
+                    'attributes':json.loads(current_location.attributes)
+                })
+                if previous_valve2 == False and current_valve2 == True:
+                    #print('ON')
+                    valve2_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'OPEN',
+                    })
+                elif previous_valve2 == True and current_valve2 == False:
+                    #print('OFF')
+                    valve2_events.append({
+                        'latitude':locations[i].latitude,
+                        'longitude':locations[i].longitude,
+                        'timestamp':locations[i].timestamp,
+                        'address':locations[i].address,
+                        'event':'CLOSE',
+                    })
+        # FIN - CALCULAR EVENTOS
+
+        summarization = [
+            {
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                final_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'type': 'valve1',
+            'amount': len(valve1_events),
+            },
+            {
+            'unit_name': unit.name,
+            'unit_description': unit.description,
+            'initial_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                initial_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'final_datetime': time_conversor.convert_utc_timestamp_to_local_datetimestr(
+                final_timestamp,"%d/%m/%Y %H:%M:%S"),
+            'type': 'valve2',
+            'amount': len(valve2_events),
+            },
+        ]
+        if len(data) == 0:
+            return {
+                'valve_report':[],
+                'events':{
+                    'valve1_events':[],
+                    'valve2_events':[],
+                },
+                'summarization':[],
+            }
+        else:
+            return {
+                'valve_report':data,
+                'events':{
+                    'valve1_events':valve1_events,
+                    'valve2_events':valve2_events,
+                },
+                'summarization':summarization,
+            }
 
     def generate_extended_detailed_report(self,unit,initial_timestamp,final_timestamp):
         locations = Location.objects.using('history_db_replica').filter(
