@@ -23,18 +23,7 @@ class RenderReport:
                 unit.id = parent.id
             except Exception as e:
                 pass
-        return unit
-
-    def __replace_id_in_children(self,units):
-        for unit in units:
-            if unit.is_child:
-                try:
-                    parent = Device.objects.get(child__id=unit.id)
-                    unit.id = parent.id
-                except Exception as e:
-                    pass
-        return units
-            
+        return unit            
 
     def render_detailed_report(self,request):
         data = request.data
