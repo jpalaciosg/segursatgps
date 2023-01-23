@@ -61,7 +61,7 @@ def login_view(request):
                 if profile:
                     return redirect('management-map')
                 logout(request)
-                return render(request,'users/login-mobile.html',{
+                return render(request,'users/salogin.html',{
                     'error':'No existe cuenta vinculada a este usuario, contactese con el administrador',
                 })
         if request.user.is_authenticated:
