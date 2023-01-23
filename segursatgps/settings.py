@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '8rubv9!m-^=(!a-zn^fato38(bkq930n@y$$31xr_5k-hbp8&c'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -238,3 +238,7 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 # GEOCODING SERVER
 GEOCODING_SERVER = 'georeverse'
 GEOCODING_TIMEOUT = 10
+
+# MULTILOGIN
+MOBILE_LOGIN_SUBDOMAIN = 'mobile'
+MANAGEMENT_LOGIN_SUBDOMAIN = 'management'

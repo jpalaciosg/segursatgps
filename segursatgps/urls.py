@@ -36,7 +36,6 @@ import checkpoint.views as checkpoint_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', users_views.login_view, name='login'),
-    path('salogin/', users_views.superadmin_login_view, name='salogin'),
     path('logout/', users_views.logout_view, name='logout'),
     path('users/', users_views.users_view, name='users'),
     path('units/', units_views.units_view, name='units'),
@@ -72,7 +71,9 @@ urlpatterns = [
     path('reports/telemetry-trip-report/', reports_views.telemetry_trip_report_view, name='telemetry-trip-report'),
     path('maps/', maps_views.map_view, name='map'),
     path('maps/mobile/', maps_views.mobile_map_view, name='mobile-map'),
-    #path('maps/multiple/', maps_views.multiple_map_view, name='multiple-map'),
+    path('maps/multiple-unit-map-4/', maps_views.multiple_unit_map_4_view, name='multiple-unit-map-4'),
+    path('maps/multiple-unit-map-6/', maps_views.multiple_unit_map_6_view, name='multiple-unit-map-6'),
+    path('maps/multiple-unit-map-8/', maps_views.multiple_unit_map_8_view, name='multiple-unit-map-8'),
     path('triggers/fleet-trigger/', triggers_views.fleet_trigger_view, name='fleet-trigger'),
     path('triggers/unit-trigger/', triggers_views.unit_trigger_view, name='unit-trigger'),
     path('alerts/', alerts_views.alerts_view, name='alerts'),

@@ -1,9 +1,9 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,7 +12,6 @@ from rest_framework.decorators import api_view
 from users.models import User
 from units.models import Device
 from .models import Profile
-from .forms import UserCreateForm,UserUpdateForm
 from .serializers import ProfileSerializer,UserSerializer,UpdateUserSerializer,UpdateProfileSerializer,UpdatePasswordSerializer
 
 from common.gmt_conversor import GMTConversor
@@ -27,7 +26,8 @@ def login_view(request):
     path = request.build_absolute_uri()
     path = path.replace('http://','').replace('https://','')
     path = path.split('/')[0]
-    if path == 'mobile.segursat.com':
+    subdomain = path.split('.')[0]
+    if subdomain == settings.MOBILE_LOGIN_SUBDOMAIN:
         if request.method == 'POST':
             username = request.POST['username']
             password = request.POST['password']
@@ -47,7 +47,7 @@ def login_view(request):
         if request.user.is_authenticated:
             return redirect('mobile-map')
         return render(request,'users/login-mobile.html')
-    elif path == 'management.segursat.com':
+    elif subdomain == settings.MANAGEMENT_LOGIN_SUBDOMAIN:
         if request.method == 'POST':
             username = request.POST['username']
             password = request.POST['password']
@@ -99,24 +99,6 @@ def login_view(request):
         if request.user.is_authenticated:
             return redirect('map')
         return render(request,'users/login.html')
-
-def superadmin_login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request,username=username,password=password)
-        if user:
-            login(request,user)
-            if request.user.profile.is_superadmin:
-                return redirect('management-dashboard')
-            logout(request)
-            return render(request,'users/salogin.html',{
-                'error':'No cuenta con los privilegios necesarios.',
-            })
-        else:
-            return render(request,'users/salogin.html',{'error':'Usuario y/o contraseña invalidos'})
-
-    return render(request,'users/salogin.html')
 
 @login_required
 def logout_view(request):

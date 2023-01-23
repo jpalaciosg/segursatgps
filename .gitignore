@@ -1,7 +1,8 @@
 env/
 templates/
-*.pyc
-*.sqlite3
 segursatgps/*.cnf
 locations/config.py
 geofences/load_geofences.py
+*.pyc
+*.sqlite3
+*-dev.py
