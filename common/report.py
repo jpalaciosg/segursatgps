@@ -1299,7 +1299,7 @@ class Report:
         }
 
     def generate_trip_report2(self,unit,initial_timestamp,final_timestamp,geofence_option):
-        trip_report = []
+        full_trip_report = []
         summarization = []
         initial_datetime_obj = datetime.utcfromtimestamp(initial_timestamp)
         initial_datetime_obj = gmt_conversor.convert_utctolocaltime(initial_datetime_obj)
@@ -1317,6 +1317,7 @@ class Report:
         datetime_ranges[0][0] = initial_datetime_obj
         datetime_ranges[len(datetime_ranges)-1][1] = final_datetime_obj
         for dr in datetime_ranges:
+            trip_report = []
             timestamp1 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[0])))
             timestamp2 = int(datetime.timestamp(gmt_conversor.convert_localtimetoutc(dr[1])))
             locations = Location.objects.using('history_db_replica').filter(
@@ -1408,71 +1409,80 @@ class Report:
                             'trip_duration':trip_duration,
                             'trip_time':str(timedelta(seconds=trip_duration))
                         })
-        for tr in trip_report:
-            if tr['initial_timestamp'] == 'N/D' or tr['final_timestamp'] == 'N/D':
-                tr['distance'] = 'N/D'
-                tr['average_speed'] = 'N/D'
-                tr['max_speed'] = 'N/D'
-                tr['stop_duration'] = 'N/D'
-                tr['stop_time'] = 'N/D'
-                tr['driving_duration'] = 'N/D'
-                tr['driving_time'] = 'N/D'
-            else:
-                trip_locations = locations.filter(
-                    timestamp__gte=tr['initial_timestamp'],
-                    timestamp__lte=tr['final_timestamp'],
-                )
-                distance = 0
-                speeds = []
-                for i in range(len(trip_locations)):
-                    speeds.append(trip_locations[i].speed)
-                    if i != 0:
-                        previous_location = trip_locations[i-1]
-                        current_location = trip_locations[i]
-                        distance2 = great_circle(
-                            (
-                                previous_location.latitude,
-                                previous_location.longitude,
-                            ),
-                            (
-                                current_location.latitude,
-                                current_location.longitude,
-                            ),
-                        ).km
-                        distance += distance2
-                tr['distance'] = round(distance,2)
-                try:
-                    average_speed = round(sum(speeds)/len(speeds),2)
-                except:
-                    average_speed = 0
-                tr['average_speed'] = average_speed
-                try:
-                    max_speed = max(speeds)
-                except:
-                    max_speed = 0
-                tr['max_speed'] = max_speed
-                movement_events = self.calculate_unit_movement_events(unit,trip_locations)
-                stop_duration = 0
-                for i in range(len(movement_events)):
-                    if i == 0:
-                        if movement_events[i]['event'] == 'START':
-                            stop_duration += movement_events[i]['timestamp'] - tr['initial_timestamp']
-                        elif  i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
-                            stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
-                    else:
-                        if i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
-                            stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
-                        elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
-                            stop_duration += movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
-                if len(movement_events) == 0: stop_duration = tr['trip_duration']
-                tr['stop_duration'] = stop_duration
-                tr['stop_time'] = str(timedelta(seconds=stop_duration))
-                tr['driving_duration'] = tr['trip_duration'] - stop_duration
-                tr['driving_time'] = str(timedelta(seconds=tr['driving_duration']))
+            for tr in trip_report:
+                if tr['initial_timestamp'] == 'N/D' or tr['final_timestamp'] == 'N/D':
+                    tr['distance'] = 'N/D'
+                    tr['average_speed'] = 'N/D'
+                    tr['max_speed'] = 'N/D'
+                    tr['stop_duration'] = 'N/D'
+                    tr['stop_time'] = 'N/D'
+                    tr['driving_duration'] = 'N/D'
+                    tr['driving_time'] = 'N/D'
+                else:
+                    trip_locations = locations.filter(
+                        timestamp__gte=tr['initial_timestamp'],
+                        timestamp__lte=tr['final_timestamp'],
+                    )
+                    """
+                    trip_locations = ([ 
+                        location 
+                        for location in locations 
+                        if location.timestamp < tr['final_timestamp']
+                    ])
+                    """
+                    distance = 0
+                    speeds = []
+                    for i in range(len(trip_locations)):
+                        speeds.append(trip_locations[i].speed)
+                        if i != 0:
+                            previous_location = trip_locations[i-1]
+                            current_location = trip_locations[i]
+                            distance2 = great_circle(
+                                (
+                                    previous_location.latitude,
+                                    previous_location.longitude,
+                                ),
+                                (
+                                    current_location.latitude,
+                                    current_location.longitude,
+                                ),
+                            ).km
+                            distance += distance2
+                    tr['distance'] = round(distance,2)
+                    try:
+                        average_speed = round(sum(speeds)/len(speeds),2)
+                    except:
+                        average_speed = 0
+                    tr['average_speed'] = average_speed
+                    try:
+                        max_speed = max(speeds)
+                    except:
+                        max_speed = 0
+                    tr['max_speed'] = max_speed
+                    movement_events = self.calculate_unit_movement_events(unit,trip_locations)
+                    stop_duration = 0
+                    for i in range(len(movement_events)):
+                        if i == 0:
+                            if movement_events[i]['event'] == 'START':
+                                stop_duration += movement_events[i]['timestamp'] - tr['initial_timestamp']
+                            elif  i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
+                                stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
+                        else:
+                            if i == len(movement_events)-1 and movement_events[i]['event'] == 'STOP':
+                                stop_duration += tr['final_timestamp'] - movement_events[i]['timestamp']
+                            elif movement_events[i-1]['event'] == 'STOP' and movement_events[i]['event'] == 'START':
+                                stop_duration += movement_events[i]['timestamp'] - movement_events[i-1]['timestamp']
+                    if len(movement_events) == 0: stop_duration = tr['trip_duration']
+                    tr['stop_duration'] = stop_duration
+                    tr['stop_time'] = str(timedelta(seconds=stop_duration))
+                    tr['driving_duration'] = tr['trip_duration'] - stop_duration
+                    tr['driving_time'] = str(timedelta(seconds=tr['driving_duration']))
+            for tr in trip_report:
+                full_trip_report.append(tr)
         # CALCULAR GEOCERCAS
         if geofence_option:
             geofences = Geofence.objects.filter(account=unit.account)
-            for tr in trip_report:
+            for tr in full_trip_report:
                 matching_initial_geofences = []
                 matching_final_geofences = []
                 for geofence in geofences:
@@ -1501,17 +1511,17 @@ class Report:
                         d_str += f', {matching_final_geofences[i]}'
                 tr['final_geofences'] = d_str
         else:
-            for tr in trip_report:
+            for tr in full_trip_report:
                 tr['initial_geofences'] = 'N/D'
                 tr['final_geofences'] = 'N/D'
         # FIN - CALCULAR GEOCERCAS
         # CALCULAR RESUMEN
-        if len(trip_report) > 0:
+        if len(full_trip_report) > 0:
             number_of_trips = 0
             distance_summarization = 0.0
             trip_duration_summarization = 0
             stop_duration_summarization = 0
-            for tr in trip_report:
+            for tr in full_trip_report:
                 if tr['initial_timestamp'] != 'N/D':
                     if tr['final_timestamp'] != 'N/D':
                         number_of_trips += 1
@@ -1519,10 +1529,10 @@ class Report:
                         trip_duration_summarization += tr['trip_duration']
                         stop_duration_summarization += tr['stop_duration']
             driving_duration_summarization = trip_duration_summarization-stop_duration_summarization
-            """
+            # CALCULANDO PORCENTAJES
             stop_percentage_summarization = stop_duration_summarization*100/trip_duration_summarization
             driving_percentage_summarization = 100 - stop_percentage_summarization
-            """
+            # FIN - CALCULANDO PORCENTAJES
             summarization.append({
                 "unit_name" : unit.name,
                 "unit_description": unit.description,
@@ -1538,15 +1548,15 @@ class Report:
                     stop_duration_summarization),
                 "driving_duration_summarization": time_conversor.convert_seconds_in_hour_format(
                     driving_duration_summarization),
-                "trip_percentage_summarization": "",
-                "stop_percentage_summarization": "",
-                "driving_percentage_summarization": "driving_percentage_summarization",
+                #"trip_percentage_summarization": "",
+                "stop_percentage_summarization": round(stop_percentage_summarization,2),
+                "driving_percentage_summarization": round(driving_percentage_summarization,2),
             })
         # FIN - CALCULAR RESUMEN
         return {
-                'trip_report': trip_report,
-                'summarization': summarization,
-            }
+            'trip_report': full_trip_report,
+            'summarization': summarization,
+        }
 
     def generate_mileage_report(self,unit,initial_timestamp,final_timestamp):
         day_mileage_report = []
